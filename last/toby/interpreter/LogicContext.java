@@ -40,6 +40,7 @@ public abstract class LogicContext extends NodeTree implements Linkable
     private static boolean traceFlag = false;
     private static long traceTime = 0;
     private static SourceWatcher[] sourceWatchers = null;
+    private static VarWatcher[] varWatchers = null;
 
     private int sourceLine = -1;
     protected Vector symTable = null;   // !!! need a freeResourcesImpl!
@@ -60,6 +61,12 @@ public abstract class LogicContext extends NodeTree implements Linkable
         } // if
         else
         {
+            for (int i = 0; i < sourceWatchers.length; i++)
+            {
+                if (sourceWatchers[i] == sw)
+                    return;
+            } // for
+
             SourceWatcher[] a = new SourceWatcher[sourceWatchers.length + 1];
             System.arraycopy(sourceWatchers, 0, a, 0, sourceWatchers.length);
             a[sourceWatchers.length] = sw;
@@ -68,8 +75,55 @@ public abstract class LogicContext extends NodeTree implements Linkable
     } // addSourceWatcher
 
 
+    public synchronized static void addVarWatcher(VarWatcher vw)
+    {
+        if (varWatchers == null)
+        {
+            varWatchers = new VarWatcher[1];
+            varWatchers[0] = vw;
+        } // if
+        else
+        {
+            for (int i = 0; i < varWatchers.length; i++)
+            {
+                if (varWatchers[i] == vw)
+                    return;
+            } // for
+
+            VarWatcher[] a = new VarWatcher[varWatchers.length + 1];
+            System.arraycopy(varWatchers, 0, a, 0, varWatchers.length);
+            a[varWatchers.length] = vw;
+            varWatchers = a;
+        } // else
+    } // addVarWatcher
+
+
+        // !!! a finer-grained lock would be nice.
+    public synchronized static void removeVarWatcher(VarWatcher vw)
+    {
+        if (varWatchers == null)
+            return;
+
+        for (int i = 0; i < varWatchers.length; i++)
+        {
+            if (varWatchers[i] == vw)
+            {
+                for (int j = i; j < varWatchers.length - 1; j++)
+                    varWatchers[j] = varWatchers[j + 1];
+
+                VarWatcher[] a = new VarWatcher[varWatchers.length - 1];
+                System.arraycopy(varWatchers, 0, a, 0, a.length);
+                varWatchers = a;
+            } // if
+        } // for
+    } // removeVarWatcher
+
+
     protected static void notifyBeginInterpretation()
     {
+        if (sourceWatchers == null)
+            return;
+
         int max = sourceWatchers.length;
         for (int i = 0; i < max; i++)
             sourceWatchers[i].beginInterpretation();
@@ -78,6 +132,9 @@ public abstract class LogicContext extends NodeTree implements Linkable
 
     protected static void notifyEndInterpretation(boolean normalTermination)
     {
+        if (sourceWatchers == null)
+            return;
+
         int max = sourceWatchers.length;
         for (int i = 0; i < max; i++)
             sourceWatchers[i].endInterpretation(normalTermination);
@@ -85,6 +142,9 @@ public abstract class LogicContext extends NodeTree implements Linkable
 
     protected static void notifySourceNewLine(int newLineNum)
     {
+        if (sourceWatchers == null)
+            return;
+
         int max = sourceWatchers.length;
         for (int i = 0; i < max; i++)
             sourceWatchers[i].sourceNewLine(newLineNum);
@@ -92,10 +152,46 @@ public abstract class LogicContext extends NodeTree implements Linkable
 
     protected static void notifySourceError(ExecException e)
     {
+        if (sourceWatchers == null)
+            return;
+
         int max = sourceWatchers.length;
         for (int i = 0; i < max; i++)
             sourceWatchers[i].sourceError(e);
     } // notifySourceError
+
+
+
+    protected synchronized static void notifyNewStackFrame(int framePtr)
+    {
+        if (varWatchers == null)
+            return;
+
+        int max = varWatchers.length;
+        for (int i = 0; i < max; i++)
+            varWatchers[i].varNewStackFrame(framePtr);
+    } // notifyNewStackFrame
+    
+    protected synchronized static void notifyDefineGlobals(Stack newGlobals)
+    {
+        if (varWatchers == null)
+            return;
+
+        int max = varWatchers.length;
+        for (int i = 0; i < max; i++)
+            varWatchers[i].varDefineGlobals(newGlobals);
+    } // notifyDefineGlobals
+    
+    protected synchronized static void notifyDefineLocalStack(Stack newLocals)
+    {
+        if (varWatchers == null)
+            return;
+
+        int max = varWatchers.length;
+        for (int i = 0; i < max; i++)
+            varWatchers[i].varDefineLocalStack(newLocals);
+    } // notifyDefineLocalStack
+
 
 
         /**
@@ -309,8 +405,8 @@ public abstract class LogicContext extends NodeTree implements Linkable
     } // link
 
 
-    public void linkVectorElements(Vector v, GlobalLogicContext glob)
-                                        throws ParseException
+    public static void linkVectorElements(Vector v, GlobalLogicContext glob)
+                                           throws ParseException
     {
         int max = v.size();
         for (int i = 0; i < max; i++)
@@ -411,6 +507,14 @@ public abstract class LogicContext extends NodeTree implements Linkable
         traceFlag = true;
         traceTime = delay;
     } // enableTracing (overload; takes a specific delay)
+
+    public static void setTracing(boolean onOff)
+    {
+        if (onOff)
+            enableTracing();
+        else
+            disableTracing();
+    } // setTracing
 
     public static void enableTracing()
     {
