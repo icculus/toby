@@ -189,14 +189,13 @@ TOBYSTR(TOBYI18N_ERR_IN_FUNC, "%0 à la ligne %1 dans la fonction %2")
 TOBYSTR(TOBYI18N_ERR_OUT_FUNC, "%0 à la ligne %1")
 
 // Error messages...
-//  Please note that the capitalized words are keywords
-//  in the Toby language, and should not be translated.
-//  (unless you are also translating the keywords in
-//   in toby.tobylang, too, but those changes will not
-//   be accepted in an official Toby distribution.)
+//  Please note that the capitalized words are keywords in the Toby language,
+//  and should not be translated, unless you are also translating the keywords
+//  themselves in in tobykeywords.tobylang, too, but those changes will not
+//   be accepted in an official Toby distribution.
 TOBYSTR(TOBYI18N_INTERNAL_ERROR, "Erreur interne")
 
-// !!! Is that correct, or was this one missed?
+// !!! TRANSLATE ME!
 TOBYSTR(TOBYI18N_EXPECTED_TOKEN, "Expected token")
 
 TOBYSTR(TOBYI18N_SYNTAX_ERROR, "Erreur de syntaxe")

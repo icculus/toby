@@ -80,13 +80,7 @@
 //  What the % values are suppose to represent are pretty obvious.
 TOBYSTR(TOBYI18N_LANGIOEXCEPT, "LANGUAGE: IOException reading language data.")
 TOBYSTR(TOBYI18N_LANGBOGUSLINE, "LANGUAGE: Line %0 is bogus in %1.")
-TOBYSTR(TOBYI18N_LANGNOSUCHCLASS, "LANGUAGE: No such class [%0] on line %1 in %2.")
 TOBYSTR(TOBYI18N_LANGNOSUCHFIELD, "LANGUAGE: No such field [%0] on line %1 in %2.")
-TOBYSTR(TOBYI18N_LANGNOTPUBLIC, "LANGUAGE: Field [%0] is not on line %1 in %2.")
-TOBYSTR(TOBYI18N_LANGNOTSTATIC, "LANGUAGE: Field [%0] is not on line %1 in %2.")
-TOBYSTR(TOBYI18N_LANGNOTSTRING, "LANGUAGE: Field [%0] is not a string on line %1 in %2.")
-TOBYSTR(TOBYI18N_LANGISFINAL, "LANGUAGE: Field [%0] is final on line %1 in %2.")
-TOBYSTR(TOBYI18N_LANGSETFAILED, "LANGUAGE: Setting field [%0] failed with message [%1] on line %2 in %3.")
 
 // Don't touch this without good reason.
 TOBYSTR(TOBYI18N_NAME, "Toby")
@@ -191,11 +185,10 @@ TOBYSTR(TOBYI18N_ERR_IN_FUNC, "%0 on line %1 in function %2")
 TOBYSTR(TOBYI18N_ERR_OUT_FUNC, "%0 on line %1")
 
 // Error messages...
-//  Please note that the capitalized words are keywords
-//  in the Toby language, and should not be translated.
-//  (unless you are also translating the keywords in
-//   in toby.tobylang, too, but those changes will not
-//   be accepted in an official Toby distribution.)
+//  Please note that the capitalized words are keywords in the Toby language,
+//  and should not be translated, unless you are also translating the keywords
+//  themselves in in tobykeywords.tobylang, too, but those changes will not
+//   be accepted in an official Toby distribution.
 TOBYSTR(TOBYI18N_INTERNAL_ERROR, "Internal error")
 TOBYSTR(TOBYI18N_EXPECTED_TOKEN, "Expected token")
 TOBYSTR(TOBYI18N_SYNTAX_ERROR, "Syntax error")
