@@ -72,8 +72,14 @@ platform_clock := unix
 
 #-----------------------------------------------------------------------------#
 # Choose a default natural language.
-#   Current option(s): "english"
+#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Ryan would also love to hear from you if you are willing to translate this
+#  software to other natural languages; it's easy to do, if you are bilingual
+#  in the first place.
+#
+#   Current option(s): "english", "french"
 #-----------------------------------------------------------------------------#
+#platform_i18n := french
 platform_i18n := english
 
 #-----------------------------------------------------------------------------#
@@ -84,6 +90,66 @@ platform_i18n := english
 platform_loader := unix
 
 #-----------------------------------------------------------------------------#
+# Set this accordingly. If you choose the XML lexer, you need to be
+#  building for a platform that has a working dynamic loader (you can use
+#  the NullLoader to compile, but it renders the parsers useless), and has
+#  an actual filesystem. The XML loader gives you more flexibility at the
+#  cost of more initial overhead and some code bloat. More importantly, the
+#  XML lexer can dynamically generate C++ code that duplicates its
+#  functionality. This code can be generated on any platform that supports the
+#  XML lexer, and then be compiled in for a more lean (but more ridgid)
+#  equivalent lexer that should work on all platforms that can't use
+#  the XML lexer for whatever reason. This generated code comprises the
+#  "static" lexer. The static lexer can be used on any platform, if the code
+#  has already been generated (we keep a revision of that code around, so you
+#  can have a choice without having to build one then the other). The Null
+#  lexer is just for stubbing out a rather important subsystem while porting
+#  to a extremely foreign platform.
+#
+# If you are really confused, the general rule is:
+#  Choose "xml", unless you're building for an unusual platform (PalmOS, a
+#  port to a new platform), in which case choose "static".
+#
+#   Current option(s): "xml", "static", "null"
+#-----------------------------------------------------------------------------#
+#platform_lexer := static
+#platform_lexer := null
+platform_lexer := xml
+
+#-----------------------------------------------------------------------------#
+# Choose all that apply. These are parsers for languages that you will be
+#  linking statically into the program. Each one you link in adds more bulk
+#  to the binary, but it's one less thing that can go wrong later. If you
+#  want to use a language, it MUST be listed either here or in the
+#  "dynamic_parsers" section, below. Systems without a dynamic loader
+#  (PalmOS, etc) must list all languages they want to use in this section.
+#  Each language should be lowercase, and separated by a space character.
+#
+# If you are really confused, the defaults are probably okay.
+#
+#   Current option(s): "Toby"
+#-----------------------------------------------------------------------------#
+#static_parsers :=
+static_parsers := Toby
+
+#-----------------------------------------------------------------------------#
+# Choose all that apply. These are parsers for languages that you will be
+#  linking dynamically against the program. The usual arguments for shared
+#  libraries apply here; modularity, plugins, potential errors, yaddayadda...
+#  If you want to use a language, it MUST be listed either here or in the
+#  "static_parsers" section, above. Systems without a dynamic loader
+#  (PalmOS, etc) must list any languages they want to use IN THE STATIC
+#  PARSERS SECTION. Each language should be lowercase, and separated by
+#  a space character.
+#
+# If you are really confused, the defaults are probably okay.
+#
+#   Current option(s): "toby"
+#-----------------------------------------------------------------------------#
+#dynamic_parsers := toby
+dynamic_parsers :=
+
+#-----------------------------------------------------------------------------#
 # To use a different platform's ASM or portable C, change this.
 #  Currently, this MUST be -DUSE_PORTABLE_C
 #-----------------------------------------------------------------------------#
@@ -92,7 +158,7 @@ USE_ASM := -DUSE_PORTABLE_C
 
 #-----------------------------------------------------------------------------#
 # You only need to set SDL_INC_DIR and SDL_LIB_DIR if you are using CygWin
-#  as a compiler and SDL for video.
+#  as a compiler and SDL for some subsystem or another.
 #
 #  SDL_INC_DIR is where SDL.h and associated headers can be found, and
 #  SDL_LIB_DIR is where SDL.lib and SDL.dll are located. These may be set as
@@ -133,6 +199,12 @@ endif
 #-----------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------#
+
+
+#-----------------------------------------------------------------------------#
+# Basic initialization.
+#-----------------------------------------------------------------------------#
+need_xml := false
 
 
 #-----------------------------------------------------------------------------#
@@ -245,37 +317,13 @@ ASMFLAGS := -f $(ASMOBJFMT) $(ASMDEFS)
 
 
 #-----------------------------------------------------------------------------#
-# Source and target names.
-#-----------------------------------------------------------------------------#
-
-MAINEXE := $(BINDIR)/toby$(strip $(EXE_EXT))
-STANDALONEEXE := $(BINDIR)/standalone/toby$(strip $(EXE_EXT))
-
-EXES := $(STANDALONEEXE) #$(MAINEXE)
-TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
-TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
-TESTGRAMMAREXE := $(BINDIR)/test/grammar$(strip $(EXE_EXT))
-
-UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
-            util/TobyLanguage.cpp util/TobyClock.cpp
-
-PARSERSRCS := parsers/Parser.cpp
-
-TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
-
-IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
-          io/Tokenizer.cpp
-
-XMLSRCS := xml/XMLTree.cpp xml/XMLNode.cpp
-
-#-----------------------------------------------------------------------------#
-# Language modules
+# Language modules.
 #-----------------------------------------------------------------------------#
 CFLAGS += "-ATOBYI18N_DEFAULT($(strip $(platform_i18n)))"
 
 
 #-----------------------------------------------------------------------------#
-# Thread modules
+# Thread modules.
 #-----------------------------------------------------------------------------#
 valid_threads_target := false
 ifeq ($(strip $(platform_threads)),pthreads)
@@ -306,7 +354,7 @@ endif
 
 
 #-----------------------------------------------------------------------------#
-# Clock modules
+# Clock modules.
 #-----------------------------------------------------------------------------#
 valid_clock_target := false
 ifeq ($(strip $(platform_clock)),sdl)
@@ -333,7 +381,7 @@ endif
 
 
 #-----------------------------------------------------------------------------#
-# Loader modules
+# Loader modules.
 #-----------------------------------------------------------------------------#
 valid_loader_target := false
 ifeq ($(strip $(platform_loader)),unix)
@@ -355,7 +403,7 @@ endif
 
 
 #-----------------------------------------------------------------------------#
-# Video modules
+# Video modules.
 #-----------------------------------------------------------------------------#
 valid_video_target := false
 ifeq ($(strip $(platform_video)),sdl)
@@ -383,10 +431,85 @@ endif
 
 
 #-----------------------------------------------------------------------------#
+# Lexer modules.
+#-----------------------------------------------------------------------------#
+valid_lexer_target := false
+ifeq ($(strip $(platform_lexer)),xml)
+  need_xml := true
+  LEXERSRCS := platform/lexers/xmllexer/XMLLexer.cpp \
+               platform/lexers/xmllexer/ElementRulesXML.cpp \
+               platform/lexers/xmllexer/LanguageRulesXML.cpp
+  LEXERDIR  := xmllexer
+  valid_lexer_target := true
+endif
+
+ifeq ($(strip $(platform_lexer)),static)
+  LEXERSRCS := platform/lexers/staticlexer/StaticLexer.cpp
+  LEXERSRCS += $(foreach f,$(static_parsers),platform/lexers/staticlexer/$(f).cpp)
+  LEXERDIR  := staticlexer
+  valid_lexer_target := true
+endif
+
+ifeq ($(strip $(platform_lexer)),null)
+  LEXERSRCS := platform/lexers/nulllexer/NullLexer.cpp
+  LEXERDIR  := nulllexer
+  valid_lexer_target := true
+endif
+
+ifneq ($(strip $(valid_lexer_target)),true)
+  $(error platform_lexer flag in Makefile is not valid.)
+endif
+
+
+#-----------------------------------------------------------------------------#
+# Parser modules.
+#-----------------------------------------------------------------------------#
+
+CFLAGS += $(foreach f,$(static_parsers),-DTOBYPARSER_$(shell echo $(f) |tr a-z A-Z))
+CFLAGS += $(foreach f,$(dynamic_parsers),-DTOBYPARSER_$(shell echo $(f) |tr a-z A-Z))
+PARSERSRCS := $(foreach f,$(static_parsers),parsers/$(f)Parser.cpp)
+
+# (!!! There's no dynamic loading support in the XML parser yet, either.)
+ifneq ($(strip $(dynamic_parsers)),)
+  $(error Can't build dynamic parsers, yet.)
+endif
+
+#-----------------------------------------------------------------------------#
+# Source and target names.
+#-----------------------------------------------------------------------------#
+
+MAINEXE := $(BINDIR)/toby$(strip $(EXE_EXT))
+STANDALONEEXE := $(BINDIR)/standalone/toby$(strip $(EXE_EXT))
+
+EXES := $(STANDALONEEXE) #$(MAINEXE)
+TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
+TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
+TESTGRAMMAREXE := $(BINDIR)/test/grammar$(strip $(EXE_EXT))
+
+TESTEXES := $(TESTTOKENIZEREXE)
+ifeq ($(strip $(need_xml)),true)
+  TESTEXES += $(TESTXMLEXE) $(TESTGRAMMAREXE)
+  XMLSRCS := xml/XMLTree.cpp xml/XMLNode.cpp
+endif
+
+UTILSRCS += util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
+            util/TobyLanguage.cpp util/TobyClock.cpp
+
+PARSERSRCS += parsers/Parser.cpp
+
+TURTLESPACESRCS += turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
+
+IOSRCS += io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
+          io/Tokenizer.cpp
+
+LEXERSRCS += lexer/ElementRules.cpp lexer/LanguageRules.cpp lexer/Lexer.cpp
+
+#-----------------------------------------------------------------------------#
 # Source and object parsing...
 #-----------------------------------------------------------------------------#
 COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS) \
-              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS) $(LOADERSRCS) $(XMLSRCS)
+              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS) $(LOADERSRCS) $(XMLSRCS) \
+              $(LEXERSRCS)
 
 # Rule for getting list of objects from source
 COMMONOBJS1 := $(COMMONSRCS:.c=.o)
@@ -416,7 +539,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.c
 $(BINDIR)/%.o: $(SRCDIR)/%.asm
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
-.PHONY: all clean distclean listobjs showcfg tests
+.PHONY: all tests clean distclean listobjs showcfg showflags
 
 all: $(BINDIR) $(EXES)
 
@@ -426,7 +549,7 @@ $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 
-tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE) $(TESTGRAMMAREXE)
+tests: $(BINDIR) $(TESTEXES)
 
 $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 	$(LINKER) -o $(TESTTOKENIZEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
@@ -446,12 +569,14 @@ $(BINDIR):
 	mkdir -p $(BINDIR)/util
 	mkdir -p $(BINDIR)/io
 	mkdir -p $(BINDIR)/xml
-	mkdir -p $(BINDIR)/parsers/toby
+	mkdir -p $(BINDIR)/lexer
+	mkdir -p $(BINDIR)/parsers
 	mkdir -p $(BINDIR)/platform/renderers/fbrenderer
 	mkdir -p $(BINDIR)/platform/renderers/$(VIDEODIR)
 	mkdir -p $(BINDIR)/platform/clocks/$(CLOCKDIR)
 	mkdir -p $(BINDIR)/platform/threads/$(THREADSDIR)
 	mkdir -p $(BINDIR)/platform/loaders/$(LOADERDIR)
+	mkdir -p $(BINDIR)/platform/lexers/$(LEXERDIR)
 
 distclean: clean
 
@@ -470,6 +595,7 @@ listobjs:
 	@echo $(EXES)
 
 showcfg:
+	@echo "Compiler              : $(CC)"
 	@echo "Using CygWin          : $(cygwin)"
 	@echo "Debugging             : $(debug)"
 	@echo "ASM flag              : $(USE_ASM)"
@@ -477,8 +603,13 @@ showcfg:
 	@echo "Thread module         : $(platform_threads)"
 	@echo "Clock module          : $(platform_clock)"
 	@echo "Loader module         : $(platform_loader)"
+	@echo "Lexer module          : $(platform_lexer)"
 	@echo "Default i18n language : $(platform_i18n)"
+	@echo "Parser module(s)      : $(static_parsers) $(dynamic_parsers)"
 
+showflags:
+	@echo 'CFLAGS  : $(CFLAGS)'
+	@echo 'LDFLAGS : $(LDFLAGS)'
 
 #-----------------------------------------------------------------------------#
 # This section is pretty much just for Ryan's use to make distributions.
