@@ -29,7 +29,7 @@ import last.toby.util.TobyLanguage;
      */
 public abstract class Intrinsic implements Linkable
 {
-    protected String name = null;
+    protected String name = null;  // !!! make this private. Use getters/setters.
 
         /**
          * If (debugging) is (true), then println debug info to stdout.
@@ -54,47 +54,47 @@ public abstract class Intrinsic implements Linkable
 
     public void setValue(Intrinsic newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(int newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(double newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(float newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(char newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(byte newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(long newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(short newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(boolean newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(Object newVal) throws FlowException
@@ -102,91 +102,89 @@ public abstract class Intrinsic implements Linkable
         if (newVal instanceof Intrinsic)
             setValue((Intrinsic) newVal);
         else
-            ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+            ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
     public void setValue(String newVal) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
     } // setValue overload
 
 // !!! change all these name comments from "overload"...
 
     public int getIntValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(0);
     } // getValue overload
 
     public char getCharValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return('0');
     } // getValue overload
 
     public byte getByteValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(0);
     } // getValue overload
 
     public long getLongValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(0);
     } // getValue overload
 
     public short getShortValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(0);
     } // getValue overload
 
     public boolean getBooleanValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(false);
     } // getValue overload
     
     public String getStringValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(null);
     } // getValue overload
 
     public float getFloatValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return((float) 0.00);
     } // getValue overload
 
     public double getDoubleValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return((double) 0.00);
     } // getValue overload
 
     public Object getObjectValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
-        return(null);
+        return(this);
     } // getValue overload
 
     public Intrinsic getIntrinsicValue() throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
-        return(null);
+        return(this);
     } // getValue overload
 
     public int compare(Intrinsic intr) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(0);
     } // compare
 
     public boolean isEqual(Intrinsic intr) throws FlowException
     {
-        ExecException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
+        ExecException._throw(TobyLanguage.TYPE_MMATCH);  // !!!
         return(false);
     } // isEqual
 
