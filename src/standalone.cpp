@@ -26,17 +26,15 @@
  *   Written by Ryan C. Gordon (icculus@linuxgames.com)
  */
 
-#include <sys/time.h>
-#include <unistd.h>
 #include "turtlespace/TurtleSpace.h"
 #include "turtlespace/TurtleSpaceRenderer.h"
 #include "util/TobyThread.h"
+#include "util/TobyClock.h"
 
 int main(int argc, char **argv)
 {
-    bool no_timing = false;
-    struct timeval start_time;
-    struct timeval end_time;
+    toby_uint32 start_time = 0;
+    toby_uint32 end_time = 0;
     TurtleSpaceRenderer *renderer;
 
     renderer = __platformBuildStandaloneRenderer(TobyLanguage::NAME,
@@ -50,11 +48,8 @@ int main(int argc, char **argv)
 
     TurtleSpace tspace(renderer);
 
-    if (gettimeofday(&start_time, NULL) == -1)
-    {
-        perror("WARNING! gettimeofday() failed");
-        no_timing = true;
-    } // if
+    TobyClock *clock = __platformGetSingletonClock();
+    start_time = clock->getTicks();
 
     try
     {
@@ -66,7 +61,7 @@ int main(int argc, char **argv)
         tspace.cleanup();
         tspace.enableFence();
 
-#if 1
+#if 0
 
         tspace.setPenColor(0.0, 1.0, 0.0, 0.0);
 
@@ -128,19 +123,8 @@ int main(int argc, char **argv)
         delete e;
     } // catch
 
-    if (gettimeofday(&end_time, NULL) == -1)
-    {
-        perror("WARNING! gettimeofday() failed");
-        no_timing = true;
-    } // if
-
-    if (no_timing == false)
-    {
-        unsigned long ms;
-        ms = (unsigned long) (((end_time.tv_sec - start_time.tv_sec) * 1000) +
-                              ((end_time.tv_usec - start_time.tv_usec) / 1000));
-        printf("total time == (%ld) milliseconds.\n", ms);
-    } // if
+    end_time = clock->getTicks();
+    printf("total time == (%ld) milliseconds.\n", end_time - start_time);
 
     while (__platformRendererDoEvents())
     {
