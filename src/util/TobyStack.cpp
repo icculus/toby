@@ -19,13 +19,13 @@
 
 #include "util/TobyStack.h"
 
-void TobyStack::push(TobyObject *elem)
+void TobyStack::push(void *elem)
 {
     insertElement(elem, 0);
 } // TobyStack::push
 
 
-TobyObject *TobyStack::pop(void)
+void *TobyStack::pop(void)
 {
     return(remove(0));
 } // TobyStack::pop

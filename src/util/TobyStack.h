@@ -32,8 +32,8 @@ class TobyStack : public TobyCollection
 public:
 //    TobyStack(void);
 //    virtual ~TobyStack(void);
-    virtual void push(TobyObject *elem);
-    virtual TobyObject *pop(void);
+    virtual void push(void *elem);
+    virtual void *pop(void);
 }; // class TobyStack
 
 #endif  // !defined _INCLUDE_TOBYSTACK_H_
