@@ -4,6 +4,7 @@ function main() returns nothing
 		top = getTurtleSpaceHeight()
 	endif
 
+	disableFence()
 	setPenColor(8)
 	spiderWeb(top, top * 0.03, top * 0.15)
 endfunction
@@ -39,5 +40,6 @@ function isosceles(number size) returns nothing
 		turnRight(120)
 	endfor
 endfunction
+
 
 
