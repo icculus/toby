@@ -20,6 +20,7 @@
 #ifndef _INCLUDE_PTHREADSMUTEX_H_
 #define _INCLUDE_PTHREADSMUTEX_H_
 
+#include <pthread.h>
 #include "util/TobyMutex.h"
 
 /*
@@ -34,6 +35,9 @@ public:
     virtual ~PthreadsMutex(void);
     virtual void request(void);
     virtual void release(void);
+
+private:
+    pthread_mutex_t realMutex;
 }; // class PthreadsMutex
 
 #endif // !defined _INCLUDE_PTHREADSMUTEX_H_

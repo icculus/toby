@@ -19,36 +19,71 @@
 
 #include "platform/threads/sdlthreads/SDLThread.h"
 
-
-SDLThread::SDLThread(void)
+typedef struct __S_THREADENTRYARGS
 {
+    void *args;
+    void *(*runfunc)(void *args);
+    bool *terminatedFlag;
+} ThreadEntryArgs;
+
+
+static int threadEntry(void *_args)
+{
+    ThreadEntryArgs *args = (ThreadEntryArgs *) _args;
+    void *retval = args->runfunc(args->args);
+    *(args->terminatedFlag) = true;
+    delete args;
+    return((int) retval);
+} // threadEntry
+
+
+SDLThread::SDLThread(void *(*runfunc)(void *), void *args)
+    : TobyThread(runfunc, args),
+      terminated(false)
+{
+    ThreadEntryArgs *_args = new ThreadEntryArgs;
+    _args->args = args;
+    _args->runfunc = runfunc;
+    _args->terminatedFlag = &terminated;
+
+    realThread = SDL_CreateThread(threadEntry, _args);
+    assert(realThread != NULL);
 } // Constructor
 
 
 SDLThread::~SDLThread(void)
 {
+    SDL_KillThread(realThread);
+    int rc = 0;
+
+    if (SDL_ThreadID() == SDL_GetThreadID(realThread))
+        SDL_KillThread(realThread);  // woo boy.
+    else
+    {
+        if (terminated)
+            SDL_WaitThread(realThread, &rc);
+        else
+            SDL_KillThread(realThread);
+    } // else
 } // Destructor
-
-
-void SDLThread::start(void *(*runfunc)(void *))
-{
-} // SDLThread::start
 
 
 void SDLThread::waitForTermination(void)
 {
+    int rc = 0;
+    SDL_WaitThread(realThread, &rc);
 } // SDLThread::waitForTermination
 
 
 bool SDLThread::isTerminated(void)
 {
-    return(true);
+    return(terminated);
 } // SDLThread::isTerminated
 
 
-TobyThread *__platformBuildThread(void)
+TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args)
 {
-    return(new SDLThread());
+    return(new SDLThread(runfunc, args));
 } // __platformBuildThread
 
 

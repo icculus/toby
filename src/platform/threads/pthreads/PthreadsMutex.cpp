@@ -22,27 +22,45 @@
 
 PthreadsMutex::PthreadsMutex(void)
 {
-    // !!!
+    pthread_mutexattr_t attr;
+
+    pthread_mutexattr_init(&attr);
+    attr.__mutexkind = PTHREAD_MUTEX_RECURSIVE_NP;
+
+    if (pthread_mutex_init(&realMutex, &attr) != 0)
+    { 
+        assert(0);
+    } /* if */
+
+    pthread_mutexattr_destroy(&attr);
 } // Constructor
 
 
 PthreadsMutex::~PthreadsMutex(void)
 {
-    // !!!
+    if (pthread_mutex_destroy(&realMutex) != 0)
+    {
+        assert(0);
+    } // if
 } // Destructor
 
 
 void PthreadsMutex::request(void)
 {
-    // !!!
+    if (pthread_mutex_lock(&realMutex) != 0)
+    {
+        assert(0);
+    } // if
 } // PthreadsMutex::request
 
 
 void PthreadsMutex::release(void)
 {
-    // !!!
+    if (pthread_mutex_lock(&realMutex) != 0)
+    {
+        assert(0);
+    } // if
 } // PthreadsMutex::request
-
 
 
 // eine kleine platform glue...

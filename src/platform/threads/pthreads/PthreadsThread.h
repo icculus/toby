@@ -22,6 +22,8 @@
 
 #include <unistd.h>
 #include <sched.h>
+#include <pthread.h>
+#include <signal.h>
 #include "util/TobyThread.h"
 
 /*
@@ -33,11 +35,14 @@
 class PthreadsThread : public TobyThread
 {
 public:
-    PthreadsThread(void);
+    PthreadsThread(void *(*runfunc)(void *), void *args);
     virtual ~PthreadsThread(void);
-    virtual void start(void *(*runfunc)(void *));
     virtual void waitForTermination(void);
     virtual bool isTerminated(void);
+
+private:
+    pthread_t realThread;
+    bool terminated;
 }; // class PthreadsThread
 
 #endif // !defined _INCLUDE_PTHREADSTHREAD_H_

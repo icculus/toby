@@ -20,7 +20,8 @@
 #include "platform/threads/nullthreads/NullThread.h"
 
 
-NullThread::NullThread(void)
+NullThread::NullThread(void *(*runfunc)(void *), void *args)
+    : TobyThread(runfunc, args)
 {
     _D(("NullThread::NullThread() called!\n"));
 } // Constructor
@@ -30,12 +31,6 @@ NullThread::~NullThread(void)
 {
     _D(("NullThread::~NullThread() called!\n"));
 } // Destructor
-
-
-void NullThread::start(void *(*runfunc)(void *))
-{
-    _D(("NullThread::start() called!\n"));
-} // NullThread::start
 
 
 void NullThread::waitForTermination(void)
@@ -51,9 +46,9 @@ bool NullThread::isTerminated(void)
 } // NullThread::isTerminated
 
 
-TobyThread *__platformBuildThread(void)
+TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args)
 {
-    return(new NullThread());
+    return(new NullThread(runfunc, args));
 } // __platformBuildThread
 
 

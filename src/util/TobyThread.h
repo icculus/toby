@@ -31,16 +31,15 @@
 class TobyThread : public TobyObject
 {
 public:
-    TobyThread(void) {}
+    TobyThread(void *(*runfunc)(void *), void *args) {}
     virtual ~TobyThread(void) {}
-    virtual void start(void *(*runfunc)(void *)) = 0;
     virtual void waitForTermination(void) = 0;
     virtual bool isTerminated(void) = 0;
 }; // class TobyThread
 
 
 // This gets filled in along with the platform-specific subclass...
-TobyThread *__platformBuildThread(void);
+TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args);
 
 // This gets called to yield the currently executing thread, which may be the
 //  main thread, for which no corresponding TobyThread exists.

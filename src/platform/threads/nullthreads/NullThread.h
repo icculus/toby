@@ -33,9 +33,8 @@
 class NullThread : public TobyThread
 {
 public:
-    NullThread(void);
+    NullThread(void *(*runfunc)(void *), void *args);
     virtual ~NullThread(void);
-    virtual void start(void *(*runfunc)(void *));
     virtual void waitForTermination(void);
     virtual bool isTerminated(void);
 }; // class NullThread

@@ -21,6 +21,7 @@
 #define _INCLUDE_SDLTHREAD_H_
 
 #include "SDL.h"
+#include "SDL_thread.h"
 #include "util/TobyThread.h"
 
 /*
@@ -32,11 +33,14 @@
 class SDLThread : public TobyThread
 {
 public:
-    SDLThread(void);
+    SDLThread(void *(*runfunc)(void *), void *args);
     virtual ~SDLThread(void);
-    virtual void start(void *(*runfunc)(void *));
     virtual void waitForTermination(void);
     virtual bool isTerminated(void);
+
+private:
+    SDL_Thread *realThread;
+    bool terminated;
 }; // class SDLThread
 
 #endif // !defined _INCLUDE_SDLTHREAD_H_
