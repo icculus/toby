@@ -9,8 +9,8 @@
 //----------------------------------------------------
 
 function main() returns nothing
-	nuclearSymbol(150)
 	hideTurtle()
+	nuclearSymbol(150)
 endfunction
 
 
@@ -19,7 +19,7 @@ function nuclearSymbol(number size) returns nothing
 
 	setPenColor(6)
 
-	for i = size to 1 step -1
+	for i = 1 to size
 		setAngle(30)
 		doTriangle(i)
 	
@@ -43,6 +43,7 @@ function doTriangle(number size) returns number
 		turnRight(360 / 3)
 	endwhile
 endfunction
+
 
 
 
