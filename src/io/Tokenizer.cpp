@@ -21,8 +21,7 @@
 
 static char *replaceString(char **origString, const char *newString)
 {
-    if (*origString != NULL)
-        delete[] *origString;
+    delete[] *origString;
 
     if (newString == NULL)
         *origString = NULL;
@@ -43,8 +42,7 @@ static char *replaceChars(char **origChars, const char *newChars,
     assert(origChars != NULL);
     assert(numCharsOut != NULL);
 
-    if (*origChars != NULL)
-        delete[] *origChars;
+    delete[] *origChars;
 
     if (newChars == NULL)
     {
@@ -87,7 +85,8 @@ Tokenizer::Tokenizer(TobyReader *reader) :
     lineNum(0),
     lastChar(0),
     backBufferSize(0),
-    caseSensitive(true)
+    caseSensitive(true),
+    wordIndex(0)
 {
     assert(in != NULL);
     memset(backBuffer, '\0', sizeof (backBuffer));
@@ -101,24 +100,12 @@ Tokenizer::Tokenizer(TobyReader *reader) :
 Tokenizer::~Tokenizer(void)
 {
     delete in;
-
-    if (tokenBuffer != NULL)
-        delete[] tokenBuffer;
-
-    if (quoteChars != NULL)
-        delete[] quoteChars;
-
-    if (whitespaceChars != NULL)
-        delete[] whitespaceChars;
-
-    if (singleLineCommentStart != NULL)
-        delete[] singleLineCommentStart;
-
-    if (multiLineCommentStart != NULL)
-        delete[] multiLineCommentStart;
-
-    if (multiLineCommentEnd != NULL)
-        delete[] multiLineCommentEnd;
+    delete[] tokenBuffer;
+    delete[] quoteChars;
+    delete[] whitespaceChars;
+    delete[] singleLineCommentStart;
+    delete[] multiLineCommentStart;
+    delete[] multiLineCommentEnd;
 } // Destructor
 
 
@@ -634,6 +621,7 @@ Tokenizer::tokentype Tokenizer::_nextToken(void) throw (IOException *)
         return(ttype);
     } // if
 
+    wordIndex = 0;
     emptyTokenBuffer();
 
     char ch = nextChar();
@@ -665,8 +653,36 @@ Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
 bool Tokenizer::mustGetWord(const char *str)
 {
     nextToken();
-    return((ttype == TT_WORD) && (strcmp(this->str, str) == 0));
+    if (ttype != TT_WORD)
+        return(false);
+
+    bool retval;
+    if (caseSensitive)
+        retval = (strcmp(this->str, str) == 0);
+    else
+        retval = (strcasecmp(this->str, str) == 0);
+
+    return(retval);
 } // mustGetWord
+
+
+int Tokenizer::getNextWordChar(void)
+{
+    char retval = str[wordIndex];
+    if (retval == '\0')
+        retval = -1;
+    else
+        wordIndex++;
+
+    return(retval);
+} // Tokenizer::getNextWordChar
+
+
+void Tokenizer::pushBackWordChar(void)
+{
+    if (wordIndex)
+        wordIndex--;
+} // Tokenizer::pushBackWordChar
 
 // end of Tokenizer.cpp ...
 

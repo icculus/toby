@@ -166,14 +166,16 @@ public:
     virtual bool mustGetWord(const char *str);
 
         // Set the case sensitivity flag. This flag doesn't affect tokenizing,
-        //  but it's related state, so we store it here. Typically, Lexers
-        //  will examine this flag to see how they should treat the word
-        //  tokens they get back from this object. Default state of the
-        //  case sensitivity flag is (true).
+        //  but it's related state. mustGetWord() will use it for to test if
+        //  a word passes. Default state of the flag is (true).
     virtual void setCaseSensitive(bool onOff);
 
         // Retrieve the case sensitivity flag's state.
     virtual bool getCaseSensitive(void);
+
+        // !!! comment me.
+    virtual int getNextWordChar(void);
+    virtual void pushBackWordChar(void);
 
 protected:
 
@@ -230,6 +232,8 @@ private:
     int backBuffer[256];
 
     bool caseSensitive;
+
+    size_t wordIndex;
 
     void extendTokenBuffer(void);
 
