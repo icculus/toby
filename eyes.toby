@@ -1,0 +1,78 @@
+//------------------------------------------------------------
+// eyes.toby : draw some eyes on the screen.
+//
+//   Copyright (c) Lighting and Sound Technologies, 1998.
+//    Written by Ryan C. Gordon.
+//------------------------------------------------------------
+
+// Global variables...
+//number eyeballStep
+
+
+function eyeballs(number step) returns nothing
+    number i
+    boolean isDrawTime
+
+    isDrawTime = false
+
+    setPenColor(4)
+    for i = 1 to 720
+        if (isDrawTime)
+            setPenDown()
+            isDrawTime = false
+        else
+            setPenUp()
+            isDrawTime = true
+        endif
+        goForward(step)
+
+        if (i >= 360)
+            turnRight(1)
+        else
+            turnLeft(1)
+        endif
+    endfor
+endfunction
+
+
+function pupil(number x, number y) returns nothing
+    number color
+    number i
+
+    color = 0
+
+    for i = 1 to 360
+        setPenColor(color)
+        setPenDown()
+        goForward(30)
+        setPenUp()
+        goBackward(30)
+        turnRight(1)
+        color = color + 1
+        if (color > 11)
+            color = 0
+        endif
+    endfor
+endfunction
+
+
+function main() returns nothing
+//    number center
+
+
+          number eyeballStep
+    eyeballStep = 2
+
+    eyeballs(eyeballStep)
+//    center = calculateRadius(eyeballStep)
+
+
+     pupil(getTurtleX(), getTurtleY())
+    
+endfunction
+
+// end of eyes.toby ...
+
+
+
+

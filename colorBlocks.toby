@@ -1,0 +1,28 @@
+function main() returns nothing
+
+    number i
+
+    for i = 0 to 11
+        setPenColor(i)
+        fillBlock(i * 20, (i + 1) * 20)
+    endfor
+
+endfunction
+
+
+function fillBlock(number start, number stop) returns nothing
+
+    number i
+
+    setPenDown()
+
+    for i = start to stop
+        setTurtleXY(0, i)
+        setAngle(90)
+        goForward(30)
+    endfor
+
+endfunction
+
+
+

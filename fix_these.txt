@@ -1,0 +1,80 @@
+ForLoopDetails.java:/** !!! comment
+MsgBox.java:    protected Button okButton;    // Add more optional buttons.  !!!
+MsgBox.java:        // !!! write this!
+SaneTokenizer.java:    /** !!! comment this. */
+SaneTokenizer.java:                {                           // !!! use Character.toString()?
+SourceCodeArea.java:        Thread.currentThread().setName("Main thread.");  // !!!
+SourceCodeArea.java:        cursorThread = new Thread(this, "Timer thread.");  //  !!!
+SourceCodeArea.java:        // KeyListener implementation...  !!! move this.
+SourceCodeArea.java:        sb.setCharAt(i, ' ');      // setLength() ?  !!!
+SourceCodeArea.java:        // !!! if shift down, go selectionStart to cursor
+SourceCodeArea.java:        // !!! otherwise, reset selectionStart to -1 ...
+SourceCodeArea.java://              sb.insert(cursorIndex, "    ");   // !!!
+SourceCodeArea.java:                cursorIndex = 0;        // !!! where does cursor go?
+SourceCodeArea.java:        repaint();              // !!!
+SourceCodeArea.java:            repaint();  // !!!
+Symbol.java:/** !!! comment. copyright. */
+Symbol.java:    {  // !!!
+Toby.java:        // !!! change strings to constants, and set true...
+Toby.java:        addMenuItem(m, MENUITEM_SAVEAS, true); // out if text is modified. !!!
+Toby.java:        // !!! Change this when we have config !!!
+Toby.java:            // !!! ask to save modified buffer?
+Toby.java:        msgText[0] = "Help not yet implemented.";   // !!!
+Toby.java:            //config = new TobyConfigFile();  // !!! write this !!!
+TobyInterpreter.java:        // !!! stdFuncTable
+TobyInterpreter.java:        // !!! take out try/catch before shipping...
+TobyInterpreter.java:                               "TobyInterpreter.OPERATOR_COUNT !!!");
+TobyInterpreter.java:        // !!! take out try/catch before shipping...
+TobyInterpreter.java:                               "TobyInterpreter.INTRINSIC_COUNT !!!");
+TobyInterpreter.java:        // !!! take out try/catch before shipping...
+TobyInterpreter.java:                               "TobyInterpreter.KEYWORD_COUNT !!!");
+TobyInterpreter.java:        // !!! write this.
+TobyInterpreter.java:            // !!! set TextArea to uneditable.  Add to SourceWatcher interface?
+TobyInterpreter.java:                    runCode(mainLine);    // !!! bitch if main returns value?
+TobyInterpreter.java:                // prepareImage(copyImage, this);   !!! need?
+TobyInterpreter.java:            // !!! set TextArea to editable.
+TobyInterpreter.java:        { //!!! change error?
+TobyInterpreter.java:            // !!! check for dupes?
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyInterpreter.java:/*        if (!!! BADTYPE !!!)
+TobyInterpreter.java:        // !!! check globals.
+TobyInterpreter.java:     * !!! comment !!!
+TobyInterpreter.java:        // !!! need to calculate()?
+TobyInterpreter.java:        // !!! check type.
+TobyInterpreter.java:     *   !!! comment !!!
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyInterpreter.java:            // !!! null-out code line?
+TobyInterpreter.java:        // !!! check type...MUST BE NUMBER...
+TobyInterpreter.java:        forDetails.ascending = true;   // !!! fix this.
+TobyInterpreter.java:            //  iteration.   !!! Good idea?
+TobyInterpreter.java:        calculate(initValue);   // !!! separate into another function...
+TobyInterpreter.java:        if (convStrToDouble((String) s.value) <   // fix for descending !!!
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyInterpreter.java:        // !!! add more flow control keywords... !!!
+TobyInterpreter.java:            if (src.length == 1)                    // basic return? !!! ?!
+TobyInterpreter.java:// !!!            else if (src[tokIndex].equals(OPCODE_EQUALS))
+TobyInterpreter.java:                // !!! will this need to throw? Use stderr for debugging...
+TobyInterpreter.java:                // !!! if no throw, change definition of findHighestPrecedence
+TobyInterpreter.java:                // !!! and remove this else if...
+TobyInterpreter.java:            // !!! check type !!!
+TobyInterpreter.java:                if (src.length != 2)   // !!! lift this restriction?
+TobyInterpreter.java:                src[n] = null;                 // !!! need this?!
+TobyInterpreter.java:    /** !!! comment !!! */
+TobyProcedure.java:        // !!! check these, put what you can into TobyInterpreter.java ...
+TobyProcedure.java:    public final static String PROCERR_SYNTAX_ERROR  = "Syntax Error!!!";
+TobyProcedure.java:    // !!! lose this before shipping...
+TobyProcedure.java:        // !!! improve this !!!
+TobyProcedure.java:/* !!! *****************************************************************
+Turtle.java: *    !!! Justify why this is NOT a component.
+Turtle.java:        angle %= 360;       // check this !!!
+Turtle.java:    /** !!! comment !!!
+Turtle.java:    /** !!! comment !!!
+Turtle.java:                g[i].setColor(Color.white);  // !!!
+Turtle.java:        angle %= 360;       // check this !!!
+VarViewer.java:/** !!! comment. and copyright. */
+VarViewer.java:            // !!! color update ...
+VarViewer.java:            // !!! color update ...
+WhileLoopDetails.java:/** !!! comment
+WhileLoopDetails.java:    // !!! anything?
