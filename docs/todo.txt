@@ -11,6 +11,8 @@ ongoing bugfixes/enhancements :
 
     Clean out this file.
 
+    TobyCollection seems really inefficient.
+
     Change the StringReader to MemoryReader.
 
     The GTK renderer seems to be refreshing wrong; it appears to draw faster

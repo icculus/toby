@@ -48,7 +48,17 @@ standalone program for initial testing.)
             Changed my email address from icculus@linuxgames.com to
             icculus@clutteredmind.org everywhere.
 08242001 - Continued work on XML parser. Added Tokenizer::setNumbersAreWords().
-            Created an XMLNode class, and changed TobyXML to XMLTree.
+            Created an XMLNode class, and changed TobyXML to XMLTree. Added
+            Tokenizer::mustGetWord().
+08252001 - Fixed line counter in Tokenizer. TobyString now has length() and
+            substr() and append(const char *) methods.
+            TobyCollection::insertElement() now returns bool. Added
+            TobyCollection::addElement(). Other fixes in the Collection class.
+            More work on XMLTree; seems complete.
+08262001 - Wrote src/test/xml.cpp, and added xml test and bin directory to
+            Makefile. Debugged. Fixed problems in TobyCollection::remove().
+            Commited XML stuff to CVS. _D() debugging is disabled in
+            TobyReader by default, now, to reduce debug spam.
 
 // end of changelog.txt ...
 
