@@ -254,7 +254,7 @@ STANDALONEEXE := $(BINDIR)/standalone/toby$(strip $(EXE_EXT))
 EXES := $(STANDALONEEXE) #$(MAINEXE)
 TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
 TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
-TESTLANGDEFEXE := $(BINDIR)/test/langdef$(strip $(EXE_EXT))
+TESTGRAMMAREXE := $(BINDIR)/test/grammar$(strip $(EXE_EXT))
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp util/TobyClock.cpp
@@ -426,7 +426,7 @@ $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 
-tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE) $(TESTLANGDEFEXE)
+tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE) $(TESTGRAMMAREXE)
 
 $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 	$(LINKER) -o $(TESTTOKENIZEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
@@ -434,8 +434,8 @@ $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 $(TESTXMLEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/xml.o
 	$(LINKER) -o $(TESTXMLEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/xml.o
 
-$(TESTLANGDEFEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/langdef.o
-	$(LINKER) -o $(TESTLANGDEFEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/langdef.o
+$(TESTGRAMMAREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/grammar.o
+	$(LINKER) -o $(TESTGRAMMAREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/grammar.o
 
 
 $(BINDIR):
