@@ -142,6 +142,11 @@ public class GlobalLogicContext extends LogicContext
     public FunctionLogicContext findFunction(String funcName)
                                             throws ParseException
     {
+        //_D("GlobalLogicContext.findFunction",
+        //     "Looking for [" + funcName + "]...");
+        //_D("GlobalLogicContext.findFunction",
+        //     "(case sensitive == {" + this.caseSensitive + "}).");
+
         if (this.caseSensitive == false)
             funcName = funcName.toLowerCase();
 
@@ -159,6 +164,9 @@ public class GlobalLogicContext extends LogicContext
                 if (func instanceof FunctionLogicContext)
                 {
                     String fName = ((FunctionLogicContext) func).getFuncName();
+
+                    //_D("GlobalLogicContext.findFunction",
+                    //    "Looking at [" + fName + "] ...");
 
                     if (this.caseSensitive == false)
                         fName = fName.toLowerCase();
@@ -184,6 +192,9 @@ public class GlobalLogicContext extends LogicContext
                 {
                     String fName = ((FunctionLogicContext) func).getFuncName();
 
+                    //_D("GlobalLogicContext.findFunction",
+                    //    "Looking at [" + fName + "] ...");
+
                     if (this.caseSensitive == false)
                         fName = fName.toLowerCase();
 
@@ -195,6 +206,7 @@ public class GlobalLogicContext extends LogicContext
             return(null);
         } // else
     } // findFunction
+
 
     protected void freeResourcesImpl()
     {
