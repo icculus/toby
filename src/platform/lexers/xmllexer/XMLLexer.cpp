@@ -39,12 +39,20 @@ typedef struct
 
 static RulesTagHandlers handlers[] =
 {
-    { "element", ElementRulesXML::buildRules },
-    { "repeat", RepeatRulesXML::buildRulesRepeatTag },
-    { "optional", RepeatRulesXML::buildRulesOptionalTag },
-    { "tokenizer", TokenizerRulesXML::buildRules },
-    { "language", LanguageRulesXML::buildRules },
-    { NULL, NULL }
+    { "reqword",              ReqWordRulesXML::buildRules },
+    { "reqeof",               ReqEOFRulesXML::buildRules },
+    { "reqnewline",           ReqNewlineRulesXML::buildRules },
+    { "reqliteralstring",     ReqLiteralStringRulesXML::buildRules },
+    { "reqwhitespace",        ReqWhitespaceRulesXML::buildRules },
+    { "reqmultilinecomment",  ReqMultiLineCommentRulesXML::buildRules },
+    { "reqsinglelinecomment", ReqSingleLineCommentRulesXML::buildRules },
+    { "pickone",              PickOneRulesXML::buildRules },
+    { "element",              ElementRulesXML::buildRules },
+    { "repeat",               RepeatRulesXML::buildRulesRepeatTag },
+    { "optional",             RepeatRulesXML::buildRulesOptionalTag },
+    { "tokenizer",            TokenizerRulesXML::buildRules },
+    { "language",             LanguageRulesXML::buildRules },
+    { NULL,                   NULL }
 };
 
 

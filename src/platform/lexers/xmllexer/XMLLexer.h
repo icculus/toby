@@ -27,6 +27,15 @@
 #include "platform/lexers/xmllexer/ElementRulesXML.h"
 #include "platform/lexers/xmllexer/TokenizerRulesXML.h"
 #include "platform/lexers/xmllexer/RepeatRulesXML.h"
+#include "platform/lexers/xmllexer/PickOneRulesXML.h"
+#include "platform/lexers/xmllexer/ReqWordRulesXML.h"
+#include "platform/lexers/xmllexer/ReqEOFRulesXML.h"
+#include "platform/lexers/xmllexer/ReqNewlineRulesXML.h"
+#include "platform/lexers/xmllexer/ReqLiteralStringRulesXML.h"
+#include "platform/lexers/xmllexer/ReqWhitespaceRulesXML.h"
+#include "platform/lexers/xmllexer/ReqSingleLineCommentRulesXML.h"
+#include "platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.h"
+
 
 /*
  * An entry point for generating, from XML metadata, the LexerRules tree
