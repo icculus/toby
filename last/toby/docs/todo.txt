@@ -1,8 +1,13 @@
 // Things still to be done for TOBY...
 
 ongoing bugfixes/enhancements :
+    GLOBAL REFERENCING IS FUCKED.
+
+
     TobyMenuBar.java : Need to not hardcode TobyParser...
     TobyMenuBar.java : Move execution to separate class.
+
+    LogicContext should not have statics.
 
     The statics in LogicContext prevent multiple concurrent interpreters.
 
@@ -92,33 +97,19 @@ ongoing bugfixes/enhancements :
     Alt-hotkey should bring up the menus. A lot of the hotkeys aren't making
      it past the text editor component right now.
 
+    In fact, rip out that cruddy editor widget...
+
     The ultimate ongoing fix are the "!!!" comments. Any comments containing
      '!!!' have been placed there to alert me that there is a bug/deficiency
      in the code that is worth revisiting, but probably isn't crippling. As
      such, they tend to build up. Feel free to fix any of these and submit
      patches to rgordon@xnot.com ...
 
-    Since operators are replaced with static references, make all runtime
-     checks for them use (a soon to be written) searchArrayForReferences(),
-     since they currently search (unnecessarily) with String.equals()...
-
-    Make all identifiers resolve before runtime, so we can replace them
-     with unified references. The more often we can safely replace
-     string1.equals(string2) calls with (string1 == string2) constructs,
-     the faster the interpretation will be. Most of the code already replaces
-     keywords, operators, etc. with references from a static table in
-     TobyInterpreter.
-
     Make inputarea use sane keys...I don't like the Swing defaults. Therefore
      someday I'd like to either replace the Swing component with a homegrown
      prettier/more functional textarea, or make some sort of customizer;
      config file or whatnot. Mostly, I'd like SHIFT-DELETE and SHIFT-INSERT
      to cut and paste.  :) Other enhancements welcome.
-
-    Unify error displaying interface between parsing and running...They both
-     result from the catching of TobyParseExceptions, but are caught and
-     handled in completely separate places and ways. (This is fixed in the
-     "unstable" tree.)
 
     Functions can specify a return type and then return nothing. This should
      be considered a bug. (Java and C consider it a feature, and it is, but
@@ -134,12 +125,6 @@ ongoing bugfixes/enhancements :
 
     Maximize window instead of sizing to screen width and height: is there a
      way to do this in Swing?
-
-    Move copyImage code from TobyInterpreter into TurtleSpace.
-
-    TriangleTurtle still looks wrong. Check math. Center line isn't drawing
-     correctly...could be symptom of bug in TobyGeometry.calculateLine(), or
-     TriangleTurtle.calcTriangle()...I'm voting for the latter.
 
     Move parse and execution time report code to more user-friendly output.
      Right now it just dumps to stdout. I'd like it to go to
@@ -174,7 +159,7 @@ alpha4 : completed.
 alpha5 : in progress.
     Fully separate parser and interpreter.  (COMPLETED)
     Separate interpreter and TurtleSpace.   (COMPLETED)
-    Complete dynamic language support.
+    Rewrite interpreter to use parse trees. (COMPLETED)
     Split this thing up into packages.      (COMPLETED)
     Abstract TurtleSpace into interface.    (COMPLETED)
 

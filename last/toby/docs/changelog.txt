@@ -26,8 +26,7 @@ What's new in Toby alpha5:
   At the same time, it's also much more flexible, which means sooner or later
   more languages will get plugged into this project. An honest-to-God LOGO
   implementation comes to mind, but other things like scientific modelling
-  languages and such should not be ruled out, either. Please see TUD.txt for
-  info on what's better about the new engine.
+  languages and such should not be ruled out, either.
 - TurtleSpace has become an interface, which is implemented by a
   JComponent-based widget. This abstraction will, eventually, allow us to
   create a Spotlet (Java UI on the Palm Pilot) version of Toby.
@@ -53,6 +52,9 @@ What's new in Toby alpha5:
 - Fixes to the Swing code.
 - SaneTokenizer now handles pushBack() better.
 - Much, much more.
+...basically, this was a almost complete rewrite; every subsystem was looked
+at, and reevaluated. There is still more to be done.
+
 
 What's new in Toby alpha4:
 - Lots of bug fixes and code improvements.
