@@ -1,0 +1,33 @@
+
+function main() returns nothing
+
+	number myValue
+
+	number i
+
+	while (true)
+		for i = 1 to 36
+			setPenColor(round(random() * 15))	
+			myValue = random() * 100
+			box(myValue)
+
+			turnRight(10)
+		endfor
+			cleanupTurtleSpace()
+	endwhile
+endfunction
+
+
+function box(number size) returns nothing
+
+	number counter
+
+	for counter = 1 to 4
+		goForward(size)
+		turnRight(90)
+	endfor
+
+endfunction
+
+
+

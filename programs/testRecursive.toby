@@ -1,0 +1,14 @@
+
+number counter = 0
+
+function main() returns nothing
+	goForward(100)
+	turnRight(90)
+
+	counter = counter + 1
+	if (counter < 4)
+		main()
+	endif
+endfunction
+
+

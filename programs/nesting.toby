@@ -1,0 +1,50 @@
+//--------------------------------------------------------
+// nesting.toby -- A program to test nested FORs and IFs.
+//
+// This program will draw boxes increasingly large, and
+//  in many colors, to test if Toby can handle some
+//  nested FORs and IFs. It should look like a square
+//  with different colored lines pulsing, and in the
+//  end, four squares, moving in different directions
+//  should be drawn.
+//
+// There are cleaner ways to write this program, but
+//  we wanted to nest stuff.
+//
+// Copyright (c) 1999 Lighting and Sound Technologies
+//  Written by Ryan C. Gordon.
+//--------------------------------------------------------
+
+function main() returns nothing
+	number totalIterations
+    number boxSize
+	number boxLoop
+	number color
+	number direction
+
+	hideTurtle()
+
+	for direction = 1 to 4
+		color = 0
+		for totalIterations = 1 to 5
+			for boxSize = 1 to 100
+				color = color + 1
+				if (color > 15)
+					color = 0
+				endif
+				setPenColor(color)
+				for boxLoop = 1 to 4
+					goForward(boxSize)
+					turnLeft(90)
+				endfor
+			endfor
+		endfor
+		turnRight(90)
+	endfor
+
+endfunction
+
+
+
+
+

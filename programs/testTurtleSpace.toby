@@ -1,0 +1,68 @@
+//-------------------------------------------------------------------
+// Test that TurtleSpace coordinate functions are functioning
+//  properly. You should end up with four arrows, east west, north
+//  and south, extending to the edges of TurtleSpace, centered on the
+//  edge.
+//
+// Copyright (c) 1999 Lighting and Sound Technologies.
+//   Written by Ryan C. Gordon.
+//-------------------------------------------------------------------
+
+function main() returns nothing
+    number i
+	number maxX = getTurtleSpaceWidth()
+	number maxY = getTurtleSpaceHeight()
+	number centerX = getTurtleX()
+	number centerY = getTurtleY()
+
+	hideTurtle()
+
+		// horizontal shaft.
+	setTurtleXY(0, centerY)
+	setAngle(0)
+	goForward(maxX)
+
+		// vertical shaft.
+	setTurtleXY(centerX, 0)
+	setAngle(90)
+	goForward(maxY)
+
+		// western arrow.
+	setTurtleXY(0, centerY)
+	setAngle(-45)
+	goForward(100)
+	setTurtleXY(0, centerY)
+	setAngle(45)
+	goForward(100)
+
+		// eastern arrow.
+	setTurtleXY(maxX, centerY)
+	setAngle(-135)
+	goForward(100)
+	setTurtleXY(maxX, centerY)
+	setAngle(135)
+	goForward(100)
+
+		// northern arrow.
+	setTurtleXY(centerX, 0)
+	setAngle(135)
+	goForward(100)
+	setTurtleXY(centerX, 0)
+	setAngle(45)
+	goForward(100)
+
+		// southern arrow.
+	setTurtleXY(centerX, maxY)
+	setAngle(-135)
+	goForward(100)
+	setTurtleXY(centerX, maxY)
+	setAngle(-45)
+	goForward(100)
+endfunction
+
+
+
+
+
+
+

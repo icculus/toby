@@ -1,0 +1,67 @@
+//
+// Something quick to test STEP...first four
+//  circles should have turtle loop around
+//  it three times. The next four should just draw.
+//
+// Copyright (c) 1999 Lighting and Sound Technologies.
+//  Written by Ryan C. Gordon.
+
+function main() returns nothing
+	number i
+
+	for i = 1 to 360
+		turnRight(3)
+		goForward(5)
+	endfor
+	for i = 1 to 360 step 1
+		turnLeft(3)
+		goForward(5)
+	endfor
+	turnRight(90)
+	for i = 360 to 1
+		turnRight(3)
+		goForward(5)
+	endfor
+	for i = 360 to 1 step -1
+		turnLeft(3)
+		goForward(5)
+	endfor
+
+		// these four for loops should not run...
+	for i = 1 to 360 step -1
+		goForward(1000)
+	endfor
+	for i = 360 to 1 step 1
+		goForward(1000)
+	endfor
+	for i = 1 to 360 step -1.7
+		goForward(1000)
+	endfor
+	for i = 360 to 1 step 1.5
+		goForward(1000)
+	endfor
+
+
+	turnRight(45)
+	for i = 1 to 360 step 3.0
+		turnRight(3)
+		goForward(5)
+	endfor
+	for i = 1 to 360 step 3
+		turnLeft(3)
+		goForward(5)
+	endfor
+	turnRight(90)
+	for i = 360 to 1 step -3.0
+		turnRight(3)
+		goForward(5)
+	endfor
+	for i = 360 to 1 step -3
+		turnLeft(3)
+		goForward(5)
+	endfor
+
+	hideTurtle()
+endfunction
+
+

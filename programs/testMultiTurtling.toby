@@ -1,0 +1,46 @@
+//---------------------------------------------------------
+// A basic test of multiturtling capabilities.
+//
+//   This should have four turtles each draw
+//    a circle, so you get a diamond-like
+//    cluster. The north circle should be blue,
+//    the west green, east cyan, and south red.
+//
+//  Written by Ryan C. Gordon.
+//   Copyright (c) Lighting and Sound Technologies, 2000.
+//---------------------------------------------------------
+
+function main() returns nothing
+	number i
+	number turtleId
+
+	disableFence()
+	addTurtle()
+	addTurtle()
+	addTurtle()
+
+	setPenColor(3)
+
+	useTurtle(1)
+	turnRight(90)
+	setPenColor(4)
+	useTurtle(2)
+	turnLeft(90)
+	setPenColor(1)
+	useTurtle(3)
+	turnLeft(180)
+	setPenColor(2)
+
+	for i = 1 to 360
+		for turtleId = 0 to 3
+			useTurtle(turtleId)
+			turnRight(1)
+			goForward(1)
+		endfor
+	endfor
+endfunction
+
+
+
+
+

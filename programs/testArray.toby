@@ -1,0 +1,82 @@
+// this is not meant to be efficient. This is meant to
+// test arrays in Toby.  --ryan.
+
+function main() returns nothing
+	number i
+	array of number[1 to 2] screendim
+	array of number[1 to 13][0 to 1] myarray
+
+	screendim[1] = getTurtleSpaceWidth()
+	screendim[2] = getTurtleSpaceHeight()
+
+	homeTurtle()
+	drawMoon(screendim[1] - (screendim[1] / 4), screendim[2] - ((screendim[2] / 8) * 7))
+
+	homeTurtle()
+	myarray[1][0] = 90
+	myarray[1][1] = 100
+	myarray[2][0] = -90
+	myarray[2][1] = 100
+	myarray[3][0] = -90
+	myarray[3][1] = 200
+	myarray[4][0] = -90
+	myarray[4][1] = 100
+	myarray[5][0] = -90
+	myarray[5][1] = 100
+	myarray[6][0] = -90
+	myarray[6][1] = 50
+	myarray[7][0] = 90
+	myarray[7][1] = 25
+	myarray[8][0] = 90
+	myarray[8][1] = 50
+	myarray[9][0] = -90
+	myarray[9][1] = 75
+	myarray[10][0] = -90
+	myarray[10][1] = 100
+	myarray[11][0] = -60
+	myarray[11][1] = 115
+	myarray[12][0] = -60
+	myarray[13][1] = 115
+
+	runArray(myarray)
+
+	hideTurtle()
+endfunction
+
+
+/// !!! should be an error.
+function runArray(array of number [1 to 3][0 to 1] anArray) returns nothing
+	number i
+
+	for i = 1 to 13
+		turnRight(anArray[i][0])
+		goForward(anArray[i][1])
+	endfor 
+endfunction
+
+
+// this would be a sun, but I'm too lazy to draw more
+//  than a circle.  :)
+function drawMoon(number x, number y) returns nothing
+	number i
+	number moonstep = 2
+
+	setPenDown()
+	setTurtleXY(x - 29, y)
+
+	for i = 1 to 360 / moonstep
+		goForward(1)
+		turnRight(moonstep)
+	endfor
+endfunction
+
+// end of arrayTest.toby ...
+
+
+
+	
+
+
+
+
+

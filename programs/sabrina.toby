@@ -1,0 +1,44 @@
+function main() returns nothing
+	number xMax = getTurtleSpaceWidth()
+	number yMax = getTurtleSpaceHeight()
+	number xPos
+	number yPos
+	number angle
+	number distance
+	number color
+
+	disableFence()
+	hideTurtle()
+
+	while (true)
+		color = round(random() * 14) + 1
+		xPos = round(random() * xMax) + 1
+		yPos = round(random() * yMax) + 1
+		angle = round(random() * 360) + 1
+		distance = random() * (yMax / 2)
+
+		setPenColor(color)
+		setTurtleXY(xPos, yPos)
+		setAngle(angle)
+		goForward(distance)
+	endwhile
+
+endfunction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

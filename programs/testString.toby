@@ -1,0 +1,86 @@
+function main() returns nothing
+	string x
+	array of string[0 to 10] myStrings
+    number fontHeight = 12
+	number i
+	string leftRight
+
+	setPenUp()
+
+	leftRight = "Left side-=-Middle-=-Right side"
+	x = "test of stringlength() was successful."
+	x = rightString(x, stringlength(x) - 8)
+
+	myStrings[0] = "String array test."
+	myStrings[1] = "w00t, old boy, w00t!"
+	myStrings[2] = joinStrings("this string->", "<-was joined")
+	myStrings[3] = leftString(leftRight, 9)
+	myStrings[4] = substring(leftRight, 12, 6)
+	myStrings[5] = rightString(leftRight, 10)
+	myStrings[6] = upperCaseString("ThiS IS uPpER casEd.")
+	myStrings[7] = lowerCaseString("ThiS IS LoWEr casEd.")
+	myStrings[8] = x
+	myStrings[9] = "last one"
+
+	setTurtleXY(10, fontHeight)
+	setAngle(0)
+	x = "passing string in a variable to a function."
+	drawString(x)
+
+	setAngle(90)
+	goForward(fontHeight)
+	setAngle(0)
+	drawString("string literal in a function call.")
+
+	setAngle(90)
+	goForward(fontHeight)
+	setAngle(0)
+	if ("equality tester" == "equality tester")
+		drawString("equality operator working.")
+	else
+		drawString("equality operator NOT working!")
+	endif
+
+	setAngle(90)
+	goForward(fontHeight)
+	setAngle(0)
+	if ("abc" > "def")
+		drawString("greater-than operator working.")
+	else
+		drawString("greater-than operator NOT working!")
+	endif
+
+	setAngle(90)
+	goForward(fontHeight)
+	setAngle(0)
+	if ("abc" < "def")
+		drawString("less-than operator NOT working.")
+	else
+		drawString("less-than operator working!")
+	endif
+
+
+
+	homeTurtle()
+
+	for i = 0 to 10
+		setPenColor(i + 1)
+		goForward(fontHeight * 3)
+		drawString(myStrings[i])
+		goBackward(fontHeight * 3)
+		turnRight(36)
+	endfor
+
+	// test rotation.
+	// test strlen
+
+endfunction
+
+
+
+
+
+
+
+
+

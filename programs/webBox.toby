@@ -1,0 +1,20 @@
+function box(number size) returns nothing
+    number i
+
+    for i = 1 to 4
+		setPenColor(i)
+        goForward(size)
+        turnRight(90)
+    endfor
+endfunction
+
+
+function main() returns nothing
+    number i
+
+    for i = 1 to 36
+        box(100)
+        turnRight(10)
+    endfor
+endfunction
+

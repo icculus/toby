@@ -1,0 +1,32 @@
+function main() returns nothing
+
+	number i = 0
+	number stepSizeH = 1 / getTurtleSpaceWidth()
+	number stepSizeV = 1 / getTurtleSpaceHeight()
+	number r = 0.0
+	number b = 0.0
+
+	disableFence()
+	hideTurtle()
+	turnRight(90)
+
+	for b = 0.0 to 1.0 step stepSizeV
+		setTurtleXY(0, i)
+		for r = 0.0 to 1.0 step stepSizeH
+			setPenColorRGB(r, 0.0, b)
+			goForward(1)
+		endfor
+		i = i + 1
+	endfor
+
+endfunction
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,51 @@
+//------------------------------------------------------------
+// boolTest.toby ... Should draw two large circles
+//  of dotted lines, connected in the center of 
+//  TurtleSpace.
+//
+// - Tests IF statement, BOOLEAN intrinsic.
+//
+//   Copyright (c) Lighting and Sound Technologies, 1998.
+//    Written by Ryan C. Gordon.
+//------------------------------------------------------------
+
+function main() returns nothing
+
+    boolean isDrawTime
+	boolean goRight
+    number i
+
+	disableFence()
+
+    isDrawTime = true
+
+    for i = 1 to 720
+        if (isDrawTime == true)
+            setPenDown()
+            isDrawTime = false
+        else
+            setPenUp()
+            isDrawTime = true
+        endif
+
+        goForward(10)
+
+			// this isn't meant to be
+			//  efficient. This is a test.
+        if (i > 360)
+			goRight = true
+		endif
+
+		if (goRight)
+            turnRight(1)
+        else
+            turnLeft(1)
+        endif
+    endfor
+
+endfunction
+
+// end of boolTest.toby ...
+
+
+

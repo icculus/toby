@@ -1,0 +1,14 @@
+
+
+function main() returns nothing
+	number x = 10
+	x = returnOneThousand()
+	goForward(x)
+endfunction
+
+
+function returnOneThousand() returns number
+
+	return(1000)
+endfunction
+

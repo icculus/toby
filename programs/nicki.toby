@@ -1,0 +1,53 @@
+number color
+
+function main() returns nothing
+	disableFence()
+	hideturtle()
+	flower(50, 100, 1)	
+endfunction 
+
+
+function flower(number start, number end, number hop) returns nothing
+// nicki is cool
+
+	number joe
+	number color = 0
+	number direction = 1
+
+	for joe = start to end step hop
+		color = color + direction
+
+		if (color > 11)
+			color = 11
+			direction = -1
+		endif
+
+		if (color < 0)
+			color = 0
+			direction = 1
+		endif
+
+		setPenColor(color)
+		webbox(joe)
+	endfor
+endfunction
+
+function webbox(number size) returns nothing
+	number x
+
+	for x = 1 to 360 / 10
+		octogon(size)
+		turnRight(15)
+	endfor
+endfunction
+
+
+function octogon(number size) returns nothing
+	number i
+
+	for i = 1 to 8
+		goForward(size)
+		turnRight(45)
+	endfor
+endfunction
+

@@ -1,0 +1,31 @@
+At this point, TOBY has been entirely written, and maintained by
+ Ryan C. Gordon (icculus@linuxgames.com), but in the spirit of the GNU
+ project, the software is placed under GNU General Public License, and hopes
+ to see more contributors in the future. At such a time, this file will list
+ more names. :)  In the meantime...
+
+...Ryan would like to give a shout out to the following:
+
+- Gregory S. Read, for testing Toby's limits, breaking the ELSEIF statement,
+  and being a bizarre sort of soul mate. Get yer slack on.
+- Sabrina Blanks, April Andrews, and Nicki Publick for being unwitting test
+  subjects for Toby.
+- Loren Osborne, for many hours of debate and discussion of implementation.
+- Michael Roessler, who managed to sleep through the noise of my clicky
+  keyboard on many consecutive nights of hacking.
+- The journal list gang, for listening to Ryan ramble about his life.
+- Robert Spidle, for battling ninjas.
+- The "Dragon book" for parsing concepts. Friggin' trees, man.
+- Mr. Mullen and Mrs. Kelly, for putting me up to the original project.
+- Karie Publick, for the naming the program, in a roundabout way.
+- Mrs. Strohm, for many things I never knew I'd be thanking her for later.
+- YOUcentric, for proof that Java doesn't necessarily suck.
+- Sun Microsystems, for all the effort to disprove YOUcentric.
+- Bernd Kreimeier, for thoughts on efficiency of the instanceof operator.
+- Ani Difranco, Phish, Soul Coughing, Soul Miner's Daughter, Beastie Boys,
+  AMG, Belle and Sebastian, and Tool for providing the Soundtrack for da Hack.
+- The Freshmeat crew, for cutting my appindex entry by about 18 sentences.
+- ...and 'A' through 'F' in the phone book.
+
+--ryan.
+
