@@ -23,7 +23,7 @@
  *  There is no user interface, it just takes a source file on the command
  *  line and fires up the interpreter and renderer.
  *
- *   Written by Ryan C. Gordon (icculus@linuxgames.com)
+ *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
  */
 
 #include "turtlespace/TurtleSpace.h"

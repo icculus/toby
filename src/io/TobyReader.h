@@ -27,7 +27,7 @@
 /*
  * TobyReaders are an abstraction over input streams of various types.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
 #define TOBYEOF -1

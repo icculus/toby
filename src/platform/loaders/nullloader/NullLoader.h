@@ -25,7 +25,7 @@
 /*
  *  A stubbed implementation of the loader, for porting to new systems.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class NullLoader : public TobyLoader
 {

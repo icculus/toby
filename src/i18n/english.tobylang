@@ -31,7 +31,7 @@
  *     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
  *     work, but by submitting your work, the maintainers of Toby gain
  *     sole ownership of it. If you don't like that, stop now.
- *  3. E-mail your completed work to Ryan at icculus@linuxgames.com. He'll
+ *  3. E-mail your completed work to Ryan at icculus@clutteredmind.org. He'll
  *     incorporate it into the next release of Toby.
  *  4. C++ comments are acceptable, both in the multiline and "//" form. They
  *     are ignored when this file is parsed. Lines with nothing but whitespace
@@ -57,7 +57,7 @@
  * 10. Expect to be notified if we have more translating work for you
  *     in the future.  :)
  * 11. Questions about context of strings and other concerns can be addressed
- *     to icculus@linuxgames.com. Please understand that I only speak English,
+ *     to icculus@clutteredmind.org. Please understand that I only speak English,
  *     and even that poorly.  :)
  *
  *                                   Have fun,
@@ -146,7 +146,7 @@ TOBYI18N(TOBYI18N_NODETREE_LOCKED, "NodeTree already locked.")
 TOBYI18N(TOBYI18N_NODETREE_ULOCKED, "NodeTree already unlocked.")
 TOBYI18N(TOBYI18N_BAD_CHILD_NODE, "Adding bad child type to NodeTree")
 TOBYI18N(TOBYI18N_USING_FREE_NODE, "Attempt to use NodeTree that has already called freeResources()!")
-TOBYI18N(TOBYI18N_SHOULDNOTBE, "This should not happen. Email icculus@linuxgames.com! (English only!)")
+TOBYI18N(TOBYI18N_SHOULDNOTBE, "This should not happen. Email icculus@clutteredmind.org! (English only!)")
 
 // This is a file description for the file open dialog, and shows up in
 //  the dropdown for "show files of type" ...

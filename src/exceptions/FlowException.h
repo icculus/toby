@@ -33,7 +33,7 @@
  *
  * This is a generic base class. Coders should look to the subclasses.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class FlowException : public TobyException
 {

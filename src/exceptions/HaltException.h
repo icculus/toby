@@ -29,7 +29,7 @@
  *   or whatnot. This allows for clean termination of the interpreter at
  *   any time.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class HaltException : public FlowException
 {

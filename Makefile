@@ -22,7 +22,7 @@
 # Makefile for building Toby on Unix-like systems. Follow the instructions
 #  for editing this file, then run "make" on the command line.
 #
-#  Written by Ryan C. Gordon (icculus@linuxgames.com)
+#  Written by Ryan C. Gordon (icculus@clutteredmind.org)
 #-----------------------------------------------------------------------------#
 
 
@@ -488,7 +488,7 @@ ifeq ($(strip $(platform_video)),sdl)
 	cp $(SDL_LIB_DIR)/SDL.dll .
     EXTRAPACKAGELIBS := SDL.dll
 endif
-	echo -e "\r\n\r\n\r\nHEY YOU.\r\n\r\n\r\nTake a look at README-win32bins.txt FIRST.\r\n\r\n\r\n--ryan. (icculus@linuxgames.com)\r\n\r\n" |zip -9rz ../toby-win32bins-$(shell date +%m%d%Y).zip $(EXES) $(EXTRAPACKAGELIBS) README-win32bins.txt
+	echo -e "\r\n\r\n\r\nHEY YOU.\r\n\r\n\r\nTake a look at README-win32bins.txt FIRST.\r\n\r\n\r\n--ryan. (icculus@clutteredmind.org)\r\n\r\n" |zip -9rz ../toby-win32bins-$(shell date +%m%d%Y).zip $(EXES) $(EXTRAPACKAGELIBS) README-win32bins.txt
 
 else
 msbins: nocygwin

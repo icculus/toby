@@ -28,7 +28,7 @@
  *   is hit. FunctionLogicContexts explicitly listen for this and pass control
  *   back to their parent contexts when such an exception is caught.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class ReturnException : public FlowException
 {

@@ -27,7 +27,7 @@
  *  IOExceptions are thrown when reading from or writing to something (disk,
  *   network, etc) fails or encounters an unusual situation..
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class IOException : public TobyException
 {

@@ -25,7 +25,7 @@
 /*
  *  An abstraction over platform-specific threading mutexes.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class TobyMutex : public TobyObject
 {

@@ -29,7 +29,7 @@
 /*
  *  FileReaders wrap ANSI-C file i/o in a TobyReader interface.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class FileReader : public TobyReader
 {

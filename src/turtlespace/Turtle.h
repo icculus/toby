@@ -30,7 +30,7 @@
  *   by default; these are just data structures. The TurtleSpace and
  *   TurtleSpaceRenderer classes handle getting those changes to the screen.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class Turtle : public TobyObject
 {

@@ -25,7 +25,7 @@
 /*
  *  An abstraction over platform-specific timers.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class TobyClock : public TobyObject
 {

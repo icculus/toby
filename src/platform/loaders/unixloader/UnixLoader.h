@@ -27,7 +27,7 @@
 /*
  *  A general Unix implementation of the loader.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 class UnixLoader : public TobyLoader
 {

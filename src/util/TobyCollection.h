@@ -28,7 +28,7 @@
  *  two threads modifying a collection at the same time, rethink your design,
  *  and then add TobyMutexes to your calling code.
  *
- *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
+ *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
 // internally, this is just a linked list.
