@@ -249,11 +249,12 @@ ASMFLAGS := -f $(ASMOBJFMT) $(ASMDEFS)
 #-----------------------------------------------------------------------------#
 
 MAINEXE := $(BINDIR)/toby$(strip $(EXE_EXT))
-STANDALONEEXE := $(BINDIR)/standalone$(strip $(EXE_EXT))
+STANDALONEEXE := $(BINDIR)/standalone/toby$(strip $(EXE_EXT))
 
 EXES := $(STANDALONEEXE) #$(MAINEXE)
 TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
 TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
+TESTLANGDEFEXE := $(BINDIR)/test/langdef$(strip $(EXE_EXT))
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp util/TobyClock.cpp
@@ -422,10 +423,10 @@ all: $(BINDIR) $(EXES)
 $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 	$(LINKER) -o $(MAINEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/toby.o
 
-$(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone.o
-	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone.o
+$(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
+	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 
-tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE)
+tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE) $(TESTLANGDEFEXE)
 
 $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 	$(LINKER) -o $(TESTTOKENIZEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
@@ -433,9 +434,13 @@ $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 $(TESTXMLEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/xml.o
 	$(LINKER) -o $(TESTXMLEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/xml.o
 
+$(TESTLANGDEFEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/langdef.o
+	$(LINKER) -o $(TESTLANGDEFEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/langdef.o
+
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
+	mkdir -p $(BINDIR)/standalone
 	mkdir -p $(BINDIR)/test
 	mkdir -p $(BINDIR)/turtlespace
 	mkdir -p $(BINDIR)/util
