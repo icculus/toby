@@ -16,7 +16,20 @@ What's new in Toby alpha6:
 - Added (multidimensional) arrays, a String intrinsic type, and functions for
   string manipulation to the interpreter and Toby language.
 - Added French translation by Olivier Scalbert. Thanks!
-
+- Rewrote TurtleSpace...AGAIN. TurtleSpace is now a class (not an interface)
+  which does all the high-level stuff. It talks to a TurtleSpaceRenderer
+  interface, which does the low-level stuff, like getting bits to the screen.
+  the high-level code (turtle management, etc) was moved out of JTurtleSpace
+  and into TurtleSpace. The rest of JTurtleSpace became SwingRenderer.
+  Turtle.java had all the painting and calculation stuff moved out of it and
+  into SwingRenderer. Turtle.java is now just a container of info for a given
+  turtle (angle, size, position, etc.), and is in the main turtlespace
+  package. TriangleTurtle mostly made it's way into SwingRenderer for now, and
+  will eventually move into TurtleSpace. Turtles, I guess, will always be
+  triangles. Abstractness has limits.  :)
+- This will be the last Java release by me. The next revision will be a C++
+  rewrite. The Java code will be kept around, and enhancements and fixes will
+  still be accepted, but I will be focusing on the C++ version after alpha6.
 
 What's new in Toby alpha5:
 - Fixes, improvements, and revisions, oh my!
