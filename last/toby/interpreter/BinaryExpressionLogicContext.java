@@ -34,7 +34,7 @@ public abstract class BinaryExpressionLogicContext extends ExpressionLogicContex
 
     protected Intrinsic simplify() throws ParseException
     {
-return(null);
+return(null);  // !!! FIXME!
 /*
         Intrinsic retVal = null;
 
@@ -87,9 +87,9 @@ return(null);
         return(retVal);
     } // simplifyAChild
 
-    public void freeResourcesImpl() {}
+    protected void freeResourcesImpl() {}
 
-    public void linkImpl(GlobalLogicContext glob) throws ParseException
+    protected void linkImpl(GlobalLogicContext glob) throws ParseException
     {
         if (children.length != 2)
             ParseException._throw(TobyLanguage.INTERNAL_ERROR);
@@ -101,7 +101,7 @@ return(null);
     } // link
 
 
-    public final Intrinsic executeImpl() throws FlowException
+    protected final Intrinsic executeImpl() throws FlowException
     {
         Intrinsic operand1 = ((LogicContext) children[0]).execute();
         Intrinsic operand2 = ((LogicContext) children[1]).execute();
