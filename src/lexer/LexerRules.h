@@ -90,6 +90,12 @@ public:
         //   "requireElement_12->element = element_WHILESTATEMENT;\n"
         //  This one's got a semicolon. Confused, yet?
     virtual const char *outputResolutions(void) { return(NULL); }
+
+protected:
+        // Delete (numRules) rules from the (rules) array, if the
+        //  array isn't null. Then, delete[] (rules). This is a convenience
+        //  function for subclasses.
+    virtual void deleteRuleList(size_t numRules, LexerRules **rules);
 }; // class LexerRules
 
 #endif // !defined _INCLUDE_LEXERRULES_H_
