@@ -133,5 +133,15 @@ const char *XMLNode::getAttributeValue(const char *name)
     return(NULL);
 } // XMLNode::getAttributeValue
 
+
+const char *XMLNode::getAttributeDefault(const char *name, const char *defval)
+{
+    const char *retval = getAttributeValue(name);
+    if (retval == NULL)
+        retval = defval;
+
+    return(retval);
+} // XMLNode::getAttributeDefault
+
 // end of XMLNode.cpp ...
 
