@@ -5,10 +5,10 @@
  *    Written by Ryan C. Gordon.
  */
 
-public class DoublePoint
+public final class DoublePoint
 {
-    double x;
-    double y;
+    public double x;
+    public double y;
 } // DoublePoint
 
 // end of DoublePoint.java ...
