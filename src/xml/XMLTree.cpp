@@ -54,13 +54,14 @@ bool XMLTree::parseTagText(XMLNode *node, Tokenizer *toker)
     bool retval = true;
     TobyString text;
 
-    //toker->setIgnoreWhitespace(false);
+    toker->setIgnoreWhitespace(false);
 
     while (true)
     {
         toker->nextToken();
-        if ((toker->ttype == Tokenizer::TT_WORD) ||
-            (toker->ttype == Tokenizer::TT_WHITESPACE))
+        if ( (toker->ttype == Tokenizer::TT_WORD) ||
+             (toker->ttype == Tokenizer::TT_WHITESPACE) ||
+             (toker->ttype == Tokenizer::TT_LITERALSTRING) )
         {
             if (strcmp(toker->str, "<") == 0)  // end of text?
             {
@@ -79,7 +80,7 @@ bool XMLTree::parseTagText(XMLNode *node, Tokenizer *toker)
         } // else
     } // while
 
-    //toker->setIgnoreWhitespace(true);
+    toker->setIgnoreWhitespace(true);
 
     if (retval)
         node->setText(text.c_str());
