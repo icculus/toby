@@ -32,6 +32,12 @@ FileReader::~FileReader(void)
 } // Destructor
 
 
+bool FileReader::isOpened(void)
+{
+    return(fp != NULL);
+} // FileReader::isOpened
+
+
 bool FileReader::isEOF(void)
 {
     bool retval = true;
@@ -49,43 +55,22 @@ bool FileReader::isEOF(void)
 } // FileReader::isEOF
 
 
-char FileReader::readChar(void) throw (IOException *)
+int FileReader::readCharImpl(void) throw (IOException *)
 {
     if (fp == NULL)
         throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     int ch = fgetc(fp);
-
     if (ch == EOF)
-        throw(new IOException(TOBYI18N_END_OF_FILE));
-
-    _D(("FileReader::readChar() ... returning '%c'...\n", (char) ch));
-
-    return((char) ch);
-} // FileReader::readChar
-
-
-TobyString *FileReader::readLine(void) throw (IOException *)
-{
-    if (fp == NULL)
-        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
-
-    TobyString *retval = new TobyString();
-    int ch = 0;
-
-// !!! FIXME : This won't work with MacOS endlines!
-
-    do
     {
-        ch = fgetc(fp);
-        if ((ch != '\r') && (ch != '\n') && (ch != EOF))
-            retval->append((char) ch);
-    } while ((ch != EOF) && (ch != '\n'));
+        if (ferror(fp))
+            throw(new IOException(strerror(errno)));
+        else
+            ch = TOBYEOF;
+    } // if
 
-    _D(("FileReader::readLine() ... returning [%s]...\n", retval->c_str()));
-
-    return(retval);
-} // TobyReader::readLine
+    return(ch);
+} // FileReader::readChar
 
 // end of FileReader.cpp ...
 

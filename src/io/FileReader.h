@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "io/TobyReader.h"
 #include "util/TobyLanguage.h"
 
@@ -37,8 +38,8 @@ public:
     virtual ~FileReader(void);
 
     virtual bool isEOF(void);
-    virtual char readChar(void) throw (IOException *);
-    virtual TobyString *readLine(void) throw (IOException *);
+    virtual bool isOpened(void);
+    virtual int readCharImpl(void) throw (IOException *);
 
 private:
     FILE *fp;

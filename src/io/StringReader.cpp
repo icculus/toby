@@ -35,51 +35,31 @@ StringReader::~StringReader(void)
 } // Destructor
 
 
+bool StringReader::isOpened(void)
+{
+    return(nextChar != NULL);
+} // FileReader::isOpened
+
+
 bool StringReader::isEOF(void)
 {
     return((nextChar != NULL) && (*nextChar != '\0'));
 } // StringReader::isEOF
 
 
-char StringReader::readChar(void) throw (IOException *)
+int StringReader::readCharImpl(void) throw (IOException *)
 {
     if (nextChar == NULL)
         throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     if (*nextChar == '\0')
-        throw(new IOException(TOBYI18N_END_OF_FILE));
+        return(TOBYEOF);
 
     char retval = *nextChar;
     nextChar++;
 
-    _D(("StringReader::readChar() ... returning '%c'...\n", retval));
-
     return(retval);
-} // StringReader::readChar
-
-
-TobyString *StringReader::readLine(void) throw (IOException *)
-{
-    if (nextChar == NULL)
-        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
-
-    TobyString *retval = new TobyString();
-    char ch = 0;
-
-// !!! FIXME : This won't work with MacOS endlines!
-
-    do
-    {
-        ch = *nextChar;
-        nextChar++;
-        if ((ch != '\r') && (ch != '\n') && (ch != '\0'))
-            retval->append((char) ch);
-    } while ((ch != '\0') && (ch != '\n'));
-
-    _D(("StringReader::readLine() ... returning [%s]...\n", retval->c_str()));
-
-    return(retval);
-} // StringReader::readLine
+} // StringReader::readCharImpl
 
 // end of StringReader.cpp ...
 

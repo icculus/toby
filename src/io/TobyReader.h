@@ -25,24 +25,35 @@
 #include "exceptions/IOException.h"
 
 /*
- *  TobyReaders are for interpretation errors at runtime, as opposed to
- *   parsetime errors.
+ * TobyReaders are an abstraction over input streams of various types.
  *
  *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
  */
+
+#define TOBYEOF -1
+
 class TobyReader : public TobyObject
 {
 public:
-    TobyReader(void) {}
+    TobyReader(void);
     virtual ~TobyReader(void) {}
 
+    int readChar(void) throw (IOException *);
+    void pushBack(void);
+    bool isPushedBack(void);
+    virtual bool isOpened(void) = 0;
     virtual bool isEOF(void) = 0;
-    virtual char readChar(void) throw (IOException *) = 0;
-    virtual TobyString *readLine(void) throw (IOException *) = 0;
+    virtual TobyString *readLine(void) throw (IOException *);
+
+protected:
+    virtual int readCharImpl(void) throw (IOException *) = 0;
+
+private:
+    bool doingPushBack;
+    int lastChar;
 }; // class TobyReader
 
 #endif  // !defined _INCLUDE_TOBYREADER_H_
 
 // end of TobyReader.h ...
-
 
