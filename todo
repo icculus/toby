@@ -92,6 +92,7 @@ alpha4 : in progress.
     add String intrinsic?
     Fix "!!!" comments...
     Make input area use sane keys.
+    Add splash screen code.
 
 alpha5 : not yet begun.
     COMMENT EVERYTHING.
