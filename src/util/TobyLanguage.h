@@ -139,7 +139,8 @@ public:
     static char *LANGNOTSTRING;
     static char *LANGISFINAL;
     static char *LANGSETFAILED;
-
+    static char *FILE_NOT_OPEN;
+    static char *END_OF_FILE;
 
 #if 0
 // !!! PUT THIS BACK IN!

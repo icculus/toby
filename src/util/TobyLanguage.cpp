@@ -167,5 +167,8 @@ char *TobyLanguage::LANGSETFAILED   = "LANGUAGE: Setting field [%0] "
                                       " failed with message [%1]"
                                       " on line %2 in %3.";
 
+char *TobyLanguage::FILE_NOT_OPEN   = "File not open";
+char *TobyLanguage::END_OF_FILE     = "End of file";
+
 // end of TobyLanguage.cpp ...
 
