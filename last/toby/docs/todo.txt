@@ -3,6 +3,8 @@
 ongoing bugfixes/enhancements :
     GLOBAL REFERENCING IS FUCKED.
 
+    Print out translation credit somewhere.
+
     Have the build binaries go into a separate tree.
 
     TobyMenuBar.java : Need to not hardcode TobyParser...
