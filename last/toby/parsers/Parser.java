@@ -40,10 +40,10 @@ public abstract class Parser
          *   @param funcName name of method where debugging info lies.
          *   @param msg Message to print.
          */
-//    public static void _D(String funcName, String msg)
-//    {
-//        BugSquasher.println(funcName, msg);
-//    } // _D
+    protected void _D(String funcName, String msg)
+    {
+        BugSquasher.println(funcName, msg);
+    } // _D
 
 
         /**
