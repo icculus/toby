@@ -55,11 +55,15 @@ public final class TobyParser extends last.toby.parsers.Parser
     public static String OPER_LESS       = "<";
     public static String OPER_GREATEREQL = ">=";
     public static String OPER_LESSEQL    = "<=";
+    public static String OPER_LARRAY     = "[";
+    public static String OPER_RARRAY     = "]";
 
        // Constants representing intrinsic data types...
     public static String KEYWORD_NUMBER  = "number";
     public static String KEYWORD_BOOLEAN = "boolean";
     public static String KEYWORD_NOTHING = "nothing";
+    public static String KEYWORD_ARRAY   = "array";
+    public static String KEYWORD_STRING  = "string";
 
        // Constants representing general TOBY keywords...
     public static String KEYWORD_IF          = "if";
@@ -68,6 +72,7 @@ public final class TobyParser extends last.toby.parsers.Parser
     public static String KEYWORD_ENDIF       = "endif";
     public static String KEYWORD_BEGINFOR    = "for";
     public static String KEYWORD_TO          = "to";
+    public static String KEYWORD_OF          = "of";
     public static String KEYWORD_DOWNTO      = "downto";
     public static String KEYWORD_STEP        = "step";
     public static String KEYWORD_ENDFOR      = "endfor";
@@ -117,6 +122,14 @@ public final class TobyParser extends last.toby.parsers.Parser
     public static String PROCNAME_ENABLEFENCE    = "enablefence";
     public static String PROCNAME_DISABLEFENCE   = "disablefence";
     public static String PROCNAME_SETFENCE       = "setfence";
+    public static String PROCNAME_SUBSTRING      = "substring";
+    public static String PROCNAME_LEFTSTRING     = "leftstring";
+    public static String PROCNAME_RIGHTSTRING    = "rightstring";
+    public static String PROCNAME_UCASESTRING    = "uppercasestring";
+    public static String PROCNAME_LCASESTRING    = "lowercasestring";
+    public static String PROCNAME_DRAWSTRING     = "drawstring";
+    public static String PROCNAME_STRINGLEN      = "stringlength";
+    public static String PROCNAME_JOINSTRINGS    = "joinstrings";
 
         // Static variables...
     protected static String[] operatorTable  = null;
@@ -224,6 +237,7 @@ public final class TobyParser extends last.toby.parsers.Parser
      */
     {
         operatorTable = new String[] {
+                                         // lowest precedence here.
                                          OPER_SEPARATOR,
                                          OPER_LESS,
                                          OPER_GREATER,
@@ -237,7 +251,10 @@ public final class TobyParser extends last.toby.parsers.Parser
                                          OPER_DIVIDE,
                                          OPER_MULTIPLY,
                                          OPER_RPAREN,
-                                         OPER_LPAREN
+                                         OPER_LPAREN,
+                                         OPER_RARRAY,
+                                         OPER_LARRAY
+                                         // highest precedence here.
                                      };
      } // buildOperatorTable
 
@@ -258,7 +275,9 @@ public final class TobyParser extends last.toby.parsers.Parser
         intrinsicTable = new String[] {
                                           KEYWORD_BOOLEAN,
                                           KEYWORD_NOTHING,
-                                          KEYWORD_NUMBER
+                                          KEYWORD_NUMBER,
+                                          KEYWORD_ARRAY,
+                                          KEYWORD_STRING
                                       };
 
         alphabetizeArrayElements(intrinsicTable);
@@ -294,7 +313,8 @@ public final class TobyParser extends last.toby.parsers.Parser
                                         KEYWORD_TO,
                                         KEYWORD_DOWNTO,
                                         KEYWORD_TRUE,
-                                        KEYWORD_BEGINWHILE
+                                        KEYWORD_BEGINWHILE,
+                                        KEYWORD_OF
                                     };
 
         alphabetizeArrayElements(keywordTable);
@@ -347,10 +367,19 @@ public final class TobyParser extends last.toby.parsers.Parser
                                         PROCNAME_HOMEALLTURTLES,
                                         PROCNAME_SETFENCE,
                                         PROCNAME_ENABLEFENCE,
-                                        PROCNAME_DISABLEFENCE
+                                        PROCNAME_DISABLEFENCE,
+                                        PROCNAME_SUBSTRING,
+                                        PROCNAME_LEFTSTRING,
+                                        PROCNAME_RIGHTSTRING,
+                                        PROCNAME_UCASESTRING,
+                                        PROCNAME_LCASESTRING,
+                                        PROCNAME_DRAWSTRING,
+                                        PROCNAME_STRINGLEN,
+                                        PROCNAME_JOINSTRINGS
                                     };
 
             // this must be in the exact same order as the above list.
+            //  !!! can these not be hardcoded here?
         internalStdFuncTable = new String[] {
                                         "__$STDFUNC$__goBackward",
                                         "__$STDFUNC$__goForward",
@@ -386,7 +415,15 @@ public final class TobyParser extends last.toby.parsers.Parser
                                         "__$STDFUNC$__homeAllTurtles",
                                         "__$STDFUNC$__setFence",
                                         "__$STDFUNC$__enableFence",
-                                        "__$STDFUNC$__disableFence"
+                                        "__$STDFUNC$__disableFence",
+                                        "__$STDFUNC$__subStr",
+                                        "__$STDFUNC$__strLeft",
+                                        "__$STDFUNC$__strRight",
+                                        "__$STDFUNC$__strUpper",
+                                        "__$STDFUNC$__strLower",
+                                        "__$STDFUNC$__drawString",
+                                        "__$STDFUNC$__strLen",
+                                        "__$STDFUNC$__strCat"
                                     };
 
 
@@ -488,7 +525,7 @@ public final class TobyParser extends last.toby.parsers.Parser
             catch (IOException ioe)
             {
                 // !!! this sucks.
-                ParseException._throw(TobyLanguage.INTERNAL);
+                ParseException._throw(TobyLanguage.INTERNAL_ERROR);
             } // catch
         } // try
 
@@ -518,19 +555,6 @@ public final class TobyParser extends last.toby.parsers.Parser
 
         return(global);
     } // Constructor
-
-
-    private Intrinsic buildVarReference(LogicContext parent, String value)
-                                            throws ParseException
-    {
-        if (isReservedTobyWord(value))
-            ParseException._throw(TobyLanguage.NOT_VAR);
-
-        if (isValidTobyIdentifier(value) == false)
-            ParseException._throw(TobyLanguage.BAD_IDENT);
-
-        return(new VarReferenceIntrinsic(value, parent, toker.lineno()));
-    } // buildVarReference
 
     public static boolean isValidTobyNumber(String token)
     {
@@ -613,13 +637,47 @@ public final class TobyParser extends last.toby.parsers.Parser
     } // buildBooleanIntrinsic
 
 
+    private Intrinsic buildStringIntrinsic(String value)
+    {
+        int index = value.length() - 1;  // index of last char in string.
+
+        if ((value.charAt(0) != '\"') || (value.charAt(index) != '\"'))
+        {
+            //_D("buildStringIntrinsic", "value [" + value + "] is NOT a string literal.");
+            return(null);
+        } // if
+
+        //_D("buildStringIntrinsic", "value [" + value + "] is a string literal.");
+
+            // substring() calls removes the quote chars.
+        return(new StringIntrinsic(value.substring(1, index)));
+    } // buildBooleanIntrinsic
+
+
+    private Intrinsic buildVarReference(LogicContext parent, String value)
+                                            throws ParseException
+    {
+        if (isReservedTobyWord(value))
+            ParseException._throw(TobyLanguage.NOT_VAR);
+
+        if (isValidTobyIdentifier(value) == false)
+            ParseException._throw(TobyLanguage.BAD_IDENT);
+
+        return(new VarReferenceIntrinsic(value, parent, toker.lineno()));
+    } // buildVarReference
+
+
     private Intrinsic buildIntrinsicFromValue(LogicContext parent, String val)
                                                 throws ParseException
     {
         Intrinsic retVal = null;
 
         if (val.length() <= 0)
-            ParseException._throw(TobyLanguage.INTERNAL);
+            ParseException._throw(TobyLanguage.INTERNAL_ERROR);
+
+        retVal = buildStringIntrinsic(val);
+        if (retVal != null)
+            return(retVal);
 
         retVal = buildNumberIntrinsic(val);
         if (retVal != null)
@@ -639,7 +697,103 @@ public final class TobyParser extends last.toby.parsers.Parser
     } // buildIntrinsicFromValue
 
 
-    private Intrinsic buildIntrinsicFromType(String type) throws ParseException
+        // is code is well-formed, array declaration looks like this:
+        //  "array", "of", <type>, <range>, <arrayname>
+        //  <type> is an Intrinsic type.
+        //  <range> looks like:
+        //   "[", <startnum>, "to", <endnum>, "]", [<range>]
+        //   <startnum> and <endnum> are CONSTANT numbers.
+        //     The need for a constant is a deliberate limitation.
+        //   Extra <range> sequences mean it's a multidimensional array.
+        //  <arrayname> is a valid variable identifier.
+        //
+        // At the time buildArrayIntrinsic() is called, the "array" token
+        //  has already been read from toker.
+
+    private Intrinsic buildArrayIntrinsic(LogicContext context)
+                                                        throws ParseException,
+                                                               IOException
+    {
+        if (toker.getWord() != KEYWORD_OF)
+            ParseException._throw(TobyLanguage.SYNTAX_ERROR);
+
+        ArrayIntrinsic retval = null;
+        String type = toker.getWord();
+        Intrinsic filler = buildIntrinsicFromType(type, context);
+        boolean getOut = false;
+        Vector v = new Vector();
+
+        do
+        {
+            if (toker.getWord() != OPER_LARRAY)
+                ParseException._throw(TobyLanguage.NO_LARRAY);
+
+            v.addElement(toker.getWord());
+
+            if (toker.getWord() != KEYWORD_TO)
+                ParseException._throw(TobyLanguage.SYNTAX_ERROR);  // !!! Expected "TO"?
+
+            v.addElement(toker.getWord());
+
+            if (toker.getWord() != OPER_RARRAY)
+                ParseException._throw(TobyLanguage.NO_RARRAY);
+
+            if (toker.getWord() != OPER_LARRAY)
+                getOut = true;
+
+            toker.pushBack();
+        } while (getOut == false);
+
+        // the next read from toker will return the array's identifier, if
+        //  the declaration was well-formed.
+
+        while (v.isEmpty() == false)
+        {
+            int i = v.size() - 2;
+            int start_range = 0, end_range = 0;
+
+            try
+            {
+                double d;
+
+                d = Double.parseDouble((String) v.remove(i));
+                start_range = (int) d;
+                if ( (d - ((double) start_range)) != 0.0 )
+                    ParseException._throw(TobyLanguage.TYPE_MMATCH);  // !!! "Expected Integer"?
+
+                d = Double.parseDouble((String) v.remove(i));
+                end_range = (int) d;
+                if ( (d - ((double) end_range)) != 0.0 )
+                    ParseException._throw(TobyLanguage.TYPE_MMATCH);  // !!! "Expected Integer"?
+            } // try
+
+            catch (NumberFormatException nfe)
+            {
+                ParseException._throw(TobyLanguage.SYNTAX_ERROR);
+            } // catch
+
+            retval = new ArrayIntrinsic();
+            retval.redim(start_range, end_range, filler);
+            filler = retval;
+        } // while
+
+        return(retval);
+    } // buildArrayIntrinsic
+
+
+    private Intrinsic buildComplexIntrinsicFromType(String type,
+                                                    LogicContext context)
+                                                        throws ParseException,
+                                                                IOException
+    {
+        Intrinsic retval = null;
+        if (type == KEYWORD_ARRAY)
+            retval = buildArrayIntrinsic(context);
+        return(retval);
+    } // buildComplexIntrinsicFromType
+
+
+    private Intrinsic buildSimpleIntrinsicFromType(String type) throws ParseException
     {
         Intrinsic retVal = null;
 
@@ -647,10 +801,22 @@ public final class TobyParser extends last.toby.parsers.Parser
             retVal = new NumberIntrinsic();
         else if (type == KEYWORD_BOOLEAN)
             retVal = new BooleanIntrinsic();
+        else if (type == KEYWORD_STRING)
+            retVal = new StringIntrinsic();
         else
             ParseException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
 
         return(retVal);
+    } // buildSimpleIntrinsicFromType
+
+
+    private Intrinsic buildIntrinsicFromType(String type, LogicContext context)
+                                            throws ParseException, IOException
+    {
+        Intrinsic retval = buildComplexIntrinsicFromType(type, context);
+        if (retval == null)
+            retval = buildSimpleIntrinsicFromType(type);
+        return(retval);
     } // buildIntrinsicFromType
 
 
@@ -947,6 +1113,8 @@ public final class TobyParser extends last.toby.parsers.Parser
         if (this.allowVarDeclaration == false)
             ParseException._throw(TobyLanguage.SYNTAX_ERROR);  // !!!
 
+        Intrinsic intr = buildIntrinsicFromType(type, context);
+
         String identifier = toker.getWord();
         LogicContext previousDecl = context.checkScopesForSymbol(identifier);
 
@@ -954,8 +1122,6 @@ public final class TobyParser extends last.toby.parsers.Parser
             //  functions and globals.
         if (previousDecl == context)
             ParseException._throw(TobyLanguage.DOUBLE_DEF);
-
-        Intrinsic intr = buildIntrinsicFromType(type);
 
         if (context instanceof GlobalLogicContext)
         {
@@ -987,6 +1153,10 @@ public final class TobyParser extends last.toby.parsers.Parser
             // !!! temporary Toby limitation.
 //        if (context instanceof GlobalLogicContext)
 //            ParseException._throw(TobyLanguage.SYNTAX_ERROR);
+
+        // Arrays don't allow assignment during declaration. Fortunately,
+        //  buildArrayIntrinsic() will read to the end of the line or throw,
+        //  so this will drop right through.
 
         if (toker.nextToken() != toker.TT_WORD)
             toker.pushBack();
@@ -1190,17 +1360,18 @@ public final class TobyParser extends last.toby.parsers.Parser
                                                    LogicContext parent)
                                                        throws ParseException
     {
-//            StringBuffer sb = new StringBuffer();
-//            sb.append("Called with tokens:");
-//            for (int i = 0; i < tokens.size(); i++)
-//            {
-//                sb.append(" [");
-//                sb.append(tokens.elementAt(i).toString());
-//                sb.append("]");
-//            } // for
-//
-//            _D("buildExpression", sb.toString());
-//            sb.setLength(0);
+            /*
+            StringBuffer sb = new StringBuffer();
+            sb.append("Called with tokens:");
+            for (int i = 0; i < tokens.size(); i++)
+            {
+                sb.append(" [");
+                sb.append(tokens.elementAt(i).toString());
+                sb.append("]");
+            } // for
+            _D("buildExpression", sb.toString());
+            sb.setLength(0);
+            */
 
         ExpressionLogicContext thisNode;
         int index;
@@ -1218,7 +1389,9 @@ public final class TobyParser extends last.toby.parsers.Parser
             } // if
             else
             {
-                if (tokens.elementAt(index) == OPER_LPAREN)
+                String str = (String) tokens.elementAt(index);
+
+                if (str == OPER_LPAREN)
                 {
                     thisNode = parseParentheses(tokens, index, parent);
                         // a bit hacky. !!!
@@ -1228,6 +1401,12 @@ public final class TobyParser extends last.toby.parsers.Parser
                         thisNode = null;
                     } // if
                 } // if
+
+                else if (str == OPER_LARRAY)
+                {
+                    thisNode = parseArrayOperator(tokens, index, parent);
+                } // else if
+
                 else
                     thisNode = parseBinaryOperator(tokens, index, parent);
             } // else
@@ -1272,9 +1451,9 @@ public final class TobyParser extends last.toby.parsers.Parser
                 if (retVal == -2)   // Definitely at least a token in here.
                     retVal = -1;
 
-                if (obj == OPER_LPAREN)
+                if ((obj == OPER_LPAREN) || (obj == OPER_LARRAY))
                     depth++;
-                else if (obj == OPER_RPAREN)
+                else if ((obj == OPER_RPAREN) || (obj == OPER_RARRAY))
                     depth--;
 
                 rc = searchArray(operatorTable, (String) obj);
@@ -1290,15 +1469,17 @@ public final class TobyParser extends last.toby.parsers.Parser
             } // if
         } // for
 
-//            if (retVal == -2)
-//                _D("findHighestPrecedence", "No tokens left.");
-//            else if (retVal == -1)
-//                _D("findHighestPrecedence", "No operators.");
-//            else
-//            {
-//                _D("findHighestPrecedence", "Highest op is #" + retVal +
-//                     ". ([" + ((String) tokens.elementAt(retVal)) + "]).");
-//            } // else
+        /*
+            if (retVal == -2)
+                _D("findHighestPrecedence", "No tokens left.");
+            else if (retVal == -1)
+                _D("findHighestPrecedence", "No operators.");
+            else
+            {
+                _D("findHighestPrecedence", "Highest op is #" + retVal +
+                     ". ([" + ((String) tokens.elementAt(retVal)) + "]).");
+            } // else
+        */
 
         return(retVal);
     } // findHighestPrecedence
@@ -1423,8 +1604,8 @@ public final class TobyParser extends last.toby.parsers.Parser
         Vector v;
         ExpressionLogicContext retVal;
 
-//        _D("parseGroupedExpression", "called. index == (" + index + "). [" +
-//                                    tokens.elementAt(index).toString() + "].");
+        //_D("parseGroupedExpression", "called. index == (" + index + "). [" +
+        //                            tokens.elementAt(index).toString() + "].");
 
         tokens.removeElementAt(index);
         v = moveElementsByDelimiter(tokens, index, delimiter);
@@ -1432,6 +1613,65 @@ public final class TobyParser extends last.toby.parsers.Parser
         tokens.insertElementAt(retVal, index);
         return(retVal);
     } // parseGroupedExpression
+
+
+    private ExpressionLogicContext parseArrayOperator(Vector tokens, int index,
+                                                       LogicContext parent)
+                                                     throws ParseException
+    {
+        //_D("parseArrayOperator", "Parsing an ARRAY dereference.");
+
+        LogicContext child = null;
+        ExpressionLogicContext retval = null;
+        int lineNum = toker.lineno();
+
+        if (index <= 0)
+            ParseException._throw(TobyLanguage.SYNTAX_ERROR);
+
+        retval = new ArrayDereferenceExpressionLogicContext(lineNum, false);
+
+        Object obj = tokens.elementAt(index - 1);
+        if (obj == OPER_RARRAY)  // multidimensional array dereference.
+        {
+            int i;
+            for (i = index - 2; ((i >= 0) && (child == null)); i--)
+            {
+                if (tokens.elementAt(i) == OPER_LARRAY)
+                {
+                    child = parseArrayOperator(tokens, i, retval);
+                    for (int j = 0; j < tokens.size(); j++)  // !!! ugh.
+                    {
+                        if (tokens.elementAt(j) == child)
+                        {
+                            index = j;
+                            tokens.remove(j);
+                            break;
+                        } // if
+                    } // for
+                } // if
+            } // for
+
+            if (i < 0)  // no OPER_LARRAY found.
+                ParseException._throw(TobyLanguage.SYNTAX_ERROR);
+        } // if
+
+        else  // actual array identifier should be here.
+        {
+            index--;
+            tokens.remove(index);
+            Intrinsic intr = buildVarReference(parent, (String) obj);
+            child = new IntrinsicLogicContext(lineNum, intr);
+        } // else
+
+        retval.addChild(child);  // add array.
+
+        child = parseGroupedExpression(tokens, index, OPER_RARRAY, retval);
+        retval.addChild(child); // add index expression.
+        tokens.remove(index);  // lose that new expression tree.
+        tokens.insertElementAt(retval, index);  // plug in result.
+
+        return(retval);
+    } // parseArrayOperator
 
 
     private ExpressionLogicContext parseParentheses(Vector tokens, int index,
@@ -1518,7 +1758,7 @@ public final class TobyParser extends last.toby.parsers.Parser
         return(retVal);
     } // parseFunctionCall
 
-} // TobyProcedure
+} // TobyParser
 
-// end of TobyProcedure.java ...
+// end of TobyParser.java ...
 
