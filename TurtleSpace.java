@@ -23,14 +23,18 @@ public abstract class TurtleSpace extends JComponent
     public final static int STEP_TRACE_DELAY = -1;
     public final static double TURTLE_RATIO = 0.02;  // 2 percent of screen.
 
-    protected Turtle turtle;                   // our little virtual pet.
+    protected Turtle turtle;
     private Vector varWatchers;
     private Vector sourceWatchers;
 
     private boolean nextStep = false;
     private boolean traceEnabled = false;
     private int traceDelay = DEFAULT_TRACE_DELAY;
+    private boolean codeRunning = false;
 
+        /**
+         * Construct a TurtleSpace component.
+         */
     public TurtleSpace()
     {
         Graphics g;
@@ -48,6 +52,10 @@ public abstract class TurtleSpace extends JComponent
     } // Constructor
 
 
+        /**
+         *  Cleanup after ourselves; empties out all the Vectors and objects
+         *   that TurtleSpaces collects up.
+         */
     public void finalize() throws Throwable
     {
         varWatchers.removeAllElements();
@@ -61,30 +69,68 @@ public abstract class TurtleSpace extends JComponent
     } // finalize
 
 
+        /**
+         * Query whether code is being interpreted or not.
+         *
+         *      @return (true) if interpretation is executing, (false) if not.
+         */
+    public boolean isCodeRunning()
+    {
+        return(codeRunning);
+    } // isCodeRunning
+
+
+        /**
+         *  Add a VarWatcher to this TurtleSpace, so it will be notified
+         *   when a variable is created or changed...
+         *
+         *    @param vw The VarWatcher to add.
+         */
     public final void addVarWatcher(VarWatcher vw)
     {
         varWatchers.addElement(vw);
     } // addVarWatcher
 
 
+        /**
+         *  Remove a VarWatcher from this TurtleSpace
+         *
+         *    @param vw The VarWatcher to remove.
+         */
     public final void removeVarWatcher(VarWatcher vw)
     {
         varWatchers.removeElement(vw);
     } // removeVarWatcher
 
 
+        /**
+         *  Add a SourceWatcher to this TurtleSpace, so it will be notified
+         *   when a new line of code is being executed.
+         *
+         *    @param sw The SourceWatcher to add.
+         */
     public final void addSourceWatcher(SourceWatcher sw)
     {
         sourceWatchers.addElement(sw);
     } // addSourceWatcher
 
 
+        /**
+         *  Remove a SourceWatcher from this TurtleSpace
+         *
+         *    @param sw The SourceWatcher to remove.
+         */
     public final void removeSourceWatcher(SourceWatcher sw)
     {
         sourceWatchers.removeElement(sw);
     } // removeSourceWatcher
 
 
+        /**
+         *  Alert all VarWatchers that a new variable has been created.
+         *
+         *    @param var A reference to the Intrinsic that has been created.
+         */
     protected final void notifyVarCreated(Intrinsic var)
     {
         int i;
@@ -95,6 +141,14 @@ public abstract class TurtleSpace extends JComponent
     } // notifyVarCreate
 
 
+        /**
+         *  Alert all VarWatchers that a variable has been destroyed.
+         *
+         *    @param var A reference to the Intrinsic that has been destroyed.
+         *               Note that this does not been the Intrinsic object has
+         *               been finalized or collected, but rather the Intrinsic
+         *               has left the scope of interpretation.
+         */
     protected final void notifyVarDestroyed(Intrinsic var)
     {
         int i;
@@ -105,6 +159,11 @@ public abstract class TurtleSpace extends JComponent
     } // notifyVarCreate
 
 
+        /**
+         *  Alert all VarWatchers that a variable has a new value.
+         *
+         *    @param var A reference to the Intrinsic that has been modified.
+         */
     protected final void notifyVarUpdated(Intrinsic var)
     {
         int i;
@@ -115,6 +174,11 @@ public abstract class TurtleSpace extends JComponent
     } // updateVarWatchers
 
 
+        /**
+         *  Alert all SourceWatchers that a new line of code has been reached.
+         *
+         *    @param line the line of code that we are now on.
+         */
     protected final void notifySourceLineUpdated(int line)
     {
         int i;
@@ -125,11 +189,19 @@ public abstract class TurtleSpace extends JComponent
     } // updateSourceWatchers
 
 
+        /**
+         *  Alert all SourceWatchers and VarWatchers that interpretation
+         *   of the program has begun (or restarted).
+         *
+         *    @param var A reference to the Intrinsic that has been created.
+         */
     protected final void notifyBeginInterpretation()
     {
         int i;
         int maxSource = sourceWatchers.size();
         int maxVar = varWatchers.size();
+
+        codeRunning = true;
 
         for (i = 0; i < maxSource; i++)
             ((SourceWatcher)sourceWatchers.elementAt(i)).beginInterpretation();
@@ -139,18 +211,44 @@ public abstract class TurtleSpace extends JComponent
     } // notifyBeginInterpretation
 
 
-    protected final void notifyEndInterpretation()
+        /**
+         *  Alert all SourceWatchers and VarWatchers that
+         *   interpretation of the program has ended.
+         *
+         *    @param normalTermination True if normal program termination,
+         *                             false if program ended due to user
+         *                             request or error.
+         */
+    protected final void notifyEndInterpretation(boolean normalTermination)
     {
         int i;
-        int max = sourceWatchers.size();
+        int maxSource = sourceWatchers.size();
+        int maxVar = varWatchers.size();
 
-        for (i = 0; i < max; i++)
-            ((SourceWatcher) sourceWatchers.elementAt(i)).endInterpretation();
+        codeRunning = false;
+
+        for (i = 0; i < maxSource; i++)
+        {
+            ((SourceWatcher) sourceWatchers.elementAt(i)).
+                endInterpretation(normalTermination);
+        } // for
+
+        for (i = 0; i < maxVar; i++)
+        {
+            ((VarWatcher) varWatchers.elementAt(i)).
+                varEndInterpretation(normalTermination);
+        } // for
 
         enableTracing(false);
     } // notifyEndInterpretation
 
 
+        /**
+         *  Alert all SourceWatchers that there was an error on
+         *   line (errLine) of the program.
+         *
+         *    @param errLine line where error occured.
+         */
     protected final void notifySourceError(int errLine)
     {
         int i;
@@ -161,32 +259,53 @@ public abstract class TurtleSpace extends JComponent
     } // notifySourceError
 
 
+        /**
+         *  Set tracing of the program that runs in this TurtleSpace.
+         *   The default delay between interpretation of lines is used.
+         *
+         *     @param shouldEnable (true) to enable tracing,
+         *            (false) otherwise.
+         */
     public final void enableTracing(boolean shouldEnable)
-    /**
-     *  !!! comment.
-     */
     {
         traceEnabled = shouldEnable;
         traceDelay = DEFAULT_TRACE_DELAY;
     } // enableTracing (overloaded; default delay time.)
 
 
+        /**
+         *  Set tracing of the program that runs in this TurtleSpace.
+         *   The delay between interpretation of lines can be specified.
+         *
+         *     @param shouldEnable (true) to enable tracing, (false) otherwise.
+         *     @param delayTime time, in milliseconds, to delay between lines.
+         */
     public final void enableTracing(boolean shouldEnable, int delayTime)
-    /**
-     *  !!! comment.
-     */
     {
         traceEnabled = shouldEnable;
         traceDelay = delayTime;
     } // enableTracing (overloaded; accepts delay time...)
 
 
+        /**
+         * Determine if tracing has been enabled for this TurtleSpace.
+         *
+         *    @return (true) if enabled, (false) otherwise.
+         */
     public final boolean isTraceEnabled()
     {
         return(traceEnabled);
     } // isTraceEnabled
 
 
+        /**
+         *  Load a new program into this TurtleSpace, and turn on
+         *   program stepping (no lines of code are interpreted until
+         *   we are explicitly instructed.)
+         *
+         *     @param shouldEnable (true) to enable tracing,
+         *                         (false) otherwise.
+         */
     public final void setCodeWithStep(String newCode) throws TobyParseException
     {
         enableTracing(true, STEP_TRACE_DELAY);
@@ -195,6 +314,11 @@ public abstract class TurtleSpace extends JComponent
     } // setCodeWithStep
 
 
+        /**
+         * Make the interpreter step to the next line of code. If
+         *  stepping was not enabled prior to this call, it will
+         *  be enabled by this method.
+         */
     public final void stepInterpreter()
     {
         if ((traceEnabled == false) || (traceDelay != STEP_TRACE_DELAY))
@@ -203,8 +327,20 @@ public abstract class TurtleSpace extends JComponent
     } // stepInterpreter
 
 
-    public final void delayInterpretation()
+        /**
+         * Blocks until delay time is over. In tracing mode, this is when
+         *  the specified delay time elapses. In stepping mode, this is when
+         *  the user instructs the interpreter to continue.
+         *
+         * If no tracing/stepping is enabled, this method returns immediately.
+         *
+         * Subclasses of TurtleSpace should call this method between
+         *  every line of code they interpret.
+         */
+    protected final void delayInterpretation()
     {
+        long endTime = System.currentTimeMillis();
+
         if (traceEnabled)
         {
             if (traceDelay == STEP_TRACE_DELAY)
@@ -215,29 +351,53 @@ public abstract class TurtleSpace extends JComponent
             } // if
             else
             {
-                    // !!! change to yielding loop that can check for halt
-                    // !!!  requests...
-                try
+                endTime += traceDelay;
+                while ( (endTime > System.currentTimeMillis()) &&
+                        (!haltRequested()) )
                 {
-                    Thread.sleep(traceDelay);
-                } // try
-                catch (InterruptedException intrExcp)
-                {
-                    // don't care...
-                } // catch
+                    Thread.yield();
+                } // while
             } // else
         } // if
     } // delayInterpretation
 
 
+    /*
+     *  The following should be overriden by a subclass that
+     *  interprets a program...paint() should probably also be overridden.
+     */
+
+
+        /**
+         * Set a new program, and start its execution.
+         *
+         *     @param newCode String of program. Can include whitespace.
+         *     @throw TobyParseException on interpretation errors.
+         */
     public abstract void setCode(String newCode) throws TobyParseException;
-    public abstract boolean isCodeRunning();
+
+
+        /**
+         * Request the interpreter to halt interpretation.
+         */
     public abstract void haltInterpreter();
-    public abstract void cleanup();
+
+
+        /**
+         * Query if an explicit termination of interpretation has been
+         *  requested.
+         *
+         *   @return (true) if halt requested, (false) otherwise.
+         */
     public abstract boolean haltRequested();
+
+
+        /*
+         * Cleanup TurtleSpace. This causes any drawing to be cleaned out.
+         */
+    public abstract void cleanup();
 
 } // TurtleSpace
 
 // end of TurtleSpace.java ...
-
 
