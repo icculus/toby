@@ -79,6 +79,7 @@ public final class TobyFrame extends JFrame implements DocumentListener,
 
     private void setTobyIcon()
     {
+        /*  !!! TriangleTurtle is gone...
         if (Incompatibilities.isSetFrameIconBroken == false)
         {
             Turtle turtle = new TriangleTurtle();
@@ -94,6 +95,7 @@ public final class TobyFrame extends JFrame implements DocumentListener,
 
             setIconImage(image);
         } // if
+        */
     } // setTobyIcon
 
 
