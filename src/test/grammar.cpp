@@ -18,7 +18,7 @@
  */
 
 /*
- * This is a standalone program to test that a langdef file is valid.
+ * This is a standalone program to test that a grammar file is valid.
  *  Ideally, we'd want to write up a DTD, and have some external tool do
  *  this for us, but oh well.
  *
