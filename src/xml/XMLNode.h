@@ -58,6 +58,7 @@ public:
     TobyCollection *getAttributes(void);
     TobyCollection *getChildren(void);
     XMLNode *getParent(void);
+    const char *getAttributeValue(const char *name);
 
 protected:
     const char *tag;

@@ -119,5 +119,19 @@ XMLNode *XMLNode::getParent(void)
     return(parent);
 } // XMLNode::getParent
 
+
+const char *XMLNode::getAttributeValue(const char *name)
+{
+    int max = attribs->getSize();
+    for (int i = 0; i < max; i++)
+    {
+        XMLAttribute *attr = (XMLAttribute *) attribs->elementAt(i);
+        if (strcmp(attr->name, name) == 0)
+            return(attr->value);
+    } // for
+
+    return(NULL);
+} // XMLNode::getAttributeValue
+
 // end of XMLNode.cpp ...
 
