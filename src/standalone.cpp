@@ -64,15 +64,27 @@ int main(int argc, char **argv)
 #if 0
 
         tspace.setPenColor(0.0, 1.0, 0.0, 0.0);
+        tspace.hideTurtle();
 
         for (int j = 0; j < 360; j++)
         {
+            tspace.renderToOffscreen();
+            tspace.cleanup();
             for (int i = 0; i < 4; i++)
             {
                 tspace.advanceTurtle(165);
                 tspace.rotateTurtle(90);
             } // for
+            tspace.renderToScreen();  // flip offscreen buffer to video.
             tspace.rotateTurtle(1);
+
+            __platformThreadYieldCurrent();
+            if (__platformRendererDoEvents() == false)
+            {
+                tspace.releaseTurtleSpace();
+                delete renderer;
+                return(1);
+            } // if
         } // for
 
 #else
@@ -88,6 +100,8 @@ int main(int argc, char **argv)
         float xincr = (1.0 / (float) xmax) * 2.0;
         float yincr = (1.0 / (float) ymax) * 2.0;
 
+        //tspace.renderToOffscreen();
+        //tspace.hideTurtle();
         tspace.rotateTurtle(90);
 
         for (double y = 0.0; y < ymax; y += 1.0)
@@ -109,7 +123,17 @@ int main(int argc, char **argv)
 
             if ((yincr > 0.0) && (y >= (ymax / 2)))
                 yincr = -yincr;
+
+            __platformThreadYieldCurrent();
+            if (__platformRendererDoEvents() == false)
+            {
+                tspace.releaseTurtleSpace();
+                delete renderer;
+                return(1);
+            } // if
         } // for
+
+        //tspace.renderToScreen();
 
 #endif
 
