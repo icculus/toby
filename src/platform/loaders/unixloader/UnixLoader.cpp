@@ -23,15 +23,18 @@ UnixLoader::UnixLoader(const char *binaryName)
     : TobyLoader(binaryName),
       dlhandle(NULL)
 {
-    char *unixName = new char[strlen(binaryName) + 7];
-    if (unixName != NULL)
+    char *unixName = NULL;
+
+    if (binaryName != NULL)
     {
+        unixName = new char[strlen(binaryName) + 7];
         strcpy(unixName, "lib");
         strcat(unixName, binaryName);
         strcat(unixName, ".so");
-        dlhandle = dlopen(unixName, RTLD_LAZY | RTLD_GLOBAL);
-        delete[] unixName;
-    } /* if */
+    } // if
+
+    dlhandle = dlopen(unixName, RTLD_LAZY | RTLD_GLOBAL);
+    delete[] unixName;
 } // Constructor
 
 
