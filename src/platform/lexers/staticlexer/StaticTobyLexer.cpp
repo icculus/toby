@@ -1601,7 +1601,7 @@ static LanguageRules *buildLanguage_toby(void)
     kids[30] = buildElement_RETURNSTATEMENT();
     kids[31] = buildElement_FUNCTIONCALLSTATEMENT();
 
-    language_toby = new LanguageRules("toby", "toby", new TokenizerRules(false, " \t", 2, true, false, "//", true, NULL, NULL, true, "\"", 1, true, '\\', false), NULL, 32, kids);
+    language_toby = new LanguageRules("toby", "toby", element_TOPLEVEL, new TokenizerRules(false, " \t", 2, true, false, "//", true, NULL, NULL, true, "\"", 1, true, '\\', false), 32, kids);
     return(language_toby);
 } // buildLanguage_toby
 

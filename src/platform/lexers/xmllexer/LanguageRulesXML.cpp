@@ -62,13 +62,13 @@ LexerRules *LanguageRulesXML::buildRules(XMLNode *node)
                 } // if
                 else
                 {
-                    ruleCount++;
                     if (strcmp(tag, "element") == 0)
                     {
                         const char *elemName = kid->getAttributeValue("name");
                         if ( (elemName) && (strcmp(elemName, firstName) == 0) )
                             firstRule = rulesList[ruleCount];
                     } // if
+                    ruleCount++;
                 } // else
             } // else
         } // for
@@ -175,13 +175,6 @@ const char *LanguageRulesXML::outputDefinitions(void)
     str.append("\", \"");
     str.append(extension);
     str.append("\", ");
-    if (tokRule == NULL)
-        str.append("NULL, ");
-    else
-    {
-        str.append(tokRule->outputConstructor());
-        str.append(", ");
-    } // else
 
     if (firstElement == NULL)
         str.append("NULL, ");
@@ -191,6 +184,15 @@ const char *LanguageRulesXML::outputDefinitions(void)
         str.append(((ElementRulesXML *) firstElement)->getName());
         str.append(", ");
     } // else
+
+    if (tokRule == NULL)
+        str.append("NULL, ");
+    else
+    {
+        str.append(tokRule->outputConstructor());
+        str.append(", ");
+    } // else
+
     str.append(numChildren);
     str.append(", kids);\n");
 
