@@ -19,6 +19,8 @@
 
 package last.toby.interpreter;
 
+import java.util.Stack;
+
     /**
      *  Implement this interface, then call TurtleSpace.addVarWatcher(). You
      *   will then be notified via these methods when their have been changes
@@ -28,13 +30,11 @@ package last.toby.interpreter;
      */
 public interface VarWatcher
 {
-    public void varCreated(VarReferenceIntrinsic intrinsic);
-    public void varDestroyed(VarReferenceIntrinsic intrinsic);
-    public void varInScope(VarReferenceIntrinsic intrinsic);
-    public void varOutOfScope(VarReferenceIntrinsic intrinsic);
-    public void varUpdated(VarReferenceIntrinsic intrinsic);
+    public void varDefineLocalStack(Stack _localStack);
+    public void varDefineGlobals(Stack _globalStack);
+    public void varNewStackFrame(int pos);
+    public void varUpdated(VarReferenceIntrinsic var);
 } // VarWatcher
 
 // end of VarWatcher.java ...
-
 
