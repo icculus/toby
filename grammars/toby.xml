@@ -6,10 +6,8 @@
                whitespacechars=" \t"
                ignorewhitespace="true"
                ignorenewlines="false"
-               singlelinecommentstart="//"
+               singlelinecomment="//"
                ignoresinglelinecomments="true"
-               multilinecommentstart=""
-               multilinecommentend=""
                ignoremultilinecomments="true"
                quotechars='"'
                escaping="true"
