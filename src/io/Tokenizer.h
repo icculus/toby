@@ -77,13 +77,20 @@ public:
         //  anything registered as whitespace, call this method as
         //  setWhitespaceChars(NULL, 0), in which case they'll register as
         //  valid tokens. Default is "\t "  (that's TAB and SPACE).
-    virtual void setWhitespaceChars(const char *chars, int numChars);
+    virtual void setWhitespaceChars(const char *chars, size_t numChars);
 
         // Ignore whitespace. Default is true. If you don't ignore whitespace,
         //  then nextToken() will place each block of it (not each individual
-        //  in the str field and return TT_WHITESPACE. Be sure to define your
-        //  whitespace characters with setWhitespaceChars(), too!
+        //  character) in the str field and return TT_WHITESPACE. Be sure to
+        //  define your whitespace characters with setWhitespaceChars(), too!
     virtual void setIgnoreWhitespace(bool onOff);
+
+        // Ignore newlines. Default is false. If you don't ignore newlines,
+        //  then nextToken() will return TT_NEWLINE when it sees a '\r' char,
+        //  a '\n' char, or a "\r\n" pair. If ignored, these chars are thrown
+        //  away, and the first unignored token that follows is grabbed
+        //  instead.
+    virtual void setIgnoreNewlines(bool onOff);
 
         // Define the sequence of chars that signifies a single line comment.
         //  Default is "//". Set it to NULL to disable single line comments.
@@ -119,7 +126,7 @@ public:
         //  Default quotes are just the double quote ('\"').
         // If you don't want to tokenize literal strings in blocks, just call
         //  this method as setQuoteChars(NULL, 0);
-    virtual void setQuoteChars(const char *chars, int numChars);
+    virtual void setQuoteChars(const char *chars, size_t numChars);
 
         // Define an escape character. Default is '\\'. This is used by the
         //  literal string handler: If you have "he said, \"woot\"", then the
@@ -152,11 +159,21 @@ public:
     virtual void pushBack(void);
 
         // Get the current line number (option base 0) in the stream.
-    virtual int currentLine(void);
+    virtual long currentLine(void);
 
         // Calls nextToken(), and returns (true) if the new token is a
         //  TT_WORD type, and it is a byte match of (str), (false) otherwise.
     virtual bool mustGetWord(const char *str);
+
+        // Set the case sensitivity flag. This flag doesn't affect tokenizing,
+        //  but it's related state, so we store it here. Typically, Lexers
+        //  will examine this flag to see how they should treat the word
+        //  tokens they get back from this object. Default state of the
+        //  case sensitivity flag is (true).
+    virtual void setCaseSensitive(bool onOff);
+
+        // Retrieve the case sensitivity flag's state.
+    virtual bool getCaseSensitive(void);
 
 protected:
 
@@ -175,8 +192,8 @@ protected:
 
     TobyReader *in;
     char *tokenBuffer;
-    int bufferAllocSize;
-    int bufferIndex;
+    size_t bufferAllocSize;
+    size_t bufferIndex;
 
     inline int nextChar(void) throw (IOException *);
     inline void pushBackChar(void);
@@ -186,12 +203,12 @@ private:
     bool pushedBack;
 
     char *quoteChars;
-    int numQuoteChars;
+    size_t numQuoteChars;
     char escapeChar;
     bool isEscaping;
 
     char *whitespaceChars;
-    int numWhitespaceChars;
+    size_t numWhitespaceChars;
     bool ignoreWhitespace;
 
     char *singleLineCommentStart;
@@ -204,11 +221,15 @@ private:
     bool convertNumbers;
     bool numsAreWords;
 
-    int lineNum;
+    bool ignoreNewlines;
+
+    long lineNum;
 
     int lastChar;
-    unsigned int backBufferSize;
+    size_t backBufferSize;
     int backBuffer[256];
+
+    bool caseSensitive;
 
     void extendTokenBuffer(void);
 

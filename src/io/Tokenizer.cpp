@@ -28,7 +28,7 @@ static char *replaceString(char **origString, const char *newString)
         *origString = NULL;
     else
     {
-        int numChars = strlen(newString) + 1;
+        size_t numChars = strlen(newString) + 1;
         *origString = new char[numChars];
         memcpy(*origString, newString, numChars);
     } // else
@@ -38,7 +38,7 @@ static char *replaceString(char **origString, const char *newString)
 
 
 static char *replaceChars(char **origChars, const char *newChars,
-                           int *numCharsOut, int numChars)
+                           size_t *numCharsOut, size_t numChars)
 {
     assert(origChars != NULL);
     assert(numCharsOut != NULL);
@@ -83,9 +83,11 @@ Tokenizer::Tokenizer(TobyReader *reader) :
     ignoreMultiLineComments(false),
     convertNumbers(true),
     numsAreWords(false),
+    ignoreNewlines(false),
     lineNum(0),
     lastChar(0),
-    backBufferSize(0)
+    backBufferSize(0),
+    caseSensitive(true)
 {
     assert(in != NULL);
     memset(backBuffer, '\0', sizeof (backBuffer));
@@ -120,7 +122,7 @@ Tokenizer::~Tokenizer(void)
 } // Destructor
 
 
-void Tokenizer::setWhitespaceChars(const char *chars, int numChars)
+void Tokenizer::setWhitespaceChars(const char *chars, size_t numChars)
 {
     replaceChars(&whitespaceChars, chars, &numWhitespaceChars, numChars);
 } // Tokenizer::setWhitespaceChars
@@ -130,6 +132,12 @@ void Tokenizer::setIgnoreWhitespace(bool onOff)
 {
     ignoreWhitespace = onOff;
 } // Tokenizer::setIgnoreWhitespace
+
+
+void Tokenizer::setIgnoreNewlines(bool onOff)
+{
+    ignoreNewlines = onOff;
+} // Tokenizer::setIgnoreNewlines
 
 
 void Tokenizer::setSingleLineComment(const char *str)
@@ -157,7 +165,7 @@ void Tokenizer::setIgnoreMultiLineComments(bool onOff)
 } // Tokenizer::setIgnoreMultiLineComment
 
 
-void Tokenizer::setQuoteChars(const char *chars, int numChars)
+void Tokenizer::setQuoteChars(const char *chars, size_t numChars)
 {
     replaceChars(&quoteChars, chars, &numQuoteChars, numChars);
 } // Tokenizer::setQuoteChars
@@ -187,13 +195,25 @@ void Tokenizer::setNumbersAreWords(bool onOff)
 } // Tokenizer::setConvertNumbers
 
 
+void Tokenizer::setCaseSensitive(bool onOff)
+{
+    caseSensitive = onOff;
+} // Tokenizer::setCaseSensitive
+
+
+bool Tokenizer::getCaseSensitive(void)
+{
+    return(caseSensitive);
+} // Tokenizer::getCaseSensitive
+
+
 void Tokenizer::pushBack(void)
 {
     pushedBack = true;
 } // Tokenizer::pushBack
 
 
-int Tokenizer::currentLine(void)
+long Tokenizer::currentLine(void)
 {
     return(lineNum);
 } // Tokenizer::currentLine
@@ -203,7 +223,7 @@ int Tokenizer::currentLine(void)
 
 void Tokenizer::extendTokenBuffer(void)
 {
-    int newAllocSize = bufferAllocSize + BUFINCREASE;
+    size_t newAllocSize = bufferAllocSize + BUFINCREASE;
     char *tempBuf = new char[newAllocSize];
     if (bufferIndex > 0)
         memcpy(tempBuf, tokenBuffer, bufferIndex);
@@ -366,6 +386,9 @@ Tokenizer::tokentype Tokenizer::tokenizeNewline(void) throw (IOException *)
     } // if
 
     lineNum++;
+
+    if (ignoreNewlines)
+        return(nextToken());
 
     return(TT_NEWLINE);
 } // Tokenizer::tokenizeNewline
