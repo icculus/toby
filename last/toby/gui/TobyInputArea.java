@@ -42,6 +42,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
     private String endl;
     private Vector lineIndexes;
     private EditorInformationDisplay edInfo = null;
+    private boolean tracing = false;
 
     public TobyInputArea(TobyFrame frame)
     {
@@ -53,6 +54,12 @@ public class TobyInputArea extends JPanel implements LayoutManager,
         setForeground(Color.black);
         setLayout(this);
     } // Constructor
+
+
+    public void setTracing(boolean _tracing)
+    {
+        this.tracing = _tracing;
+    } // setTracing
 
 
     public void setSource(BufferedReader inReader) throws IOException
@@ -192,10 +199,8 @@ public class TobyInputArea extends JPanel implements LayoutManager,
 
     public void sourceNewLine(int lineNum)
     {
-//        TurtleSpace tspace = ((TobyPanel) getParent()).getTurtleSpace();
-
-  //      if (tspace.isTraceEnabled())
-//            highlightLine(lineNum);
+        if (this.tracing == true)
+            highlightLine(lineNum);
     } // sourceNewLine
 
 
