@@ -31,13 +31,9 @@
  */
 class SDLClock : public TobyClock
 {
-protected:
-    SDLClock(void);
-    static SDLClock *instance;
-
 public:
+    SDLClock(void);
     virtual ~SDLClock(void);
-    static TobyClock *getInstance(void);
     virtual toby_uint32 getTicks(void);
 }; // class SDLClock
 

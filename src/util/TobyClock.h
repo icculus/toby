@@ -30,21 +30,25 @@
 class TobyClock : public TobyObject
 {
 public:
-    virtual ~TobyClock(void) {}
+    virtual ~TobyClock(void);
 
         // This returns the number of milliseconds since the instance was
         //  constructed, which may be somewhat arbitrary by itself, but is
-        //  useful when compared against a later call to this method.
+        //  useful when compared against a later call to this method.
     virtual toby_uint32 getTicks(void) = 0;
+
+        // This is how you get a TobyClock object; there is no constructor.
+    static TobyClock *getSingleton(void);
 
 protected:
         // This is protected, since the class is a singleton.
-    TobyClock(void) {}
+    TobyClock(void);
+
+private:
+    static TobyClock *instance;
+        // This gets filled in along with the platform-specific subclass...
+    static TobyClock *getInstance(void);
 }; // class TobyClock
-
-
-// This gets filled in along with the platform-specific subclass...
-TobyClock *__platformGetSingletonClock(void);
 
 #endif // !defined _INCLUDE_TOBYCLOCK_H_
 

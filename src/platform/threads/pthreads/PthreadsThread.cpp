@@ -86,13 +86,13 @@ bool PthreadsThread::isTerminated(void)
 } // PthreadsThread::isTerminated
 
 
-TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args)
+TobyThread *TobyThread::getInstance(void *(*runfunc)(void *), void *args)
 {
     return(new PthreadsThread(runfunc, args));
-} // __platformBuildThread
+} // TobyThread::getInstance
 
 
-void __platformThreadYieldCurrent(void)
+void TobyThread::yieldCurrent(void)
 {
 
     usleep(1000);
@@ -105,7 +105,7 @@ void __platformThreadYieldCurrent(void)
 #warning There is no sched_yield() on this platform...
 #endif
 #endif
-} // __platformThreadYieldCurrent
+} // TobyThread::yieldCurrent
 
 // end of PthreadsThread.cpp ...
 

@@ -23,24 +23,13 @@ SDLClock *SDLClock::instance = NULL;
 
 SDLClock::SDLClock(void)
 {
-    assert(instance == NULL);
     SDL_Init(0);
 } // Constructor
 
 
 SDLClock::~SDLClock(void)
 {
-    instance = NULL;
 } // Destructor
-
-
-TobyClock *SDLClock::getInstance(void)
-{
-    if (instance == NULL)
-        instance = new SDLClock();
-
-    return(instance);
-} // SDLClock::getInstance
 
 
 toby_uint32 SDLClock::getTicks(void)
@@ -49,10 +38,10 @@ toby_uint32 SDLClock::getTicks(void)
 } // SDLClock::getTicks
 
 
-TobyClock *__platformGetSingletonClock(void)
+TobyClock *TobyClock::getInstance(void)
 {
-    return(SDLClock::getInstance());
-} // __platformGetSingletonClock
+    return(new SDLClock());
+} // TobyClock::getInstance
 
 // end of SDLClock.cpp ...
 

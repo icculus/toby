@@ -22,7 +22,7 @@
 TurtleSpace::TurtleSpace(TurtleSpaceRenderer *_renderer) :
         dueNorth(270.0), turtles(NULL), turtlesArraySize(0),
         turtlePool(new TobyStack()), fenceEnabled(false), turtle(NULL),
-        renderer(_renderer), turtleSync(__platformBuildMutex()),
+        renderer(_renderer), turtleSync(TobyMutex::getInstance()),
         renderingToOffscreen(false)
 {
     assert(_renderer != NULL);

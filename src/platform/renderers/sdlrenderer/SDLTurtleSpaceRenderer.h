@@ -50,6 +50,8 @@ protected:
     virtual void putMultToScreen(toby_uint32 *pix, int rectCount,
                                     FrameBufferRect *rects);
 
+    virtual bool doEvents(void);
+
 private:
     Uint32 sdlflags;
     SDL_Surface *screen;

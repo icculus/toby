@@ -47,10 +47,10 @@ void SDLMutex::release(void)
 
 // eine kleine platform glue...
 
-TobyMutex *__platformBuildMutex(void)
+TobyMutex *TobyMutex::getInstance(void)
 {
     return(new SDLMutex());
-} // __platformBuildMutex
+} // TobyMutex::getInstance
 
 // end of SDLMutex.cpp ...
 

@@ -31,7 +31,11 @@ standalone program for initial testing.)
             TobyReader (and fixed the MacOS endline thing). readLine can be
             overridden by a subclass for something more efficient but less
             generic. Added TobyReader::isOpened(). This is preparation for the
-            Tokenizer class. Added -ldl to UnixLoader's LDFLAGS.
+            Tokenizer class. Added -ldl to UnixLoader's LDFLAGS. Rewrote the
+            platform-specific stuff to call static methods in the baseclass,
+            which is implemented in the subclasses' source files. Moved the
+            tiny bit of code in util/TobyClock.h to util/TobyClock.cpp, and
+            added it to the Makefile.
 
 // end of changelog.txt ...
 

@@ -37,10 +37,10 @@ void *NullLoader::getSymbol(const char *sym)
 } // NullLoader::getSymbol
 
 
-TobyLoader *__platformGetLoader(const char *name)
+TobyLoader *TobyLoader::getInstance(const char *name)
 {
     return(new NullLoader(name));
-} // __platformGetSingletonLoader
+} // TobyLoader::getInstance
 
 // end of NullLoader.cpp ...
 

@@ -29,13 +29,9 @@
  */
 class NullClock : public TobyClock
 {
-protected:
-    NullClock(void);
-    static NullClock *instance;
-
 public:
+    NullClock(void);
     virtual ~NullClock(void);
-    static TobyClock *getInstance(void);
     virtual toby_uint32 getTicks(void);
 }; // class NullClock
 

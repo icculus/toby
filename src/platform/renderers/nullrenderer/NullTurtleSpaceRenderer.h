@@ -55,6 +55,8 @@ public:
     virtual void renderToOffscreen(void);
     virtual void renderToScreen(void);
 
+    virtual bool doEvents(void);
+
 private:
     double w;
     double h;

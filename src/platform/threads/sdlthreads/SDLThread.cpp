@@ -81,16 +81,16 @@ bool SDLThread::isTerminated(void)
 } // SDLThread::isTerminated
 
 
-TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args)
+TobyThread *TobyThread::getInstance(void *(*runfunc)(void *), void *args)
 {
     return(new SDLThread(runfunc, args));
-} // __platformBuildThread
+} // TobyThread::getInstance
 
 
-void __platformThreadYieldCurrent(void)
+void TobyThread::yieldCurrent(void)
 {
     SDL_Delay(1);
-} // __platformThreadYieldCurrent
+} // TobyThread::yieldCurrent
 
 // end of SDLThread.cpp ...
 

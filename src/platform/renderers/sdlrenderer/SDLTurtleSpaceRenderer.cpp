@@ -118,16 +118,7 @@ toby_uint32 *SDLTurtleSpaceRenderer::getSurface(void)
 } // SDLTurtleSpaceRenderer::getSurface
 
 
-TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
-                                                       int *argc, char ***argv)
-{
-    SDLTurtleSpaceRenderer *retval = new SDLTurtleSpaceRenderer(0);
-    SDL_WM_SetCaption(winTitle, winTitle);
-    return(retval);
-} // __platformBuildStandaloneRenderer
-
-
-bool __platformRendererDoEvents(void)
+bool SDLTurtleSpaceRenderer::doEvents(void)
 {
     bool retval = true;
     SDL_Event event;
@@ -139,7 +130,17 @@ bool __platformRendererDoEvents(void)
     } // while
 
     return(retval);
-} // __platformRendererDoEvents
+} // SDLTurtleSpaceRenderer::doEvents
+
+
+TurtleSpaceRenderer *TurtleSpaceRenderer::buildStandalone(const char *winTitle,
+                                                          int *argc,
+                                                          char ***argv)
+{
+    SDLTurtleSpaceRenderer *retval = new SDLTurtleSpaceRenderer(0);
+    SDL_WM_SetCaption(winTitle, winTitle);
+    return(retval);
+} // TurtleSpaceRenderer::buildStandalone
 
 // end of SDLTurtleSpaceRenderer.cpp ...
 

@@ -37,7 +37,8 @@ int main(int argc, char **argv)
     toby_uint32 end_time = 0;
     TurtleSpaceRenderer *renderer;
 
-    renderer = __platformBuildStandaloneRenderer(TOBYI18N_NAME, &argc, &argv);
+    renderer = TurtleSpaceRenderer::buildStandalone(TOBYI18N_NAME,
+                                                    &argc, &argv);
 
     if ((renderer == NULL) || (renderer->resize(640, 480) == false))
     {
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
 
     TurtleSpace tspace(renderer);
 
-    TobyClock *clock = __platformGetSingletonClock();
+    TobyClock *clock = TobyClock::getSingleton();
     start_time = clock->getTicks();
 
     try
@@ -77,8 +78,8 @@ int main(int argc, char **argv)
             tspace.renderToScreen();  // flip offscreen buffer to video.
             tspace.rotateTurtle(1);
 
-            __platformThreadYieldCurrent();
-            if (__platformRendererDoEvents() == false)
+            TobyThread::yieldCurrent();
+            if (renderer->doEvents() == false)
             {
                 tspace.releaseTurtleSpace();
                 delete renderer;
@@ -123,8 +124,8 @@ int main(int argc, char **argv)
             if ((yincr > 0.0) && (y >= (ymax / 2)))
                 yincr = -yincr;
 
-            __platformThreadYieldCurrent();
-            if (__platformRendererDoEvents() == false)
+            TobyThread::yieldCurrent();
+            if (renderer->doEvents() == false)
             {
                 tspace.releaseTurtleSpace();
                 delete renderer;
@@ -149,10 +150,8 @@ int main(int argc, char **argv)
     end_time = clock->getTicks();
     printf("total time == (%ld) milliseconds.\n", end_time - start_time);
 
-    while (__platformRendererDoEvents())
-    {
-        __platformThreadYieldCurrent();
-    } // while
+    while (renderer->doEvents())
+        TobyThread::yieldCurrent();
 
     delete renderer;
     return(0);

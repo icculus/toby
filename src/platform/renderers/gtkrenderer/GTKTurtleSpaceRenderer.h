@@ -58,6 +58,8 @@ public:
     virtual GtkWidget *getDrawingAreaWidget(void);
     virtual GdkPixmap *getOffscreenPixmap(void);
 
+    virtual bool doEvents(void);
+
 protected:
         // This returns a 32-bit value based on four floats that represent
         //  intensity of the color channels in the range of 0.0 to 1.0.

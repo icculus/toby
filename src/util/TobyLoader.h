@@ -34,17 +34,19 @@ public:
         // Load a dynamic binary. (binaryName) is the basename of the
         //  binary to load ("mybinary" will become "libmybinary.so" on
         //  Linux, and "mybinary.dll" on win32). (binaryname) can be
-        //  NULL, which means use the application's binary.
-    TobyLoader(const char *binaryName) {}
+        //  NULL, which means use the application's binary. Use this
+        //  instead of the new operator, since we need to generate a
+        //  platform-dependent object.
+    TobyLoader *getInstance(const char *name);
+
     virtual ~TobyLoader(void) {}
 
         // return a pointer to the symbol named (sym). NULL if not found.
     virtual void *getSymbol(const char *sym) = 0;
+
+protected:
+    TobyLoader(const char *binaryName) {}
 }; // class TobyLoader
-
-
-// This gets filled in along with the platform-specific subclass...
-TobyLoader *__platformGetLoader(const char *name);
 
 #endif // !defined _INCLUDE_TOBYLOADER_H_
 

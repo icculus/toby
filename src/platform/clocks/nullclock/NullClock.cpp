@@ -23,23 +23,12 @@ NullClock *NullClock::instance = NULL;
 
 NullClock::NullClock(void)
 {
-    assert(instance == NULL);
 } // Constructor
 
 
 NullClock::~NullClock(void)
 {
-    instance = NULL;
 } // Destructor
-
-
-TobyClock *NullClock::getInstance(void)
-{
-    if (instance == NULL)
-        instance = new NullClock();
-
-    return(instance);
-} // NullClock::getInstance
 
 
 toby_uint32 NullClock::getTicks(void)
@@ -48,11 +37,10 @@ toby_uint32 NullClock::getTicks(void)
 } // NullClock::getTicks
 
 
-TobyClock *__platformGetSingletonClock(void)
+TobyClock *TobyClock::getInstance(void)
 {
-    return(NullClock::getInstance());
-} // __platformGetSingletonClock
+    return(new NullClock());
+} // TobyClock::getInstance
 
 // end of NullClock.cpp ...
-
 

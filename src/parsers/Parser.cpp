@@ -119,7 +119,7 @@ GlobalLogicContext *Parser::parseCode(TobyReader *code, TobyObject *screen)
                                                 throw (ParseException *)
 {
     _D(("Parser::parseCode(): Starting parsing phase...\n"));
-    TobyClock *clock = __platformGetSingletonClock();
+    TobyClock *clock = TobyClock::getSingleton();
     toby_uint32 parseStartTime = clock->getTicks();
     GlobalLogicContext *retVal = parseCodeImpl(code);
     totalParseTime = clock->getTicks() - parseStartTime;

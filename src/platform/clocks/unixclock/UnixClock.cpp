@@ -19,28 +19,15 @@
 
 #include "platform/clocks/unixclock/UnixClock.h"
 
-UnixClock *UnixClock::instance = NULL;
-
 UnixClock::UnixClock(void)
 {
-    assert(instance == NULL);
     gettimeofday(&construction_time, NULL);
 } // Constructor
 
 
 UnixClock::~UnixClock(void)
 {
-    instance = NULL;
 } // Destructor
-
-
-TobyClock *UnixClock::getInstance(void)
-{
-    if (instance == NULL)
-        instance = new UnixClock();
-
-    return(instance);
-} // UnixClock::getInstance
 
 
 toby_uint32 UnixClock::getTicks(void)
@@ -55,10 +42,10 @@ toby_uint32 UnixClock::getTicks(void)
 } // UnixClock::getTicks
 
 
-TobyClock *__platformGetSingletonClock(void)
+TobyClock *TobyClock::getInstance(void)
 {
-    return(UnixClock::getInstance());
-} // __platformGetSingletonClock
+    return(new UnixClock());
+} // TobyClock::getInstance
 
 // end of UnixClock.cpp ...
 

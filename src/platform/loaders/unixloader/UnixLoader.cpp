@@ -48,10 +48,10 @@ void *UnixLoader::getSymbol(const char *sym)
 } // UnixLoader::getSymbol
 
 
-TobyLoader *__platformGetLoader(const char *name)
+TobyLoader *TobyLoader::getInstance(const char *name)
 {
     return(new UnixLoader(name));
-} // __platformGetSingletonLoader
+} // TobyLoader::getInstance
 
 // end of UnixLoader.cpp ...
 

@@ -46,16 +46,16 @@ bool NullThread::isTerminated(void)
 } // NullThread::isTerminated
 
 
-TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args)
+TobyThread *TobyThread::getInstance(void *(*runfunc)(void *), void *args)
 {
     return(new NullThread(runfunc, args));
-} // __platformBuildThread
+} // TobyThread::getInstance
 
 
-void __platformThreadYieldCurrent(void)
+void TobyThread::yieldCurrent(void)
 {
-    _D(("Null version of __platformThreadYieldCurrent() called!\n"));
-} // __platformThreadYieldCurrent
+    _D(("NullThread::yieldCurrent() called!\n"));
+} // TobyThread::yieldCurrent
 
 // end of NullThread.cpp ...
 

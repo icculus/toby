@@ -34,11 +34,10 @@ public:
     virtual ~TobyMutex(void) {}
     virtual void request(void) = 0;
     virtual void release(void) = 0;
+
+    // This gets filled in along with the platform-specific subclass...
+    static TobyMutex *getInstance(void);
 }; // class TobyMutex
-
-
-// This gets filled in along with the platform-specific subclass...
-TobyMutex *__platformBuildMutex(void);
 
 #endif // !defined _INCLUDE_TOBYMUTEX_H_
 

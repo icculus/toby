@@ -118,22 +118,22 @@ public:
         //  optionally, the offscreen buffer as well.
     virtual void renderToScreen(void) = 0;
 
+        // This gets called to give you a chance to run a toolkit-specific
+        //  event queue or other idle-time upkeep you may need. If a quit
+        //  event or some other reason to abort the program arises, return
+        //  false, otherwise, return true.
+    virtual bool doEvents(void) = 0;
+
+        // This gets filled in along with the platform-specific subclass.
+        //  It should be a standalone TurtleSpace, or return NULL if it can't.
+        //  For example, a GTK+ widget-based TurtleSpace should build a
+        //  GtkWindow around it so that it needs nothing else to display.
+        //  Width and height are specified in pixels.
+        //  Note that various GUI interfaces will just instantiate their
+        //  rendering subclass directly, so they can have an embedded renderer.
+    static TurtleSpaceRenderer *buildStandalone(const char *winTitle,
+                                                int *argc, char ***argv);
 }; // class TurtleSpaceRenderer
-
-
-    // This gets filled in along with the platform-specific subclass.
-    //  It should be a standalone TurtleSpace, or return NULL if it can't.
-    //  For example, a GTK+ widget-based TurtleSpace should build a GtkWindow
-    //  around it so that it needs nothing else to display. Width and height
-    //  are specified in pixels.
-TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
-                                                       int *argc, char ***argv);
-
-    // This gets called to give you a chance to run a toolkit-specific
-    //  event queue or other idle-time upkeep you may need. If a quit event
-    //  or some other reason to abort the program arises, return false,
-    //  otherwise, return true.
-bool __platformRendererDoEvents(void);
 
 #endif // !defined _INCLUDE_TURTLESPACERENDERER_H_
 

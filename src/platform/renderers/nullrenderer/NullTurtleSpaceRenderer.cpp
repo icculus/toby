@@ -131,18 +131,19 @@ void NullTurtleSpaceRenderer::renderToScreen(void)
 } // NullTurtleSpaceRenderer::renderToScreen
 
 
-TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
-                                                       int *argc, char ***argv)
+bool NullTurtleSpaceRenderer::doEvents(void)
+{
+    _D(("NullTurtleSpaceRenderer::doEvents() called!\n"));
+    return(true);
+} // TurtleSpaceRenderer::doEvents
+
+
+TurtleSpaceRenderer *TurtleSpaceRenderer::buildStandalone(const char *winTitle,
+                                                          int *argc,
+                                                          char ***argv)
 {
     return(new NullTurtleSpaceRenderer());
-} // __platformBuildStandaloneRenderer
-
-
-bool __platformRendererDoEvents(void)
-{
-    _D(("NullTurtleSpaceRenderer's __platformRendererDoEvents() called!\n"));
-    return(true);
-} // __platformRendererDoEvents
+} // TurtleSpaceRenderer::buildStandalone
 
 // end of NullTurtleSpaceRenderer.cpp ...
 

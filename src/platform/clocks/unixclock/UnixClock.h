@@ -31,13 +31,9 @@
  */
 class UnixClock : public TobyClock
 {
-protected:
-    UnixClock(void);
-    static UnixClock *instance;
-
 public:
+    UnixClock(void);
     virtual ~UnixClock(void);
-    static TobyClock *getInstance(void);
     virtual toby_uint32 getTicks(void);
 
 private:

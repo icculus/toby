@@ -35,15 +35,15 @@ public:
     virtual ~TobyThread(void) {}
     virtual void waitForTermination(void) = 0;
     virtual bool isTerminated(void) = 0;
+
+    // This gets filled in along with the platform-specific subclass...
+    TobyThread *getInstance(void *(*runfunc)(void *), void *args);
+
+    // This gets called to yield the currently executing thread, which may
+    //  be the main thread, for which no corresponding TobyThread exists.
+    //  Fill this in with the platform-specific subclass.
+    static void yieldCurrent(void);
 }; // class TobyThread
-
-
-// This gets filled in along with the platform-specific subclass...
-TobyThread *__platformBuildThread(void *(*runfunc)(void *), void *args);
-
-// This gets called to yield the currently executing thread, which may be the
-//  main thread, for which no corresponding TobyThread exists.
-void __platformThreadYieldCurrent(void);
 
 #endif // !defined _INCLUDE_TOBYTHREAD_H_
 

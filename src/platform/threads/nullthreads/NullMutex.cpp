@@ -47,10 +47,10 @@ void NullMutex::release(void)
 
 // eine kleine platform glue...
 
-TobyMutex *__platformBuildMutex(void)
+TobyMutex *TobyMutex::getInstance(void)
 {
     return(new NullMutex());
-} // __platformBuildMutex
+} // TobyMutex::getInstance
 
 // end of NullMutex.cpp ...
 

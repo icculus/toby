@@ -254,7 +254,7 @@ STANDALONEEXE := $(BINDIR)/standalone$(strip $(EXE_EXT))
 EXES := $(STANDALONEEXE) #$(MAINEXE)
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
-            util/TobyLanguage.cpp
+            util/TobyLanguage.cpp util/TobyClock.cpp
 PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
 IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp

@@ -370,8 +370,18 @@ static gint on_gtk_window_delete(GtkWidget *widget,
 } // on_gtk_window_delete
 
 
-TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
-                                                       int *argc, char ***argv)
+bool GTKTurtleSpaceRenderer::doEvents(void)
+{
+    while (gtk_events_pending())
+        gtk_main_iteration();
+
+    return(!quit_event_caught);
+} // GTKTurtleSpaceRenderer::doEvents
+
+
+TurtleSpaceRenderer *TurtleSpaceRenderer::buildStandalone(const char *winTitle,
+                                                          int *argc,
+                                                          char ***argv)
 {
     window_still_not_displayed = true;
     quit_event_caught = false;
@@ -406,16 +416,7 @@ TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
         gtk_main_iteration();
 
     return(retval);
-} // __platformBuildStandaloneRenderer
-
-
-bool __platformRendererDoEvents(void)
-{
-    while (gtk_events_pending())
-        gtk_main_iteration();
-
-    return(!quit_event_caught);
-} // __platformRendererDoEvents
+} // TurtleSpaceRenderer::buildStandalone
 
 // end of GTKTurtleSpaceRenderer.cpp ...
 
