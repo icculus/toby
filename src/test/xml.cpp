@@ -100,7 +100,15 @@ int main(int argc, char **argv)
             if (!tree.parseXMLThrowException())
                 printf("- Document is not well-formed.\n");
             else
-                reoutputXML(tree.getRootNode(), 0);
+            {
+                XMLNode *root = tree.getRootNode();
+                assert(root->getTag() == NULL);
+                assert(root->getText() == NULL);
+                TobyCollection *children = root->getChildren();
+                int max = children->size();
+                for (int j = 0; j < max; j++)
+                    reoutputXML((XMLNode *) children->elementAt(j), 0);
+            } // else
         } // try
 
         catch (IOException *ioe)
