@@ -86,7 +86,7 @@ bool TobyCollection::insertElement(void *elem, int pos)
 // !!! really inefficient.
 void TobyCollection::addElement(void *elem)
 {
-    insertElement(elem, size());
+    insertElement(elem, getSize());
 } // TobyCollection::addElement
 
 
@@ -140,7 +140,7 @@ bool TobyCollection::isEmpty(void)
 } // TobyCollection::isEmpty
 
 
-int TobyCollection::size(void)
+int TobyCollection::getSize(void)
 {
     // O(n), not O(1).
     int retval = 0;
@@ -149,7 +149,7 @@ int TobyCollection::size(void)
         retval++;
 
     return(retval);
-} // TobyCollection::size
+} // TobyCollection::getSize
 
 
 void TobyCollection::swapElements(int pos1, int pos2)

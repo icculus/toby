@@ -49,7 +49,7 @@ public:
     virtual void *elementAt(int pos);
     virtual void *remove(int pos);
     virtual bool isEmpty(void);
-    virtual int size(void);
+    virtual int getSize(void);
     virtual void swapElements(int pos1, int pos2);
 
 protected:
