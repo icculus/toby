@@ -51,6 +51,9 @@ char StringReader::readChar(void) throw (IOException *)
 
     char retval = *nextChar;
     nextChar++;
+
+    _D(("StringReader::readChar() ... returning '%c'...\n", retval));
+
     return(retval);
 } // StringReader::readChar
 
@@ -72,6 +75,8 @@ TobyString *StringReader::readLine(void) throw (IOException *)
         if ((ch != '\r') && (ch != '\n') && (ch != '\0'))
             retval->append((char) ch);
     } while ((ch != '\0') && (ch != '\n'));
+
+    _D(("StringReader::readLine() ... returning [%s]...\n", retval->c_str()));
 
     return(retval);
 } // StringReader::readLine

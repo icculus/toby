@@ -59,6 +59,8 @@ char FileReader::readChar(void) throw (IOException *)
     if (ch == EOF)
         throw(new IOException(TobyLanguage::END_OF_FILE));
 
+    _D(("FileReader::readChar() ... returning '%c'...\n", (char) ch));
+
     return((char) ch);
 } // FileReader::readChar
 
@@ -79,6 +81,8 @@ TobyString *FileReader::readLine(void) throw (IOException *)
         if ((ch != '\r') && (ch != '\n') && (ch != EOF))
             retval->append((char) ch);
     } while ((ch != EOF) && (ch != '\n'));
+
+    _D(("FileReader::readLine() ... returning [%s]...\n", retval->c_str()));
 
     return(retval);
 } // TobyReader::readLine
