@@ -16,9 +16,6 @@ ongoing bugfixes/enhancements :
 
     Allow JTurtleSpace to load graphics in background.
 
-    stdfunctions should have their names assigned at construction by
-     the caller.
-
     Keep static references to the stdfunctions logic contexts, and
      have the parsers install them in the globallogiccontext themselves.
 
@@ -104,7 +101,7 @@ ongoing bugfixes/enhancements :
      '!!!' have been placed there to alert me that there is a bug/deficiency
      in the code that is worth revisiting, but probably isn't crippling. As
      such, they tend to build up. Feel free to fix any of these and submit
-     patches to rgordon@xnot.com ...
+     patches to icculus@lokigames.com ...
 
     Make inputarea use sane keys...I don't like the Swing defaults. Therefore
      someday I'd like to either replace the Swing component with a homegrown
