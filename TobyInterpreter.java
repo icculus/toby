@@ -45,12 +45,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String OPCODE_LESSEQL    = "<=";
 
        // Constants representing intrinsic data types...
-    public final static int    INTRINSIC_COUNT   = 2;
+    public final static int    INTRINSIC_COUNT   = 3;
     public final static String INTRINSIC_NUMBER  = "number";
     public final static String INTRINSIC_BOOLEAN = "boolean";
+    public final static String INTRINSIC_NOTHING = "nothing";
 
        // Constants representing general TOBY keywords...
-    public final static int    KEYWORD_COUNT       = 14;
+    public final static int    KEYWORD_COUNT       = 13;
     public final static String KEYWORD_IF          = "if";
     public final static String KEYWORD_ELSEIF      = "elseif";
     public final static String KEYWORD_ELSE        = "else";
@@ -64,7 +65,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String KEYWORD_TRUE        = "true";
     public final static String KEYWORD_FALSE       = "false";
     public final static String KEYWORD_RETURNS     = "returns";
-    public final static String KEYWORD_NOTHING     = "nothing";
 
        // Constants representing standard TOBY function names...
     public final static int    STDFUNC_COUNT       = 16;
@@ -114,6 +114,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String PROCERR_TYPE_MMATCH  = "Type mismatch";
     public final static String PROCERR_BAD_ARGUMENT = "Invalid argument.";
     public final static String PROCERR_MAIN_RETVAL  = "Main returned value.";
+    public final static String PROCERR_BAD_GLOBAL   = "Expected variable or FUNCTION";
 
         // Static variables...
     protected static String[] operatorTable  = null;
@@ -129,7 +130,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     private Stack stack;
     private Graphics[] g;
     private Image copyImage = null;
-    private NothingIntrinsic nothing = null;
+
 
         // Methods...
 
@@ -145,8 +146,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         procList = new Vector();
         globals = new Stack();
         stack = new Stack();
-        nothing = new NothingIntrinsic();
-
         buildTables();
     } // Constructor
 
@@ -274,6 +273,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         intrinsicTable[0] = INTRINSIC_NUMBER;
         intrinsicTable[1] = INTRINSIC_BOOLEAN;
+        intrinsicTable[2] = INTRINSIC_NOTHING;
     } // buildIntrinsicTable
 
 
@@ -302,7 +302,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         keywordTable[10] = KEYWORD_TRUE;
         keywordTable[11] = KEYWORD_FALSE;
         keywordTable[12] = KEYWORD_RETURNS;
-        keywordTable[13] = KEYWORD_NOTHING;
     } // buildKeywordTable
 
 
@@ -465,14 +464,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // setCode
 
 
-
-    private void buildGlobals(SaneTokenizer sToker) throws TobyParseException
-    {
-        // !!! write this.
-    } // buildGlobals
-
-
-
     private void buildProcedures(SaneTokenizer sToker)
                                     throws TobyParseException
     /**
@@ -503,6 +494,75 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         procList.trimToSize();    // if code falls to here, we win.  :)
     } // buildProcedures
 
+
+    private void buildGlobals(SaneTokenizer sToker) throws TobyParseException
+    /**
+     * Build the list of global variables (actually, it's a stack...).
+     * Globals must be the first non-comment entity in the source code.
+     * They are declared exactly like local variables, but their declarations
+     *  do not appear inside a function.
+     *
+     *     params : sToker == Tokenizer to read from.
+     *    returns : void.
+     *     throws : TobyParseException on syntax error and other problems.
+     */
+    {
+        boolean getOut = false;
+
+        try
+        {
+            while (!getOut)
+            {
+                if (sToker.nextToken() == SaneTokenizer.TT_EOF)
+                    getOut = true;
+                else if (sToker.ttype == SaneTokenizer.TT_WORD)
+                {
+                    if (sToker.sval.toLowerCase().equals(KEYWORD_BEGINFUNC))
+                    {
+                        sToker.pushBack();
+                        getOut = true;
+                    } // if
+                    else
+                        parseGlobalDeclaration(sToker);
+                } // else
+            } // while
+        } // try
+        catch (IOException ioe)
+        {
+            TobyParseException.throwException(PROCERR_INTERNAL, null);
+        } // catch
+    } // buildGlobals
+
+
+    private void parseGlobalDeclaration(SaneTokenizer sToker)
+                                         throws TobyParseException, IOException
+    /**
+     * Parsing of global variables is done here. sToker should have already
+     *  retrieved the intrinsic type token from the stream. In fact, if the
+     *  token is not an intrinsic type, a TobyParseException is thrown.
+     *
+     *      @param sToker SaneTokenizer containing TOBY source.
+     *      @throw IOException on stream errors.
+     *      @throw TobyParseException on panic.
+     */
+    {
+        String intrinsicType;
+        String varName;
+
+        intrinsicType = sToker.sval;
+        if (isIntrinsic(intrinsicType) == false)
+            TobyParseException.throwException(PROCERR_BAD_GLOBAL, null);
+
+        if (sToker.nextToken() != SaneTokenizer.TT_WORD)
+            TobyParseException.throwException(PROCERR_NOT_A_VAR, null);
+        varName = sToker.sval;
+
+            // !!! This notifies VarWatchers before program start!
+        createTobyVar(intrinsicType, varName, globals);
+
+        if (sToker.nextToken() != SaneTokenizer.TT_EOL)
+            TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
+    } // parseGlobalDeclaration
 
 
     private void checkIfProc(SaneTokenizer sToker) throws TobyParseException,
@@ -575,7 +635,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *   copyImage to the screen, if it exists, or just draw a blank
      *   if all else fails.
      *
-     *      params : g == the "device context;" see Component::paint().
+     *      params : g == graphics context; see JComponent::paintComponent().
      *     returns : void.
      */
     {
@@ -711,7 +771,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *  objects below it to be "out of scope". We allow a stack to be
      *  specified, since Toby stores global variables in a different stack
      *  than the locals. Locals, should always be scanned first to
-     *  correct;y resolve name clashes, naturally.
+     *  correctly resolve name clashes, naturally.
      *
      *     @param scanStack Stack to scan.
      *     @param ident Name of intrinsic to find.
@@ -722,9 +782,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         boolean getOut = false;
         Object obj;
 
-        for (i = stack.size() - 1; (i >= 0) && (!getOut); i--)
+        for (i = scanStack.size() - 1; (i >= 0) && (!getOut); i--)
         {
-            obj = stack.elementAt(i);
+            obj = scanStack.elementAt(i);
 
             if (obj instanceof TobyProcedure)
                 getOut = true;
@@ -766,7 +826,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     /**
      * Checks stack and (possibly) globals for a var named (identifier)...
      *
-     *    params : ident        == variable name to look for.
+     *    params : ident == variable name to look for.
      *   returns : Intrinsic for said variable, or (null) if not found.
      */
     {
@@ -781,7 +841,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         return(retVal);
     } // varDefined
-
 
 
     private int findHighestOperator(String[] src)
@@ -831,7 +890,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         int i;
 
-        for (i = tokIndex; i <= 0; i--)
+        for (i = tokIndex; i >= 0; i--)
         {
             if (src[i] != null)
                 return(true);
@@ -1218,7 +1277,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *      throws : TobyParseException on code pukeage.
      */
     {
-        Intrinsic retVal = nothing;    // NothingIntrinsic return is assumed.
+        Intrinsic retVal = NothingIntrinsic.nothing;    // NothingIntrinsic return is assumed.
         Vector args;
         String tmpStr;
         int tmpInt;
@@ -1578,7 +1637,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         if (src.length == 1)                    // basic return? !!! ?!
         {
             if (retType == null)
-                throw(nothing);
+                throw(NothingIntrinsic.nothing);
         } // if
         else
         {
@@ -2233,15 +2292,16 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *
      *     params : proc == TOBY function to parse.
      *              args == arguments to the function. null if none.
-     *    returns : String representing possible TOBY return value. (nothing)
-     *               if returns "nothing"  (a NothingIntrinsic).
+     *    returns : String representing possible TOBY return value.
+                     (NothingIntrinsic.nothing) if returns "nothing"
+                     (a NothingIntrinsic).
      *     throws : TobyParseException on pukes.
      */
     {
         String[] src;
         int srcLine = 0;
         int lineChange;
-        Intrinsic retVal = nothing;
+        Intrinsic retVal = NothingIntrinsic.nothing;
 
 
             /*
@@ -2310,7 +2370,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         } // catch
 
         if (retVal == null)
-            retVal = nothing;
+            retVal = NothingIntrinsic.nothing;
 
         cleanupStack();
         return(retVal);
@@ -2340,7 +2400,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
             try
             {
-                if (runCode(mainLine) != nothing)
+                if (runCode(mainLine) != NothingIntrinsic.nothing)
                 {
                     TobyParseException.throwException(PROCERR_MAIN_RETVAL,
                                                       mainLine.getProcName());
