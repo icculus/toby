@@ -1,98 +1,127 @@
-#
-# Don't change this unless you know what you are doing.
-#  Please refer to example.tobylang for basic instructions.
-#
-# EVERYTHING IN HERE MUST BE LOWERCASE, OR YOU WILL GET STRANGE RUNTIME
-#  ERRORS. The Toby language is case insensitive to the end user, but for
-#  efficiency, some of the data sorting internally expects these strings to
-#  be lowercase.
-#
-#    --ryan c. gordon (icculus@lokigames.com)
-#
+/*
+ * TOBY -- An abstract interpreter engine and system for learning.
+ * Copyright (C) 1999  Ryan C. Gordon.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
-last.toby.parsers.toby.TobyParser.OPER_LPAREN     = (
-last.toby.parsers.toby.TobyParser.OPER_RPAREN     = )
-last.toby.parsers.toby.TobyParser.OPER_SEPARATOR  = ,
-last.toby.parsers.toby.TobyParser.OPER_ASSIGNMENT = =
-last.toby.parsers.toby.TobyParser.OPER_EQUALS     = ==
-last.toby.parsers.toby.TobyParser.OPER_MULTIPLY   = *
-last.toby.parsers.toby.TobyParser.OPER_DIVIDE     = /
-last.toby.parsers.toby.TobyParser.OPER_MODULO     = %
-last.toby.parsers.toby.TobyParser.OPER_ADD        = +
-last.toby.parsers.toby.TobyParser.OPER_SUBTRACT   = -
-last.toby.parsers.toby.TobyParser.OPER_GREATER    = >
-last.toby.parsers.toby.TobyParser.OPER_LESS       = <
-last.toby.parsers.toby.TobyParser.OPER_GREATEREQL = >=
-last.toby.parsers.toby.TobyParser.OPER_LESSEQL    = <=
-last.toby.parsers.toby.TobyParser.OPER_LARRAY     = [
-last.toby.parsers.toby.TobyParser.OPER_RARRAY     = ]
-last.toby.parsers.toby.TobyParser.KEYWORD_NUMBER  = number
-last.toby.parsers.toby.TobyParser.KEYWORD_BOOLEAN = boolean
-last.toby.parsers.toby.TobyParser.KEYWORD_NOTHING = nothing
-last.toby.parsers.toby.TobyParser.KEYWORD_ARRAY   = array
-last.toby.parsers.toby.TobyParser.KEYWORD_STRING  = string
-last.toby.parsers.toby.TobyParser.KEYWORD_IF          = if
-last.toby.parsers.toby.TobyParser.KEYWORD_ELSEIF      = elseif
-last.toby.parsers.toby.TobyParser.KEYWORD_ELSE        = else
-last.toby.parsers.toby.TobyParser.KEYWORD_ENDIF       = endif
-last.toby.parsers.toby.TobyParser.KEYWORD_BEGINFOR    = for
-last.toby.parsers.toby.TobyParser.KEYWORD_TO          = to
-last.toby.parsers.toby.TobyParser.KEYWORD_OF          = of
-last.toby.parsers.toby.TobyParser.KEYWORD_DOWNTO      = downto
-last.toby.parsers.toby.TobyParser.KEYWORD_STEP        = step
-last.toby.parsers.toby.TobyParser.KEYWORD_ENDFOR      = endfor
-last.toby.parsers.toby.TobyParser.KEYWORD_RETURN      = return
-last.toby.parsers.toby.TobyParser.KEYWORD_BEGINFUNC   = function
-last.toby.parsers.toby.TobyParser.KEYWORD_ENDFUNC     = endfunction
-last.toby.parsers.toby.TobyParser.KEYWORD_TRUE        = true
-last.toby.parsers.toby.TobyParser.KEYWORD_FALSE       = false
-last.toby.parsers.toby.TobyParser.KEYWORD_RETURNS     = returns
-last.toby.parsers.toby.TobyParser.KEYWORD_BEGINWHILE  = while
-last.toby.parsers.toby.TobyParser.KEYWORD_ENDWHILE    = endwhile
-last.toby.parsers.toby.TobyParser.KEYWORD_MAINLINE    = main
-last.toby.parsers.toby.TobyParser.PROCNAME_ADDTURTLE      = addturtle
-last.toby.parsers.toby.TobyParser.PROCNAME_USETURTLE      = useturtle
-last.toby.parsers.toby.TobyParser.PROCNAME_REMTURTLE      = removeturtle
-last.toby.parsers.toby.TobyParser.PROCNAME_REMALLTURTLES  = removeallturtles
-last.toby.parsers.toby.TobyParser.PROCNAME_HIDETURTLE     = hideturtle
-last.toby.parsers.toby.TobyParser.PROCNAME_SHOWTURTLE     = showturtle
-last.toby.parsers.toby.TobyParser.PROCNAME_HIDEALLTURTLES = hideallturtles
-last.toby.parsers.toby.TobyParser.PROCNAME_SHOWALLTURTLES = showallturtles
-last.toby.parsers.toby.TobyParser.PROCNAME_FORWARD        = goforward
-last.toby.parsers.toby.TobyParser.PROCNAME_BACKWARD       = gobackward
-last.toby.parsers.toby.TobyParser.PROCNAME_RIGHT          = turnright
-last.toby.parsers.toby.TobyParser.PROCNAME_LEFT           = turnleft
-last.toby.parsers.toby.TobyParser.PROCNAME_SETPEN         = setpencolor
-last.toby.parsers.toby.TobyParser.PROCNAME_SETPENRGB      = setpencolorrgb
-last.toby.parsers.toby.TobyParser.PROCNAME_PENUP          = setpenup
-last.toby.parsers.toby.TobyParser.PROCNAME_PENDOWN        = setpendown
-last.toby.parsers.toby.TobyParser.PROCNAME_ISPENUP        = ispenup
-last.toby.parsers.toby.TobyParser.PROCNAME_ISPENDOWN      = ispendown
-last.toby.parsers.toby.TobyParser.PROCNAME_RANDOM         = random
-last.toby.parsers.toby.TobyParser.PROCNAME_ROUND          = round
-last.toby.parsers.toby.TobyParser.PROCNAME_TSPACEHIGH     = getturtlespaceheight
-last.toby.parsers.toby.TobyParser.PROCNAME_TSPACEWIDE     = getturtlespacewidth
-last.toby.parsers.toby.TobyParser.PROCNAME_STOP           = stopprogram
-last.toby.parsers.toby.TobyParser.PROCNAME_SETANGLE       = setangle
-last.toby.parsers.toby.TobyParser.PROCNAME_GETANGLE       = getangle
-last.toby.parsers.toby.TobyParser.PROCNAME_PAUSE          = pause
-last.toby.parsers.toby.TobyParser.PROCNAME_GETTURTLEX     = getturtlex
-last.toby.parsers.toby.TobyParser.PROCNAME_GETTURTLEY     = getturtley
-last.toby.parsers.toby.TobyParser.PROCNAME_SETTURTXY      = setturtlexy
-last.toby.parsers.toby.TobyParser.PROCNAME_HOMETURTLE     = hometurtle
-last.toby.parsers.toby.TobyParser.PROCNAME_HOMEALLTURTLES = homeallturtles
-last.toby.parsers.toby.TobyParser.PROCNAME_CLEANUP        = cleanupturtlespace
-last.toby.parsers.toby.TobyParser.PROCNAME_ENABLEFENCE    = enablefence
-last.toby.parsers.toby.TobyParser.PROCNAME_DISABLEFENCE   = disablefence
-last.toby.parsers.toby.TobyParser.PROCNAME_SETFENCE       = setfence
-last.toby.parsers.toby.TobyParser.PROCNAME_SUBSTRING      = substring
-last.toby.parsers.toby.TobyParser.PROCNAME_LEFTSTRING     = leftstring
-last.toby.parsers.toby.TobyParser.PROCNAME_RIGHTSTRING    = rightstring
-last.toby.parsers.toby.TobyParser.PROCNAME_UCASESTRING    = uppercasestring
-last.toby.parsers.toby.TobyParser.PROCNAME_LCASESTRING    = lowercasestring
-last.toby.parsers.toby.TobyParser.PROCNAME_DRAWSTRING     = drawstring
-last.toby.parsers.toby.TobyParser.PROCNAME_STRINGLEN      = stringlength
-last.toby.parsers.toby.TobyParser.PROCNAME_JOINSTRINGS    = joinstrings
+/*
+ * Don't change this unless you know what you are doing.
+ *  Please refer to example.tobylang for basic instructions.
+ *
+ * EVERYTHING IN HERE MUST BE LOWERCASE, OR YOU WILL GET STRANGE RUNTIME
+ *  ERRORS. The Toby language is case insensitive to the end user, but for
+ *  efficiency, some of the data sorting internally expects these strings to
+ *  be lowercase.
+ *
+ *    --ryan c. gordon (icculus@linuxgames.com)
+ */
+
+#ifndef CALLED_FROM_TOBYLANGUAGE
+#error Do not include this directly; use util/TobyLanguage.h instead.
+#endif
+
+
+
+/* --- BEGIN TOBY I18N LANGUAGE DATA --- */
+
+TOBYSTR(TOBYI18N_OPER_LPAREN, "(")
+TOBYSTR(TOBYI18N_OPER_RPAREN, ")")
+TOBYSTR(TOBYI18N_OPER_SEPARATOR, ",")
+TOBYSTR(TOBYI18N_OPER_ASSIGNMENT, "=")
+TOBYSTR(TOBYI18N_OPER_EQUALS, "==")
+TOBYSTR(TOBYI18N_OPER_MULTIPLY, "*")
+TOBYSTR(TOBYI18N_OPER_DIVIDE, "/")
+TOBYSTR(TOBYI18N_OPER_MODULO, "%")
+TOBYSTR(TOBYI18N_OPER_ADD, "+")
+TOBYSTR(TOBYI18N_OPER_SUBTRACT, "-")
+TOBYSTR(TOBYI18N_OPER_GREATER, ">")
+TOBYSTR(TOBYI18N_OPER_LESS, "<")
+TOBYSTR(TOBYI18N_OPER_GREATEREQL, ">=")
+TOBYSTR(TOBYI18N_OPER_LESSEQL, "<=")
+TOBYSTR(TOBYI18N_OPER_LARRAY, "[")
+TOBYSTR(TOBYI18N_OPER_RARRAY, "]")
+TOBYSTR(TOBYI18N_KEYWORD_NUMBER, "number")
+TOBYSTR(TOBYI18N_KEYWORD_BOOLEAN, "boolean")
+TOBYSTR(TOBYI18N_KEYWORD_NOTHING, "nothing")
+TOBYSTR(TOBYI18N_KEYWORD_ARRAY, "array")
+TOBYSTR(TOBYI18N_KEYWORD_STRING, "string")
+TOBYSTR(TOBYI18N_KEYWORD_IF, "if")
+TOBYSTR(TOBYI18N_KEYWORD_ELSEIF, "elseif")
+TOBYSTR(TOBYI18N_KEYWORD_ELSE, "else")
+TOBYSTR(TOBYI18N_KEYWORD_ENDIF, "endif")
+TOBYSTR(TOBYI18N_KEYWORD_BEGINFOR, "for")
+TOBYSTR(TOBYI18N_KEYWORD_TO, "to")
+TOBYSTR(TOBYI18N_KEYWORD_OF, "of")
+TOBYSTR(TOBYI18N_KEYWORD_DOWNTO, "downto")
+TOBYSTR(TOBYI18N_KEYWORD_STEP, "step")
+TOBYSTR(TOBYI18N_KEYWORD_ENDFOR, "endfor")
+TOBYSTR(TOBYI18N_KEYWORD_RETURN, "return")
+TOBYSTR(TOBYI18N_KEYWORD_BEGINFUNC, "function")
+TOBYSTR(TOBYI18N_KEYWORD_ENDFUNC, "endfunction")
+TOBYSTR(TOBYI18N_KEYWORD_TRUE, "true")
+TOBYSTR(TOBYI18N_KEYWORD_FALSE, "false")
+TOBYSTR(TOBYI18N_KEYWORD_RETURNS, "returns")
+TOBYSTR(TOBYI18N_KEYWORD_BEGINWHILE, "while")
+TOBYSTR(TOBYI18N_KEYWORD_ENDWHILE, "endwhile")
+TOBYSTR(TOBYI18N_KEYWORD_MAINLINE, "main")
+TOBYSTR(TOBYI18N_PROCNAME_ADDTURTLE, "addturtle")
+TOBYSTR(TOBYI18N_PROCNAME_USETURTLE, "useturtle")
+TOBYSTR(TOBYI18N_PROCNAME_REMTURTLE, "removeturtle")
+TOBYSTR(TOBYI18N_PROCNAME_REMALLTURTLES, "removeallturtles")
+TOBYSTR(TOBYI18N_PROCNAME_HIDETURTLE, "hideturtle")
+TOBYSTR(TOBYI18N_PROCNAME_SHOWTURTLE, "showturtle")
+TOBYSTR(TOBYI18N_PROCNAME_HIDEALLTURTLES, "hideallturtles")
+TOBYSTR(TOBYI18N_PROCNAME_SHOWALLTURTLES, "showallturtles")
+TOBYSTR(TOBYI18N_PROCNAME_FORWARD, "goforward")
+TOBYSTR(TOBYI18N_PROCNAME_BACKWARD, "gobackward")
+TOBYSTR(TOBYI18N_PROCNAME_RIGHT, "turnright")
+TOBYSTR(TOBYI18N_PROCNAME_LEFT, "turnleft")
+TOBYSTR(TOBYI18N_PROCNAME_SETPEN, "setpencolor")
+TOBYSTR(TOBYI18N_PROCNAME_SETPENRGB, "setpencolorrgb")
+TOBYSTR(TOBYI18N_PROCNAME_PENUP, "setpenup")
+TOBYSTR(TOBYI18N_PROCNAME_PENDOWN, "setpendown")
+TOBYSTR(TOBYI18N_PROCNAME_ISPENUP, "ispenup")
+TOBYSTR(TOBYI18N_PROCNAME_ISPENDOWN, "ispendown")
+TOBYSTR(TOBYI18N_PROCNAME_RANDOM, "random")
+TOBYSTR(TOBYI18N_PROCNAME_ROUND, "round")
+TOBYSTR(TOBYI18N_PROCNAME_TSPACEHIGH, "getturtlespaceheight")
+TOBYSTR(TOBYI18N_PROCNAME_TSPACEWIDE, "getturtlespacewidth")
+TOBYSTR(TOBYI18N_PROCNAME_STOP, "stopprogram")
+TOBYSTR(TOBYI18N_PROCNAME_SETANGLE, "setangle")
+TOBYSTR(TOBYI18N_PROCNAME_GETANGLE, "getangle")
+TOBYSTR(TOBYI18N_PROCNAME_PAUSE, "pause")
+TOBYSTR(TOBYI18N_PROCNAME_GETTURTLEX, "getturtlex")
+TOBYSTR(TOBYI18N_PROCNAME_GETTURTLEY, "getturtley")
+TOBYSTR(TOBYI18N_PROCNAME_SETTURTXY, "setturtlexy")
+TOBYSTR(TOBYI18N_PROCNAME_HOMETURTLE, "hometurtle")
+TOBYSTR(TOBYI18N_PROCNAME_HOMEALLTURTLES, "homeallturtles")
+TOBYSTR(TOBYI18N_PROCNAME_CLEANUP, "cleanupturtlespace")
+TOBYSTR(TOBYI18N_PROCNAME_ENABLEFENCE, "enablefence")
+TOBYSTR(TOBYI18N_PROCNAME_DISABLEFENCE, "disablefence")
+TOBYSTR(TOBYI18N_PROCNAME_SETFENCE, "setfence")
+TOBYSTR(TOBYI18N_PROCNAME_SUBSTRING, "substring")
+TOBYSTR(TOBYI18N_PROCNAME_LEFTSTRING, "leftstring")
+TOBYSTR(TOBYI18N_PROCNAME_RIGHTSTRING, "rightstring")
+TOBYSTR(TOBYI18N_PROCNAME_UCASESTRING, "uppercasestring")
+TOBYSTR(TOBYI18N_PROCNAME_LCASESTRING, "lowercasestring")
+TOBYSTR(TOBYI18N_PROCNAME_DRAWSTRING, "drawstring")
+TOBYSTR(TOBYI18N_PROCNAME_STRINGLEN, "stringlength")
+TOBYSTR(TOBYI18N_PROCNAME_JOINSTRINGS, "joinstrings")
+
+/* --- END TOBY I18N LANGUAGE DATA --- */
 
 # end of tobykeywords.tobylang ...
 
