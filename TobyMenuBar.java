@@ -19,6 +19,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
     public static final String MENUITEM_OPEN   = "Open...";
     public static final String MENUITEM_SAVE   = "Save";
     public static final String MENUITEM_SAVEAS = "Save as...";
+    public static final String MENUITEM_PRINT  = "Print...";
     public static final String MENUITEM_QUIT   = "Quit";
 
     public static final String MENUNAME_HELP  = "Help";
@@ -43,6 +44,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
     public JMenuItem openItem;
     public JMenuItem saveItem;
     public JMenuItem saveAsItem;
+    public JMenuItem printItem;
     public JMenuItem quitItem;
 
     public JMenu helpMenu;
@@ -116,10 +118,12 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
                                    key(KeyEvent.VK_N, Event.CTRL_MASK));
         openItem   = setupMenuItem(fileMenu, MENUITEM_OPEN, true,
                                    key(KeyEvent.VK_O, Event.CTRL_MASK));
-        saveItem   = setupMenuItem(fileMenu, MENUITEM_SAVE, true,           // !!! change when we can figure
+        saveItem   = setupMenuItem(fileMenu, MENUITEM_SAVE, false,
                                    key(KeyEvent.VK_S, Event.CTRL_MASK));
-        saveAsItem = setupMenuItem(fileMenu, MENUITEM_SAVEAS, true,         // !!!  out if text is modified. !!!
+        saveAsItem = setupMenuItem(fileMenu, MENUITEM_SAVEAS, true,
                                    key(KeyEvent.VK_A, Event.CTRL_MASK));
+        printItem = setupMenuItem(fileMenu, MENUITEM_PRINT, true,
+                                   key(KeyEvent.VK_P, Event.CTRL_MASK));
         fileMenu.addSeparator();
         quitItem   = setupMenuItem(fileMenu, MENUITEM_QUIT, true,
                                    key(KeyEvent.VK_Q, Event.CTRL_MASK));
@@ -160,6 +164,12 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
                                    key(KeyEvent.VK_H, Event.CTRL_MASK));
         add(helpMenu);
     } // Constructor
+
+
+    public void setSaveEnabled(boolean savable)
+    {
+        saveItem.setEnabled(savable);
+    } // setSaveable
 
 
     private void doStep()
@@ -229,6 +239,9 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         else if (mi == aboutItem)
             parent.createAboutBox();
 
+        else if (mi == printItem)
+            parent.doPrint();
+
         else if (mi == startStopItem)
         {
             if (codeRunning == false)
@@ -271,6 +284,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         clearItem.setEnabled(false);
     } // beginInterpretation
 
+
     public void endInterpretation(boolean normalTermination)
     {
         codeRunning = false;
@@ -280,6 +294,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         openItem.setEnabled(true);
         clearItem.setEnabled(true);
     } // endInterpretation
+
 
     public void sourceUpdated(int newSourceLine) {}
     public void sourceError(int errLine) {}
