@@ -13,6 +13,8 @@ ongoing bugfixes/enhancements :
 
     TobyCollection seems really inefficient.
 
+    Write up a langdef DTD so external tools can validate the files for us.
+
     Change the StringReader to MemoryReader.
 
     The GTK renderer seems to be refreshing wrong; it appears to draw faster
@@ -37,7 +39,7 @@ ongoing bugfixes/enhancements :
 
     The FrameBuffer and SDL renderers are inefficient and broken.
 
-    Move the source tree to src/
+-----This is from rewrite #3 and earlier.-----
 
     GLOBAL REFERENCING IS FUCKED.
 

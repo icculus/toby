@@ -58,7 +58,31 @@ standalone program for initial testing.)
 08262001 - Wrote src/test/xml.cpp, and added xml test and bin directory to
             Makefile. Debugged. Fixed problems in TobyCollection::remove().
             Commited XML stuff to CVS. _D() debugging is disabled in
-            TobyReader by default, now, to reduce debug spam.
+            TobyReader by default, now, to reduce debug spam. Started writing
+            up docs/subsystems/code_generation.txt. Put note at top of old
+            changelog.
+08272001 - XMLTree now has a null parent node that holds all the toplevel
+            nodes. Fixes to Tokenizer. Wrote up initial Toby language spec in
+            the working XML format.
+08282001 - Whitespace is now ignored in the XMLNode's text field. Dunno if
+            this is going to be problematic in general, but for my purposes,
+            it's probably okay. Fixed up src/text/xml.cpp to have prettier
+            output. Added '\'' as a quote char in the XML tokenizer. Rewrote
+            Tokenizer::tokenizeLiteralString(), so it works like I want it to
+            now (calling application must handle escaped chars, escaping in
+            the Tokenizer just prevents premature ending of literal strings).
+            Wrote src/test/langdef.cpp to do quick-and-dirty XML validation
+            for the langdef files. I should really write a DTD and have an
+            external tool do this right. Moved src/standalone.cpp to
+            src/standalone/toby.cpp. Changed my mind, and reenabled whitespace
+            in the XML tokenizer.
+08292001 - Renamed docs/subsystems/code_generation.txt to
+            docs/subsystems/code_execution.txt. Wrote up
+            docs/subsystems/langdef_tags.txt. Decided <tokenizer> should only
+            be allowed as a child of <language> in the langdef format, and
+            changed the test program accordingly. The test program now
+            distinguishes between errors and warnings, and outputs warning and
+            error counts at the end of execution.
 
 // end of changelog.txt ...
 
