@@ -36,16 +36,16 @@ public final class Toby extends JFrame implements DocumentListener,
     private String tobyFileName = null;
     private File currentDirectory = null;
     private boolean textModified = false;
-
+    private TobyMenuBar tmb = null;
 
     public Toby()
     {
         super();
 
         Container rootPane = getContentPane();
-        TobyMenuBar tmb = new TobyMenuBar(this);
         TurtleSpace tspace;
         
+        tmb = new TobyMenuBar(this);
         currentDirectory = new File(".");   // !!! is this kosher?
         setTitle();
  
@@ -65,7 +65,7 @@ public final class Toby extends JFrame implements DocumentListener,
         show();
     } // Constructor
 
-/*
+
     private void setTobyIcon()
     {
         System.out.println("in setTobyIcon.");
@@ -86,7 +86,16 @@ public final class Toby extends JFrame implements DocumentListener,
 
         System.out.println("done.");
     } // setTobyIcon
-*/
+
+
+    public void doPrint()
+    {
+        String msg = "Printing not yet implemented.";
+
+        JOptionPane.showMessageDialog(null, msg, TITLE + " " + VERSION,
+                                      JOptionPane.INFORMATION_MESSAGE);
+    } // doPrint
+
 
     public void setTitle()
     {
@@ -200,6 +209,7 @@ public final class Toby extends JFrame implements DocumentListener,
             tobyPanel.getInputArea().clearCode();
             tobyFileName = null;
             textModified = false;
+            tmb.setSaveEnabled(false);
             setTitle();
         } // if
     } // newFile
@@ -222,6 +232,7 @@ public final class Toby extends JFrame implements DocumentListener,
                     tobyPanel.getInputArea().setSource(br);
                     tobyFileName = fileName;
                     textModified = false;
+                    tmb.setSaveEnabled(false);
                     setTitle();
                 } // try
 
@@ -290,6 +301,7 @@ public final class Toby extends JFrame implements DocumentListener,
                 bw.close();
                 tobyFileName = fileName;
                 textModified = false;
+                tmb.setSaveEnabled(false);
                 setTitle();
                 retVal = true;
             } // try
@@ -394,6 +406,7 @@ public final class Toby extends JFrame implements DocumentListener,
         if (textModified == false)
         {
             textModified = true;
+            tmb.setSaveEnabled(true);
             setTitle();
         } // if
     } // textModified
@@ -405,8 +418,6 @@ public final class Toby extends JFrame implements DocumentListener,
     {
         if (saveAndContinue() == true)
             e.getWindow().dispose();
-        else
-            e.getWindow().show();
     } // windowClosing
 
 

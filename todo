@@ -31,7 +31,8 @@ alpha5 : not yet begun.
     Build splash screen/remove System.out.println() stuff...
 
 beta1 : not yet begun.
-    design webpage
+    fix all significant outstanding bugs.
+    design webpage.
     write tutorial.
     release.
 
@@ -42,6 +43,7 @@ beta2 : not yet begun.
 
 1.0 : not yet begun.
     fix bugs reported from beta2.
+    fix all outstanding bugs.
     release.
 
 // end of todo ...
