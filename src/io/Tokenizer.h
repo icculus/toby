@@ -124,7 +124,7 @@ public:
         // Define an escape character. Default is '\\'. This is used by the
         //  literal string handler: If you have "he said, \"woot\"", then the
         //  tokenizer will give you ["he said, \"] as a token, and probably
-        //  [woot.] followed by [\] and [""] if you didn't use '\\' as an
+        //  [woot] followed by [\] and [""] if you didn't use '\\' as an
         //  escape char. Don't forget to call setEscaping(true), too!
     virtual void setEscapeChar(char ch);
 
@@ -154,6 +154,9 @@ public:
         // Get the current line number (option base 0) in the stream.
     virtual int currentLine(void);
 
+        // Calls nextToken(), and returns (true) if the new token is a
+        //  TT_WORD type, and it is a byte match of (str), (false) otherwise.
+    virtual bool mustGetWord(const char *str);
 
 protected:
 
