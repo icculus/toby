@@ -647,6 +647,16 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         g[GRAPHICS_COPY] = copyImage.getGraphics();
         g[GRAPHICS_SCREEN] = getGraphics();
 
+        /* !!! waiting for Java 1.2 ...
+
+        ((Graphics2D) g[GRAPHICS_COPY]).setRenderingHint(
+                                            RenderingHint.KEY_ANTIALIASING,
+                                            RenderingHint.VALUE_ANTIALIAS_ON)
+        ((Graphics2D) g[GRAPHICS_SCREEN]).setRenderingHint(
+                                            RenderingHint.KEY_ANTIALIASING,
+                                            RenderingHint.VALUE_ANTIALIAS_ON)
+         */
+
         for (i = 0; i < g.length; i++)
         {
             g[i].setColor(getBackground());
