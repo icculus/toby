@@ -151,6 +151,20 @@ and this construct to the appropriate place in src/util/TobyLanguage.h:
 
 Now rebuild. If it compiles, then you've done everything right.
 
+You might have noticed that one form of TOBYI18N adds an extra string:
+  #define TOBYI18N(sym, str) char *sym = str "\0";
+
+This makes the strings compile as usual, but each literal string takes one
+more byte of memory, so you basically get two '\0' chars at the end of the
+string. Why? You can't free() or delete[] a literal string. However, if we
+want to replace a string more than once, if we DON'T free the first string
+that we allocated before overwriting it with the next, then we've got a
+memory leak. When we replace a string, we see if it's got a '!' char after the
+terminating null character (which it won't, if it's a literal string.), if
+so, we delete[] it first. Otherwise, we just allocate the new string some
+space and overwrite the previous pointer. Any strings we allocate for i18n
+purposes get an extra byte placed after the terminating NULL char, where we
+store a '!' character. Problem solved.
 
 --ryan.  (icculus@clutteredmind.org)
 
