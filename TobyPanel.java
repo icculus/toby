@@ -16,6 +16,17 @@ public final class TobyPanel extends JComponent implements LayoutManager
     private JScrollPane varScrollPane = null;
     private Toby frame = null;
 
+
+    public TobyPanel(Toby frame)
+    {
+        this.frame = frame;
+        setLayout(this);
+        buildComponents();
+        setVisible(true);
+        System.gc();        // clean up everything that setup left behind.
+    } // Constructor
+
+
     private void buildComponents()
     /**
      *  The various components of this panel are built and
@@ -81,16 +92,6 @@ public final class TobyPanel extends JComponent implements LayoutManager
     {
         return(tia);
     } // getTurtleSpace
-
-
-    public TobyPanel(Toby frame)
-    {
-        this.frame = frame;
-        setLayout(this);
-        buildComponents();
-        setVisible(true);
-        System.gc();        // clean up everything that setup left behind.
-    } // Constructor
 
 
     public Toby getFrame()
