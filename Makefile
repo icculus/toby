@@ -32,7 +32,6 @@
 CC = gcc
 LINKER = gcc
 
-
 #-----------------------------------------------------------------------------#
 # If this makefile fails to detect Cygwin correctly, or you want to force
 #  the build process's behaviour, set it to "true" or "false" (w/o quotes).
@@ -44,8 +43,8 @@ cygwin := autodetect
 #-----------------------------------------------------------------------------#
 # Set this to true if you want to create a debug build.
 #-----------------------------------------------------------------------------#
-debugging := false
-#debugging := true
+#debugging := false
+debugging := true
 
 #-----------------------------------------------------------------------------#
 # Set this to what your platform has.
@@ -71,14 +70,18 @@ platform_clock := unix
 #platform_clock := sdl
 #platform_clock := null
 
+#-----------------------------------------------------------------------------#
+# Set this to what your platform has.
+#   Current option(s): "unix", "null".
+#-----------------------------------------------------------------------------#
+#platform_loader := null
+platform_loader := unix
 
 #-----------------------------------------------------------------------------#
 # To use a different platform's ASM or portable C, change this.
 #-----------------------------------------------------------------------------#
 #USE_ASM := -DUSE_I386_ASM
 USE_ASM := -DUSE_PORTABLE_C
-
-
 
 #-----------------------------------------------------------------------------#
 # You only need to set SDL_INC_DIR and SDL_LIB_DIR if you are using CygWin
@@ -217,6 +220,8 @@ SRCDIR := src
 CFLAGS += $(USE_ASM) -I$(SRCDIR) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
 CFLAGS += -Wall -Werror -fexceptions -frtti -D_REENTRANT
 
+LDFLAGS += -lm
+
 ifeq ($(strip $(debugging)),true)
   CFLAGS += -DDEBUG -g -fno-omit-frame-pointer
   LDFLAGS += -g -fno-omit-frame-pointer
@@ -248,6 +253,9 @@ TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
 IOSRCS := io/FileReader.cpp io/StringReader.cpp
 
 
+#-----------------------------------------------------------------------------#
+# Thread modules
+#-----------------------------------------------------------------------------#
 valid_threads_target := false
 ifeq ($(strip $(platform_threads)),pthreads)
   THREADSRCS := platform/threads/pthreads/PthreadsThread.cpp \
@@ -276,6 +284,9 @@ ifneq ($(strip $(valid_threads_target)),true)
 endif
 
 
+#-----------------------------------------------------------------------------#
+# Clock modules
+#-----------------------------------------------------------------------------#
 valid_clock_target := false
 ifeq ($(strip $(platform_clock)),sdl)
     CLOCKSRCS := platform/clocks/sdlclock/SDLClock.cpp
@@ -300,6 +311,30 @@ ifneq ($(strip $(valid_clock_target)),true)
 endif
 
 
+#-----------------------------------------------------------------------------#
+# Loader modules
+#-----------------------------------------------------------------------------#
+valid_loader_target := false
+ifeq ($(strip $(platform_loader)),unix)
+    LOADERSRCS := platform/loaders/unixloader/UnixLoader.cpp
+    LOADERDIR := unixloader
+    valid_loader_target := true
+endif
+
+ifeq ($(strip $(platform_loader)),null)
+    LOADERSRCS := platform/loaders/nullloader/NullLoader.cpp
+    LOADERDIR := nullloader
+    valid_loader_target := true
+endif
+
+ifneq ($(strip $(valid_loader_target)),true)
+  $(error platform_loader flag in Makefile is not valid.)
+endif
+
+
+#-----------------------------------------------------------------------------#
+# Video modules
+#-----------------------------------------------------------------------------#
 valid_video_target := false
 ifeq ($(strip $(platform_video)),sdl)
   VIDEOSRCS := platform/renderers/fbrenderer/FrameBufferTurtleSpaceRenderer.cpp \
@@ -324,8 +359,12 @@ ifneq ($(strip $(valid_video_target)),true)
   $(error platform_video flag in Makefile is not valid.)
 endif
 
+
+#-----------------------------------------------------------------------------#
+# Source and object parsing...
+#-----------------------------------------------------------------------------#
 COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS) \
-              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS)
+              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS) $(LOADERSRCS)
 
 # Rule for getting list of objects from source
 COMMONOBJS1 := $(COMMONSRCS:.c=.o)
@@ -333,8 +372,7 @@ COMMONOBJS2 := $(COMMONOBJS1:.cpp=.o)
 COMMONOBJS3 := $(COMMONOBJS2:.asm=.o)
 
 COMMONOBJS := $(foreach f,$(COMMONOBJS3),$(BINDIR)/$(f))
-COMMONSRCS := $(foreach f,$(COMMONOBJS3),$(SRCDIR)/$(f))
-
+COMMONSRCS := $(foreach f,$(COMMONSRCS),$(SRCDIR)/$(f))
 
 CLEANUP = $(wildcard *.exe) $(wildcard *.obj) \
           $(wildcard $(BINDIR)/*.exe) $(wildcard $(BINDIR)/*.obj) \
@@ -356,7 +394,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.c
 $(BINDIR)/%.o: $(SRCDIR)/%.asm
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
-.PHONY: all clean listobjs
+.PHONY: all clean distclean listobjs showcfg
 
 all: $(BINDIR) $(EXES)
 
@@ -372,9 +410,13 @@ $(BINDIR):
 	mkdir -p $(BINDIR)/util
 	mkdir -p $(BINDIR)/io
 	mkdir -p $(BINDIR)/parsers/toby
+	mkdir -p $(BINDIR)/platform/renderers/fbrenderer
 	mkdir -p $(BINDIR)/platform/renderers/$(VIDEODIR)
 	mkdir -p $(BINDIR)/platform/clocks/$(CLOCKDIR)
 	mkdir -p $(BINDIR)/platform/threads/$(THREADSDIR)
+	mkdir -p $(BINDIR)/platform/loaders/$(LOADERDIR)
+
+distclean: clean
 
 clean:
 	rm -f $(CLEANUP)
@@ -394,9 +436,11 @@ showcfg:
 	@echo "Using CygWin   : $(cygwin)"
 	@echo "Debugging      : $(debugging)"
 	@echo "ASM flag       : $(USE_ASM)"
-	@echo "Video library  : $(platform_video)"
-	@echo "Thread library : $(platform_threads)"
-	@echo "Clock library  : $(platform_clock)"
+	@echo "Video module   : $(platform_video)"
+	@echo "Thread module  : $(platform_threads)"
+	@echo "Clock module   : $(platform_clock)"
+	@echo "Loader module  : $(platform_loader)"
+
 
 #-----------------------------------------------------------------------------#
 # This section is pretty much just for Ryan's use to make distributions.
