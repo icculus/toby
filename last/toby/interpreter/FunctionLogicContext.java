@@ -95,7 +95,7 @@ public class FunctionLogicContext extends LogicContext
     } // link
 
 
-    protected void addLocalsToStack()
+    protected void addLocalsToStack() throws FlowException
     {
         int max = locals.size();
 
