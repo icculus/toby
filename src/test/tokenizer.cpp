@@ -22,6 +22,8 @@
  *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
  */
 
+#include <stdio.h>
+
 #include "io/FileReader.h"
 #include "io/Tokenizer.h"
 
@@ -39,8 +41,7 @@ int main(int argc, char **argv)
         {
             printf("+ NEW FILE: [%s].\n", argv[i]);
 
-            FileReader *in = new FileReader(argv[i]);
-            Tokenizer toker(in);
+            Tokenizer toker(new FileReader(argv[i]));
 
             do
             {
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
 
         catch (IOException *ioe)
         {
-            printf("- IOException! [%s].", ioe->getMessage());
+            printf("- IOException! [%s].\n", ioe->getMessage());
             delete ioe;
         } // catch
     } // for
