@@ -291,7 +291,7 @@ endif
 # Platform-specific binary stuff.
 #-----------------------------------------------------------------------------#
 
-CFLAGS += -Dstrcasecmp=$(strcasecmp)
+CFLAGS += -Dstrcasecmp=$(strcasecmp) $(EXTRAINCLUDES)
 
 ifeq ($(strip $(cygwin)),true)
   ASM = nasmw
@@ -525,8 +525,9 @@ endif
 TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
 TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
 TESTGRAMMAREXE := $(BINDIR)/test/grammar$(strip $(EXE_EXT))
+TESTLEXEREXE := $(BINDIR)/test/lexer$(strip $(EXE_EXT))
 
-TESTEXES := $(TESTTOKENIZEREXE)
+TESTEXES := $(TESTTOKENIZEREXE) $(TESTLEXEREXE)
 ifeq ($(strip $(need_xml)),true)
   TESTEXES += $(TESTXMLEXE) $(TESTGRAMMAREXE)
   XMLSRCS := xml/XMLTree.cpp xml/XMLNode.cpp
@@ -609,6 +610,9 @@ $(TESTXMLEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/xml.o
 
 $(TESTGRAMMAREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/grammar.o
 	$(LINKER) -o $(TESTGRAMMAREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/grammar.o
+
+$(TESTLEXEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/lexer.o
+	$(LINKER) -o $(TESTLEXEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/lexer.o
 
 
 $(BINDIR):
