@@ -1,38 +1,67 @@
 <HTML>
+    <HEAD>
+        <TITLE>Toby applet demonstration.</TITLE>
+    </HEAD>
 
-<TITLE> Toby in da HOUSE. </TITLE>
+    <BODY>
+        <APPLET NAME="TobyApplet" CODE="TobyApplet.class"
+            ARCHIVE="TobyApplet10a3.jar" WIDTH=420 HEIGHT=340
+        >
+            <!-- These are sample parameters... -->
+            <!--
+            <PARAM NAME="URL"  VALUE="file://localhost/home/gordonr/projects/toby/testWhile.toby">
 
-<BODY> 
-   <APPLET CODE="TobyApplet.class" ARCHIVE="TobyApplet10a3.jar"
-       WIDTH=420 HEIGHT=340
-   >
-        <PARAM NAME="URL"  VALUE="file://localhost/home/gordonr/projects/toby/testWhile.toby">
+            <PARAM NAME="SOURCE1"   VALUE="FUNCTION box(number size) returns nothing">
+            <PARAM NAME="SOURCE2"   VALUE="    NUMBER i">
+            <PARAM NAME="SOURCE3"   VALUE="    FOR i = 1 to 4">
+            <PARAM NAME="SOURCE4"   VALUE="        goForward(size)">
+            <PARAM NAME="SOURCE5"   VALUE="        turnRight(90)">
+            <PARAM NAME="SOURCE6"   VALUE="    ENDFOR">
+            <PARAM NAME="SOURCE7"   VALUE="ENDFUNCTION">
 
+            <PARAM NAME="SOURCE8"   VALUE="FUNCTION spinBox(number size, number angle) returns nothing">
+            <PARAM NAME="SOURCE9"   VALUE="    NUMBER i">
+            <PARAM NAME="SOURCE10"  VALUE="    FOR i = 1 to (360 / angle)">
+            <PARAM NAME="SOURCE11"  VALUE="        box(size)">
+            <PARAM NAME="SOURCE12"  VALUE="        turnRight(angle)">
+            <PARAM NAME="SOURCE13"  VALUE="    ENDFOR">
+            <PARAM NAME="SOURCE14"  VALUE="ENDFUNCTION">
 
-        <PARAM NAME="SOURCE1"   VALUE="FUNCTION box(number size) returns nothing">
-        <PARAM NAME="SOURCE2"   VALUE="    NUMBER i">
-        <PARAM NAME="SOURCE3"   VALUE="    FOR i = 1 to 4">
-        <PARAM NAME="SOURCE4"   VALUE="        goForward(size)">
-        <PARAM NAME="SOURCE5"   VALUE="        turnRight(90)">
-        <PARAM NAME="SOURCE6"   VALUE="    ENDFOR">
-        <PARAM NAME="SOURCE7"   VALUE="ENDFUNCTION">
+            <PARAM NAME="SOURCE15"  VALUE="FUNCTION main() returns nothing">
+            <PARAM NAME="SOURCE16"  VALUE="    spinBox(100, 20)">
+            <PARAM NAME="SOURCE17"  VALUE="ENDFUNCTION">
+            -->
 
-        <PARAM NAME="SOURCE8"   VALUE="FUNCTION spinBox(number size, number angle) returns nothing">
-        <PARAM NAME="SOURCE9"   VALUE="    NUMBER i">
-        <PARAM NAME="SOURCE10"  VALUE="    FOR i = 1 to (360 / angle)">
-        <PARAM NAME="SOURCE11"  VALUE="        box(size)">
-        <PARAM NAME="SOURCE12"  VALUE="        turnRight(angle)">
-        <PARAM NAME="SOURCE13"  VALUE="    ENDFOR">
-        <PARAM NAME="SOURCE14"  VALUE="ENDFUNCTION">
+               Sorry, The Toby Applet needs a Java 1.1-enabled browser to work.
+        </APPLET>
 
-        <PARAM NAME="SOURCE15"  VALUE="FUNCTION main() returns nothing">
-        <PARAM NAME="SOURCE16"  VALUE="    spinBox(100, 20)">
-        <PARAM NAME="SOURCE17"  VALUE="ENDFUNCTION">
+        <NOSCRIPT>
+            <CENTER>
+                This doesn't work without Java
+                <B><I><U>AND</U></I></B> JavaScript!
+            </CENTER>
+        </NOSCRIPT>
 
-        Boy, don't you wish you had a JAVA enabled browser right now, eh?
-   </APPLET>
-</BODY>
+        <SCRIPT LANGUAGE="javascript">
+        <!--
+            function updateApplet()
+            {
+                TobyApplet.setCode(sourceCodeText.value);
+            } // updateApplet
+        // -->
+        </SCRIPT>
 
+        <FORM METHOD=POST ACTION="javascript:updateApplet();">
+            <TEXTAREA NAME="sourceCodeText" ROWS=10 COLS=40>
+function main() returns nothing
+    // enter your code here.
+endfunction
+            </TEXTAREA>
+
+            <INPUT TYPE=submit value="Do it!">
+
+        </FORM>
+    </BODY>
 </HTML>
 
 
