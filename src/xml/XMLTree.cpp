@@ -140,9 +140,6 @@ bool XMLTree::parseTag(XMLNode *parent, Tokenizer *toker) throw (IOException *)
     //  so there's a reference to delete later...
 
     XMLNode *node = new XMLNode(parent);
-    if (parent == NULL)
-        root = node;
-
     node->setTag(toker->str);
     if (!parseTagAttributes(node, toker))
         return(false);
@@ -255,18 +252,39 @@ bool XMLTree::_parseXMLThrowException(void) throw (IOException *)
         return(false);
     } // if
 
-    // Must be a valid XML tag at this point...
-    if (!toker.mustGetWord("<"))
-        return(false);
-
-    if (!parseTag(NULL, &toker))  // This recurses through the XML tree.
+    bool retval = false;
+    root = new XMLNode(NULL);
+    while (true)
     {
-        _D(("XMLTree: document is not well-formed on line #%d.\n",
-             toker.currentLine()));
-        return(false);
+        // Must be a valid XML tag or EOF at this point...
+        toker.nextToken();
+        if (toker.ttype == Tokenizer::TT_EOF)
+        {
+            retval = true;
+            break;
+        } // if
+
+        if (toker.ttype != Tokenizer::TT_WORD)
+            break;
+
+        if (strcmp(toker.str, "<") != 0)  // not a tag?
+            break;
+
+        if (!parseTag(root, &toker))  // This recurses through the XML tree.
+        {
+            _D(("XMLTree: document is not well-formed on line #%d.\n",
+                 toker.currentLine()));
+            break;
+        } // if
+    } // while
+
+    if (!retval)
+    {
+        delete root;
+        root = NULL;
     } // if
 
-    return(true);
+    return(retval);
 } // XMLTree::_parseXMLThrowException
 
 
@@ -277,11 +295,6 @@ bool XMLTree::parseXMLThrowException(void) throw (IOException *)
     try
     {
         retval = _parseXMLThrowException();
-        if ((!retval) && (root != NULL))
-        {
-            delete root;
-            root = NULL;
-        } // if
     } // try
     catch (IOException *ioe)
     {
