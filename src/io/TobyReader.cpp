@@ -19,6 +19,16 @@
 
 #include "io/TobyReader.h"
 
+// Make sure that _D debug output is disabled for just this class,
+//  unless explicitly requested...
+#if (!defined DEBUG_TOBYREADER)
+#  if (defined _D)
+#    undef _D
+#  endif
+#  define _D(x)
+#endif
+
+
 TobyReader::TobyReader(void)
     : doingPushBack(false),
       lastChar(0)
