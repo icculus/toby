@@ -86,14 +86,38 @@ public:
     virtual void renderLine(double x1, double y1, double x2, double y2,
                                 float r, float b, float g, float a) = 0;
 
-        // These need to be replaced by !!!
+
+        // Draw the turtle to the screen. It is the responsibility of the
+        //  renderer implementation to maintain the pixels underneath the
+        //  turtle, so they can be replaced during the blankTurtle call.
+        //
+        // The turtle is a triangle, which should be rendered with the points
+        //  returned from turtle->getRenderingInts(). See
+        //  src/turtlespace/Turtle.h for details. The turtle should never
+        //  be rendered to the offscreen image.
     virtual void renderTurtle(Turtle *turtle) throw (ExecException) = 0;
+
+        // Remove the turtle from the screen, and return the pixels that
+        //  the turtle had overwritten.
     virtual void blankTurtle(Turtle *turtle) throw (ExecException) = 0;
 
         // Blank TurtleSpace to full alpha, and zero red, green, and blue.
         //  Turtles that need rerendering will be handled by calls to
         //  the renderTurtle() method after this call.
     virtual void cleanup(void) throw (ExecException) = 0;
+
+        // When this is called, all rendering is done to the offscreen buffer,
+        //  and never to the screen. The turtle should never be rendered to
+        //  the offscreen buffer. Screen rendering should commence again when
+        //  renderToScreen() is called.
+    virtual void renderToOffscreen(void) = 0;
+
+        // When this is called, the offscreen buffer should be blitted/flipped
+        //  to the screen, and further rendering (at least, until the next
+        //  renderToOffscreen() call) should be done to the screen and,
+        //  optionally, the offscreen buffer as well.
+    virtual void renderToScreen(void) = 0;
+
 }; // class TurtleSpaceRenderer
 
 

@@ -58,7 +58,8 @@ static gboolean on_gtkcanvas_expose(GtkWidget       *widget,
 
 GTKTurtleSpaceRenderer::GTKTurtleSpaceRenderer(void)
     : gc(NULL), offscreen_pixmap(NULL),
-      canvas(gtk_drawing_area_new())
+      canvas(gtk_drawing_area_new()),
+      renderingToScreen(true)
 {
     gtk_widget_ref(canvas);
     gdk_rgb_init();
@@ -92,6 +93,9 @@ bool GTKTurtleSpaceRenderer::resize(int w, int h)
     if (canvas == NULL)
         return(false);
 
+    quit_event_caught = false;
+    window_still_not_displayed = true;
+
     GdkPixmap *pix = gdk_pixmap_new(canvas->window, w, h, -1);
     if (pix == NULL)
         return(false);
@@ -116,6 +120,8 @@ bool GTKTurtleSpaceRenderer::resize(int w, int h)
     gdk_gc_unref(_gc);
     offscreen_pixmap = pix;
 
+    gdk_flush();
+
     while ((window_still_not_displayed) || (gtk_events_pending()))
         gtk_main_iteration();
 
@@ -128,9 +134,13 @@ bool GTKTurtleSpaceRenderer::resize(int w, int h)
 
 void GTKTurtleSpaceRenderer::notifyGrabbed(void)
 {
+    assert(canvas != NULL);
+    assert(canvas->window != NULL);
+
     gc = gdk_gc_new(canvas->window);
     assert(gc != NULL);
 
+    gdk_flush();
     while (gtk_events_pending())
         gtk_main_iteration();
 } // GTKTurtleSpaceRenderer::notifyGrabbed
@@ -144,6 +154,7 @@ void GTKTurtleSpaceRenderer::notifyUngrabbed(void)
         gc = NULL;
     } // if
 
+    gdk_flush();
     while (gtk_events_pending())
         gtk_main_iteration();
 } // GTKTurtleSpaceRenderer::notifyUngrabbed
@@ -200,8 +211,8 @@ void GTKTurtleSpaceRenderer::renderLine(double _x1, double _y1,
                                         float r, float b,
                                         float g, float a)
 {
-
     assert(canvas != NULL);
+    assert(canvas->window != NULL);
     assert(offscreen_pixmap != NULL);
     assert(gc != NULL);
 
@@ -215,32 +226,127 @@ void GTKTurtleSpaceRenderer::renderLine(double _x1, double _y1,
     int y2 = TobyGeometry::roundDoubleToInt(_y2);
 
     gdk_draw_line(offscreen_pixmap, gc, x1, y1, x2, y2);
-    gdk_draw_line(canvas->window, gc, x1, y1, x2, y2);
+
+    if (renderingToScreen)
+    {
+        gdk_draw_line(canvas->window, gc, x1, y1, x2, y2);
+        gdk_flush();
+    } // if
 } // GTKTurtleSpaceRenderer::renderLine
 
 
 void GTKTurtleSpaceRenderer::renderTurtle(Turtle *t) throw (ExecException *)
 {
+    assert(canvas != NULL);
+    assert(canvas->window != NULL);
+    assert(offscreen_pixmap != NULL);
+    assert(gc != NULL);
+
+    if (!renderingToScreen)
+        return;
+
+    int *x = t->getRenderingIntsX();
+    int *y = t->getRenderingIntsY();
+
+    GdkPoint gdk_points[3];
+
+    for (int i = 0; i < 3; i++)
+    {
+        gdk_points[i].x = x[i];
+        gdk_points[i].y = y[i];
+    } // for
+
+    gdk_rgb_gc_set_foreground(gc, 0x0000FF00);
+    gdk_draw_polygon(canvas->window, gc, TRUE, gdk_points, 3);
+    gdk_rgb_gc_set_foreground(gc, 0x000000FF);
+    gdk_draw_line(canvas->window, gc, x[0], y[0], x[3], y[3]);
+    gdk_flush();
 } // GTKTurtleSpaceRenderer::renderTurtle
 
 
 void GTKTurtleSpaceRenderer::blankTurtle(Turtle *t) throw (ExecException *)
 {
+    assert(canvas != NULL);
+    assert(canvas->window != NULL);
+    assert(offscreen_pixmap != NULL);
+    assert(gc != NULL);
+
+    if (!renderingToScreen)
+        return;
+
+    int *x = t->getRenderingIntsX();
+    int *y = t->getRenderingIntsY();
+
+    int left = 0;
+    int top = 0;
+    int right = 0;
+    int bottom = 0;
+
+    for (int i = 0; i < 3; i++)
+    {
+        left = tobymin(left, x[i]);
+        top = tobymin(top, y[i]);
+        right = tobymax(right, x[i]);
+        bottom = tobymax(bottom, y[i]);
+    } // for
+
+    right++;
+    bottom++;
+
+    left   = tobyclamp(0, left, canvas->allocation.width);
+    right  = tobyclamp(0, right, canvas->allocation.width);
+    top    = tobyclamp(0, top, canvas->allocation.height);
+    bottom = tobyclamp(0, bottom, canvas->allocation.height);
+
+    gdk_draw_pixmap(canvas->window, gc, offscreen_pixmap,
+                    left, top, left, top, right - left, bottom - top);
+    gdk_flush();
 } // GTKTurtleSpaceRenderer::blankTurtle
 
 
 void GTKTurtleSpaceRenderer::cleanup(void) throw (ExecException *)
 {
     assert(canvas != NULL);
+    assert(canvas->window != NULL);
+    assert(offscreen_pixmap != NULL);
     assert(gc != NULL);
 
     gdk_rgb_gc_set_foreground(gc, 0x00000000);
-    gdk_draw_rectangle(canvas->window, gc, TRUE, 0, 0,
+
+    gdk_draw_rectangle(offscreen_pixmap, gc, TRUE, 0, 0,
                        canvas->allocation.width, canvas->allocation.height);
 
-    while (gtk_events_pending())
-        gtk_main_iteration();
+    if (renderingToScreen)
+    {
+        gdk_draw_rectangle(canvas->window, gc, TRUE, 0, 0,
+                           canvas->allocation.width, canvas->allocation.height);
+        gdk_flush();
+    } // if
+
 } // GTKTurtleSpaceRenderer::cleanup
+
+
+void GTKTurtleSpaceRenderer::renderToOffscreen(void)
+{
+    renderingToScreen = false;
+} // GTKTurtleSpaceRenderer::renderToOffscreen
+
+
+void GTKTurtleSpaceRenderer::renderToScreen(void)
+{
+    assert(canvas != NULL);
+    assert(canvas->window != NULL);
+    assert(offscreen_pixmap != NULL);
+    assert(gc != NULL);
+
+    gdk_draw_pixmap(canvas->window, gc, offscreen_pixmap,
+                    0, 0, 0, 0, canvas->allocation.width,
+                    canvas->allocation.height);
+
+    gdk_flush();
+
+    renderingToScreen = true;
+} // GTKTurtleSpaceRenderer::renderToScreen
 
 
 GtkWidget *GTKTurtleSpaceRenderer::getDrawingAreaWidget(void)
@@ -293,6 +399,8 @@ TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
     gtk_widget_realize(darea);
     gtk_widget_show(darea);
     gtk_widget_show(window);
+
+    gdk_flush();
 
     while (gtk_events_pending())
         gtk_main_iteration();

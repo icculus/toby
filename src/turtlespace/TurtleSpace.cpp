@@ -22,7 +22,8 @@
 TurtleSpace::TurtleSpace(TurtleSpaceRenderer *_renderer) :
         dueNorth(270.0), turtles(NULL), turtlesArraySize(0),
         turtlePool(new TobyStack()), fenceEnabled(false), turtle(NULL),
-        renderer(_renderer), turtleSync(__platformBuildMutex())
+        renderer(_renderer), turtleSync(__platformBuildMutex()),
+        renderingToOffscreen(false)
 {
     assert(_renderer != NULL);
 } // Constructor
@@ -68,6 +69,7 @@ TurtleSpaceRenderer *TurtleSpace::getTurtleSpaceRenderer(void)
 {
     return(renderer);
 } // TurtleSpace::getTurtleSpaceRenderer
+
 
 double TurtleSpace::getTurtleSpaceWidth(void)
 {
@@ -749,9 +751,11 @@ void TurtleSpace::defaultTurtle(Turtle *t) throw (ExecException *)
 
     t->setPenDown(true);
     t->setPenColor(r, g, b, a);
+    t->setSize(20.0);
 
     double x = renderer->getTurtleSpaceWidth() / 2;
     double y = renderer->getTurtleSpaceHeight() / 2;
+
     if ((t->getX() != x) || (t->getY() != y))
     {
         if (isVis == true)
@@ -882,6 +886,43 @@ void TurtleSpace::cleanup(void) throw (ExecException *)
     turtleSync->release();
 } // TurtleSpace::cleanup
 
+
+void TurtleSpace::renderToOffscreen(void)
+{
+
+    // !!! race condition?
+
+    if (!renderingToOffscreen)
+    {
+        renderer->renderToOffscreen();
+        renderingToOffscreen = true;
+    } // if
+} // TurtleSpace::renderToOffscreen
+
+
+void TurtleSpace::renderToScreen(void)
+{
+
+    // !!! race condition?
+
+    if (renderingToOffscreen)
+    {
+        renderer->renderToScreen();
+        renderingToOffscreen = false;
+    } // if
+} // TurtleSpace::renderToScreen
+
+
+bool TurtleSpace::isRenderingToOffscreen(void)
+{
+    return(renderingToOffscreen);
+} // TurtleSpace::isRenderingToOffscreen
+
+
+bool TurtleSpace::isRenderingToScreen(void)
+{
+    return(!renderingToOffscreen);
+} // TurtleSpace::isRenderingToScreen
 
 // end of TurtleSpace.cpp ...
 

@@ -52,6 +52,9 @@ public:
     virtual void blankTurtle(Turtle *turtle) throw (ExecException *);
     virtual void cleanup(void) throw (ExecException *);
 
+    virtual void renderToOffscreen(void);
+    virtual void renderToScreen(void);
+
     virtual GtkWidget *getDrawingAreaWidget(void);
     virtual GdkPixmap *getOffscreenPixmap(void);
 
@@ -64,6 +67,7 @@ private:
     GdkGC *gc;
     GdkPixmap *offscreen_pixmap;
     GtkWidget *canvas;
+    bool renderingToScreen;
 }; // class GTKTurtleSpaceRenderer
 
 #endif // !defined _INCLUDE_GTKTURTLESPACERENDERER_H_

@@ -103,6 +103,25 @@ public:
     void drawString(const char *str) throw (ExecException *);
     void cleanup(void) throw (ExecException *);
 
+        // When this is called, all rendering is done to the offscreen buffer,
+        //  and never to the screen. The turtle should never be rendered to
+        //  the offscreen buffer. Screen rendering should commence again when
+        //  renderToScreen() is called.
+    virtual void renderToOffscreen(void);
+
+        // When this is called, the offscreen buffer should be blitted/flipped
+        //  to the screen, and further rendering (at least, until the next
+        //  renderToOffscreen() call) should be done to the screen and,
+        //  optionally, the offscreen buffer as well.
+    void renderToScreen(void);
+
+        // returns (true) if rendering is only being done in the offscreen
+        //  buffer. Returns (false) if rendering is also going to the screen.
+    virtual bool isRenderingToOffscreen(void);
+
+        // returns (true) if rendering is being done on the video device.
+    virtual bool isRenderingToScreen(void);
+
 protected:
     Turtle *getTurtleByIndex(int turtleIndex);
     Turtle *buildNewTurtle(void) throw (ExecException *);
@@ -120,6 +139,7 @@ private:
     Turtle *turtle;
     TurtleSpaceRenderer *renderer;
     TobyMutex *turtleSync;
+    bool renderingToOffscreen;
 }; // class TurtleSpace
 
 #endif // !defined _INCLUDE_TURTLESPACE_H_

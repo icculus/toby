@@ -19,8 +19,6 @@
 
 #include "platform/renderers/fbrenderer/FrameBufferTurtleSpaceRenderer.h"
 
-#include "SDL.h"  // !!!
-
 FrameBufferTurtleSpaceRenderer::FrameBufferTurtleSpaceRenderer(void)
     : TurtleSpaceRenderer(), defaultSurface(NULL)
 {
