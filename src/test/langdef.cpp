@@ -87,7 +87,7 @@ static void testNode(XMLNode *node)
         if (strcmp(tags[i].tag, tag) == 0)
         {
             TobyCollection *children = node->getChildren();
-            int max = children->size();
+            int max = children->getSize();
             for (int j = 0; j < max; j++)
             {
                 XMLNode *kid = (XMLNode *) children->elementAt(j);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
                 assert(root->getTag() == NULL);
                 assert(root->getText() == NULL);
                 TobyCollection *children = root->getChildren();
-                int max = children->size();
+                int max = children->getSize();
                 for (int j = 0; j < max; j++)
                     testLangTree((XMLNode *) children->elementAt(j));
             } // else

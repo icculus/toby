@@ -47,7 +47,7 @@ static void reoutputXML(XMLNode *node, int depth)
     printf("<%s", node->getTag());
 
     TobyCollection *attribs = node->getAttributes();
-    for (i = 0, max = attribs->size(); i < max; i++)
+    for (i = 0, max = attribs->getSize(); i < max; i++)
     {
         XMLAttribute *attr = (XMLAttribute *) attribs->elementAt(i);
         printf(" %s=\"%s\"", attr->name, attr->value);
@@ -69,7 +69,7 @@ static void reoutputXML(XMLNode *node, int depth)
             printf("%s\n", text);
         } // if
 
-        for (i = 0, max = children->size(); i < max; i++)
+        for (i = 0, max = children->getSize(); i < max; i++)
         {
             XMLNode *child = (XMLNode *) children->elementAt(i);
             assert(child->getParent() == node);
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
                 assert(root->getTag() == NULL);
                 assert(root->getText() == NULL);
                 TobyCollection *children = root->getChildren();
-                int max = children->size();
+                int max = children->getSize();
                 for (int j = 0; j < max; j++)
                     reoutputXML((XMLNode *) children->elementAt(j), 0);
             } // else
