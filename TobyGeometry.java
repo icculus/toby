@@ -1,6 +1,6 @@
 /**
  *
- * Extension to java.lang.math to allow calculations in turtlespace.
+ * Extension to java.lang.math to allow calculations in TurtleSpace.
  *
  *   Copyright (c) Lighting and Sound Technologies, 1997.
  *    Written by Ryan C. Gordon.
@@ -84,6 +84,19 @@ public class TobyGeometry
      *   triangle, we can get the third. (In this function, you need to know
      *   which is the hypotenuse, but you can easily write a version of
      *   this that figures out the hypotenuse based on the other two sides.
+     *
+     *  To find a non-hypotenuse side:
+     *    (H2 represents hypotenuse, squared.)
+     *    (X2 represents 1st non-hypotenuse side, squared.)
+     *    (Y2 represents 2nd non-hypotenuse side, squared.)
+     *
+     *       H2 = X2 + Y2
+     *       H2 - X2 = Y2 + X2 - X2
+     *       H2 - X2 = Y2
+     *       H2 - H2 - X2 = Y2 - H2
+     *       -X2 = Y2 - H2
+     *       X2 = - Y2 + H2
+     *       X2 = H2 - Y2
      *
      *      params : s1 == length of known non-hypotenuse side of rt. triangle.
      *               hypotenuse == length of hypotenuse of right triangle.
