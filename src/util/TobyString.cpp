@@ -26,7 +26,7 @@ TobyString::TobyString(void) : str(NULL)
 
 TobyString::TobyString(const char *_str) : str(NULL)
 {
-    assignCStr("");
+    assignCStr(_str);
 } // Constructor
 
 TobyString::TobyString(const TobyString *_str) : str(NULL)
@@ -50,8 +50,17 @@ void TobyString::append(char ch)
 {
     int strSize = strlen(str);
     str = (char *) realloc(str, strSize + 2);
-    str[strSize + 1] = '\0';
     str[strSize] = ch;
+    str[strSize + 1] = '\0';
+} // TobyString::append
+
+
+void TobyString::append(const char *_str)
+{
+    int strSize = strlen(str);
+    int newStrSize = strlen(_str);
+    str = (char *) realloc(str, strSize + newStrSize + 1);
+    strcpy(str + strSize, _str);
 } // TobyString::append
 
 
@@ -95,6 +104,31 @@ bool TobyString::replaceFormatToken(int n, int val)
     snprintf(buf, sizeof (buf), "%d", val);
     return(replaceFormatToken(n, buf));
 } // TobyString::replaceFormatToken
+
+
+int TobyString::length(void)
+{
+    return(strlen(str));
+} // TobyString::length
+
+
+const char *TobyString::substr(int start, int end)
+{
+    int len;
+
+    if (end < 0)
+        end = strlen(str);
+
+    len = (end - start) + 1;
+    char *newstr = (char *) malloc(len);
+
+    memcpy(newstr, str + start, len - 1);
+    newstr[len - 1] = '\0';
+    free(str);
+    str = newstr;
+    return(str);  // READ ONLY.
+} // TobyString::substr
+
 
 // end of TobyString.cpp ...
 

@@ -41,11 +41,15 @@ public:
 
     const char *c_str(void) const;
     void append(char ch);
+    void append(const char *str);
 
     bool replaceFormatToken(int n, const char *val);
     bool replaceFormatToken(int n, int val);
 
     void assignCStr(const char *str);
+
+    int length(void);
+    const char *substr(int start, int end);
 
 private:
     char *str;
