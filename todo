@@ -16,6 +16,7 @@ ongoing bugfixes :
     Even on a cancel save, JFrame closes, if Window manager terminating it.
     Fix equality operator
     Maximize window instead of sizing...
+    Move copyImage code from TobyInterpreter into TurtleSpace.
 
 alpha2 : completed.
     Convert to Swing.                       (COMPLETED)
