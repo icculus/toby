@@ -42,6 +42,7 @@ public final class Toby extends JFrame implements DocumentListener,
     private File currentDirectory = null;
     private boolean textModified = false;
     private TobyMenuBar tmb = null;
+    private boolean isSetIconBroken = true;
 
     public Toby()
     {
@@ -70,23 +71,22 @@ public final class Toby extends JFrame implements DocumentListener,
 
     private void setTobyIcon()
     {
-        System.out.println("in setTobyIcon.");
-        Turtle turtle = new TriangleTurtle();
-        Image image = createImage(24, 24);
-        Graphics g = image.getGraphics();
+            /*
+             * !!! comment why this if () is here.
+             */
+        if (isSetIconBroken == false)
+        {
+            Turtle turtle = new TriangleTurtle();
+            Image image = createImage(24, 24);
+            Graphics g = image.getGraphics();
 
-        System.out.println("painting...");
+            g.setColor(Color.black);
+            g.fillRect(0, 0, 24, 24);
+            turtle.setXY(12, 12, g, image);
+            g.dispose();
 
-        g.setColor(Color.black);
-        g.fillRect(0, 0, 24, 24);
-        turtle.paint(g, null);
-        g.dispose();
-
-        System.out.println("doing it...");
-
-        setIconImage(null);
-
-        System.out.println("done.");
+            setIconImage(image);
+        } // if
     } // setTobyIcon
 
 
@@ -407,7 +407,6 @@ public final class Toby extends JFrame implements DocumentListener,
     } // main
 
 
-
         // DocumentListener implementation...
 
     public void changedUpdate(DocumentEvent e)
@@ -468,7 +467,7 @@ public final class Toby extends JFrame implements DocumentListener,
 
     public void windowOpened(WindowEvent e)
     {
-//        setTobyIcon();
+        setTobyIcon();
     } // windowOpened
 
     public void windowIconified(WindowEvent e) {}
