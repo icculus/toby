@@ -24,7 +24,8 @@
  *   language.
  *
  *  To use a different language than English, just specify
- *    --langfile=/path/to/new/langfile on the command line.
+ *    --langfile=/path/langfile or --langfile=url://hostname/path/langfile
+ *    on the command line.
  *
  *     @author Ryan C. Gordon. (icculus@lokigames.com)
  */
@@ -33,13 +34,14 @@ package last.toby.util;
 
 import java.io.*;
 import java.net.*;
+import java.lang.reflect.*;
 
 public class TobyLanguage
 {
 
         // Do NOT translate these strings!
         //  The program will default to English (using the below strings)
-        //  if it doesn't load a langfile to use a different language.
+        //  if it doesn't load langfiles to use a different language.
         //  Translations should be done from a langfile.
 
     public static String USAGE = "USAGE: Toby.class [--langfile=xxx] [sourceFile.toby]";
@@ -51,7 +53,7 @@ public class TobyLanguage
     public static String COPYRIGHT = "Copyright (C) 1999 Ryan C. Gordon";
 
     public static String ERROR = "Error";
-    public static String NOT_YET_IMPLEMENTED = "Not yet implemented.";
+    public static String NOT_YET_IMPLEMENTED = "Feature not yet implemented.";
     public static String NODETREE_LOCKED = "NodeTree already locked.";
     public static String NODETREE_ULOCKED = "NodeTree already unlocked.";
     public static String BAD_CHILD_NODE  = "Adding bad child type to NodeTree";
@@ -83,14 +85,11 @@ public class TobyLanguage
     public static String REPLACE_RANGE_ERR =
                         "Replace index must be between (0) and (9).";
 
-    public static String NO_GUI1 =
-                               "Your Java Virtual Machine has thrown" +
-                               " an error...chances are, you don't have";
-    public static String NO_GUI2 =
-                               " the GUI support you need. Please start" +
-                               " your Window system before running this";
-    public static String NO_GUI3 =
-                               " program.";
+    public static String NO_GUI1 = "Your Java Virtual Machine has thrown" +
+                                   " an error...chances are, you don't have";
+    public static String NO_GUI2 = " the GUI support you need. Please start" +
+                                   " your Window system before running this";
+    public static String NO_GUI3 = " program.";
 
     public static String HERES_THE_ERR = "For record, here's the error:";
 
@@ -101,17 +100,18 @@ public class TobyLanguage
                                "WARNING: setIconImage() is broken on this" +
                                " Java Virtual Machine!";
 
-    public static String WORK_AROUND_IT =
-                                        " (We will work around it, though.)";
+    public static String WORK_AROUND_IT = " (We will work around it, though.)";
 
     public static String TOBY_FILE_DESCRIPTION = "TOBY source code";
 
     public static String CARET_POSITION = "line %0, column %1";
 
-    public static String ERR_IN_FUNC = "Error %0 on line %1 in function %2";
+    public static String ERR_IN_FUNC = "%0 on line %1 in function %2";
+    public static String ERR_OUT_FUNC = "%0 on line %1";
 
     public static String SHOULDNOTBE = "This should not happen." +
-                                       " Email icculus@lokigames.com!";
+                                       " Email icculus@lokigames.com!" +
+                                       " (English only!)";
 
         // Menuitems...
     public static String MENUNAME_FILE   = "File";
@@ -175,6 +175,26 @@ public class TobyLanguage
     public static String NOCURTURTLE     = "No current turtle";
     public static String TURTLE_FENCED   = "Turtle past fence";
 
+    public static String LANGIOEXCEPT    = "LANGUAGE: IOException reading" +
+                                           " language data.";
+    public static String LANGBOGUSLINE   = "LANGUAGE: Line %0 is bogus in %1.";
+    public static String LANGNOSUCHCLASS = "LANGUAGE: No such class [%0] on" +
+                                           " line %1 in %2.";
+    public static String LANGNOSUCHFIELD = "LANGUAGE: No such field [%0] on" +
+                                           " line %1 in %2.";
+    public static String LANGNOTPUBLIC   = "LANGUAGE: Field [%0] is not" +
+                                           " public on line %1 in %2.";
+    public static String LANGNOTSTATIC   = "LANGUAGE: Field [%0] is not" +
+                                           " static on line %1 in %2.";
+    public static String LANGNOTSTRING   = "LANGUAGE: Field [%0] is not" +
+                                           " a string on line %1 in %2.";
+    public static String LANGISFINAL     = "LANGUAGE: Field [%0] is final" +
+                                           " on line %1 in %2.";
+    public static String LANGSETFAILED   = "LANGUAGE: Setting field [%0] " +
+                                           " failed with message [%1]" +
+                                           " on line %2 in %3.";
+
+
 
         /**
          * Read a string from a langfile. This will read until a non-blank
@@ -190,122 +210,173 @@ public class TobyLanguage
 
         do
         {
-            retVal = br.readLine().trim();
+            retVal = br.readLine();
+
+            if (retVal == null)
+                return(null);
+
+            retVal = retVal.trim();
             if ((retVal.length() > 0) && (retVal.charAt(0) != '#'))
                 return(retVal);
+
         } while (true);
     } // readLangString
 
 
-
-        /**
-         * Load a language file from a specified URL.
-         *
-         *     @param langUrl URL where a language file can be found.
-         * @exception IOException if there's an i/o problem. Throwing this
-         *             exception leaves this class in an unknown state, and
-         *             you should probably either abort or try again if this
-         *             happens. Just going on is NOT recommended.
-         */
-    public static void loadLanguage(URL langUrl) throws IOException
+    public static Class retrieveLangClass(String cName, int line, String file)
     {
-        InputStreamReader isr = new InputStreamReader(langUrl.openStream());
-        BufferedReader br = new BufferedReader(isr);
+        Class retVal = null;
+        try
+        {
+            retVal = Class.forName(cName);
+        } // try
+        catch (ClassNotFoundException cnfe)
+        {
+            String s = TobyLanguage.LANGNOSUCHCLASS;
+            s = replaceFmtTokenInStr(0, s, cName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+        } // catch
 
-            // Don't EVER rearrange these.
-        TobyLanguage.USAGE = readLangString(br);
-        TobyLanguage.TRANSLATION_BY = readLangString(br);
-        TobyLanguage.WRITTENBY = readLangString(br);
-        TobyLanguage.COPYRIGHT = readLangString(br);
-        TobyLanguage.ERROR = readLangString(br);
-        TobyLanguage.NOT_YET_IMPLEMENTED = readLangString(br);
-        TobyLanguage.NODETREE_LOCKED = readLangString(br);
-        TobyLanguage.NODETREE_ULOCKED = readLangString(br);
-        TobyLanguage.BAD_CHILD_NODE = readLangString(br);
-        TobyLanguage.USING_FREE_NODE = readLangString(br);
-        TobyLanguage.NEW_PROGRAM = readLangString(br);
-        TobyLanguage.PLEASE_CONFIRM = readLangString(br);
-        TobyLanguage.SAVE_MODIFIED_PROG = readLangString(br);
-        TobyLanguage.FILE_NOT_FOUND = readLangString(br);
-        TobyLanguage.CANNOT_LOAD_FILE = readLangString(br);
-        TobyLanguage.FILE_EXISTS = readLangString(br);
-        TobyLanguage.OVERWRITE_FILENAME = readLangString(br);
-        TobyLanguage.CANNOT_WRITE_TO = readLangString(br);
-        TobyLanguage.MISSING_CLASS1 = readLangString(br);
-        TobyLanguage.MISSING_CLASS2 = readLangString(br);
-        TobyLanguage.MISSING_CLASS3 = readLangString(br);
-        TobyLanguage.TOOMANYFILES = readLangString(br);
-        TobyLanguage.REPLACE_FORMAT_ERR = readLangString(br);
-        TobyLanguage.REPLACE_RANGE_ERR = readLangString(br);
-        TobyLanguage.NO_GUI1 = readLangString(br);
-        TobyLanguage.NO_GUI2 = readLangString(br);
-        TobyLanguage.NO_GUI3 = readLangString(br);
-        TobyLanguage.HERES_THE_ERR = readLangString(br);
-        TobyLanguage.MSG_BAD_JAVA = readLangString(br);
-        TobyLanguage.SETICON_BROKEN = readLangString(br);
-        TobyLanguage.WORK_AROUND_IT = readLangString(br);
-        TobyLanguage.TOBY_FILE_DESCRIPTION = readLangString(br);
-        TobyLanguage.CARET_POSITION = readLangString(br);
-        TobyLanguage.ERR_IN_FUNC = readLangString(br);
-        TobyLanguage.SHOULDNOTBE = readLangString(br);
-        TobyLanguage.MENUNAME_FILE = readLangString(br);
-        TobyLanguage.MENUITEM_NEW  = readLangString(br);
-        TobyLanguage.MENUITEM_OPEN = readLangString(br);
-        TobyLanguage.MENUITEM_SAVE = readLangString(br);
-        TobyLanguage.MENUITEM_SAVEAS = readLangString(br);
-        TobyLanguage.MENUITEM_PRINT = readLangString(br);
-        TobyLanguage.MENUITEM_QUIT = readLangString(br);
-        TobyLanguage.MENUNAME_HELP = readLangString(br);
-        TobyLanguage.MENUITEM_HELP = readLangString(br);
-        TobyLanguage.MENUITEM_ABOUT = readLangString(br);
-        TobyLanguage.MENUNAME_RUN = readLangString(br);
-        TobyLanguage.MENUITEM_STARTCODE = readLangString(br);
-        TobyLanguage.MENUITEM_STOPCODE = readLangString(br);
-        TobyLanguage.MENUITEM_CLEAR = readLangString(br);
-        TobyLanguage.MENUNAME_DEBUG = readLangString(br);
-        TobyLanguage.MENUITEM_TRACE = readLangString(br);
-        TobyLanguage.MENUITEM_STEP  = readLangString(br);
-        TobyLanguage.MENUITEM_WATCHVARS = readLangString(br);
-        TobyLanguage.INTERNAL_ERROR = readLangString(br);
-        TobyLanguage.EXPECTED_TOKEN = readLangString(br);
-        TobyLanguage.SYNTAX_ERROR = readLangString(br);
-        TobyLanguage.BAD_ASSIGNMENT = readLangString(br);
-        TobyLanguage.DOUBLE_DEF = readLangString(br);
-        TobyLanguage.ORPHAN_CODE = readLangString(br);
-        TobyLanguage.INTERNAL = readLangString(br);
-        TobyLanguage.BAD_TYPE = readLangString(br);
-        TobyLanguage.NOT_VAR = readLangString(br);
-        TobyLanguage.NO_MAINLINE = readLangString(br);
-        TobyLanguage.NO_RPAREN = readLangString(br);
-        TobyLanguage.NO_LPAREN = readLangString(br);
-        TobyLanguage.NO_ASSIGN = readLangString(br);
-        TobyLanguage.NOT_A_FUNC = readLangString(br);
-        TobyLanguage.BADNUM_ARGS = readLangString(br);
-        TobyLanguage.BAD_IDENT = readLangString(br);
-        TobyLanguage.NO_ENDFOR = readLangString(br);
-        TobyLanguage.NO_FOR = readLangString(br);
-        TobyLanguage.NO_ENDWHILE = readLangString(br);
-        TobyLanguage.NO_WHILE = readLangString(br);
-        TobyLanguage.ORPHAN_ELIF = readLangString(br);
-        TobyLanguage.ORPHAN_ELSE = readLangString(br);
-        TobyLanguage.ORPHAN_ENDIF = readLangString(br);
-        TobyLanguage.TYPE_MMATCH = readLangString(br);
-        TobyLanguage.BAD_ARGUMENT = readLangString(br);
-        TobyLanguage.MAIN_RETVAL = readLangString(br);
-        TobyLanguage.BAD_GLOBAL = readLangString(br);
-        TobyLanguage.EXPECTED_END = readLangString(br);
-        TobyLanguage.NO_RETTYPE = readLangString(br);
-        TobyLanguage.ELIF_AFTER_ELSE = readLangString(br);
-        TobyLanguage.ELSE_AFTER_ELSE = readLangString(br);
-        TobyLanguage.NO_VAR_DECL = readLangString(br);
-        TobyLanguage.FUNC_IN_FUNC = readLangString(br);
-        TobyLanguage.DIV_BY_ZERO = readLangString(br);
-        TobyLanguage.NOCURTURTLE = readLangString(br);
-        TobyLanguage.TURTLE_FENCED = readLangString(br);
+        return(retVal);
+    } // retrieveLangClass
 
-        br.close();
-        isr.close();  // !!! needed?
-    } // loadLanguage
+
+    public static Field retrieveLangField(Class c, String fName,
+                                            int line, String file)
+    {
+        Field retVal = null;
+
+        try
+        {
+            retVal = c.getField(fName);
+        } // try
+        catch (NoSuchFieldException nsfe)
+        {
+            String s = TobyLanguage.LANGNOSUCHFIELD;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+            return(null);
+        } // catch
+
+        int mods = retVal.getModifiers();
+
+        if (java.lang.reflect.Modifier.isPublic(mods) == false)
+        {
+            String s = TobyLanguage.LANGNOTPUBLIC;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+            return(null);
+        } // if
+
+        else if (java.lang.reflect.Modifier.isStatic(mods) == false)
+        {
+            String s = TobyLanguage.LANGNOTSTATIC;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+            return(null);
+        } // else if
+
+        else if (java.lang.reflect.Modifier.isFinal(mods) == true)
+        {
+            String s = TobyLanguage.LANGISFINAL;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+            return(null);
+        } // else if
+
+        else if (retVal.getType().getName().equals("java.lang.String") == false)
+        {
+            String s = TobyLanguage.LANGNOTSTRING;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, line);
+            s = replaceFmtTokenInStr(2, s, file);
+            System.err.println(s);
+            return(null);
+        } // else if
+
+        return(retVal);
+    } // retrieveLangField
+
+
+    public static boolean setLangField(String cName, String fName, String val,
+                                        int line, String file)
+    {
+        Class c = retrieveLangClass(cName, line, file);
+        if (c == null)
+            return(false);
+
+        Field f = retrieveLangField(c, fName, line, file);
+        if (f == null)
+            return(false);
+
+        try
+        {
+            f.set(null, val);
+        } // try
+        catch (Exception e)
+        {
+            String s = TobyLanguage.LANGSETFAILED;
+            s = replaceFmtTokenInStr(0, s, fName);
+            s = replaceFmtTokenInStr(1, s, e.getMessage());
+            s = replaceFmtTokenInStr(2, s, line);
+            s = replaceFmtTokenInStr(3, s, file);
+            System.err.println(s);
+            return(false);
+        } // catch
+
+        return(true);
+    } // setLangField
+
+
+    public static void reportBogusLangLine(int lineNum, String fname)
+    {
+        String s = TobyLanguage.LANGBOGUSLINE;
+        s = replaceFmtTokenInStr(0, s, lineNum);
+        s = replaceFmtTokenInStr(1, s, fname);
+        System.err.println(s);
+    } // reportBogusLangLine
+
+
+    public static void loadLangFile(LineNumberReader lnr, String file) throws IOException
+    {
+        String langString = null;
+
+        while ( (langString = readLangString(lnr)) != null )
+        {
+            int pos = langString.indexOf('=');
+            int line = lnr.getLineNumber();
+            if (pos == -1)
+            {
+                reportBogusLangLine(line, file);
+                continue;
+            } // if
+
+            String fullName = langString.substring(0, pos).trim();
+            String value = langString.substring(pos + 1).trim();
+
+            pos = fullName.lastIndexOf('.');
+            if (pos == -1)
+            {
+                reportBogusLangLine(line, file);
+                continue;
+            } // if
+
+            String className = fullName.substring(0, pos);
+            String fieldName = fullName.substring(pos + 1);
+
+            setLangField(className, fieldName, value, line, file);
+        } // while
+    } // loadLangFile
 
 
 
