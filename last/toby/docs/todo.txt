@@ -3,6 +3,7 @@
 ongoing bugfixes/enhancements :
     GLOBAL REFERENCING IS FUCKED.
 
+    Have the build binaries go into a separate tree.
 
     TobyMenuBar.java : Need to not hardcode TobyParser...
     TobyMenuBar.java : Move execution to separate class.

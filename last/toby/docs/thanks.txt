@@ -23,7 +23,7 @@ At this point, TOBY has been entirely written, and maintained by
 - Bernd Kreimeier, for thoughts on efficiency of the instanceof operator.
 - linux.com, for being my OTHER creative outlet.
 - Ani Difranco, Phish, Soul Coughing, Soul Miner's Daughter, Beastie Boys,
-  AMG, and the Red Hot Chili Peppers for providing the Soundtrack for da Hack.
+  AMG, Belle and Sebastian, and Tool for providing the Soundtrack for da Hack.
 - Loki Entertainment Software, for paying my bills.
 - The Freshmeat crew, for cutting my appindex entry by about 18 sentences.
 - ...and 'A' through 'F' in the phone book.

@@ -4,7 +4,7 @@ Documentation is in the docs/ directory. It's meager, but there are plans to
 Quick start:
 
 You can try to just run toby.bat, toby.cmd, or toby.sh, depending on
- your platform.
+ your platform. No promises.
 
 This program is licensed under the GNU General Public License. Please know
  your rights and freedoms; the license text can be found in docs/LICENSE.TXT .

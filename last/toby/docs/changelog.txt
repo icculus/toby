@@ -9,11 +9,8 @@ meant to be informative, but not authoritative.
 
 
 If you want a byte-for-byte revision history, please use the CVS server:
-  set CVSROOT=:pserver:anonymous@cvs.xnot.com:/cvs/toby/cvsroot
-  cvs login
-    (password is "anonymous", without the quotes)
-  cvs checkout toby
-  cvs log fileToExamine.java
+    [hhmm...which is not currently available, since XNOT's demise. The
+     repository is intact, and will be made public again sooner or later.]
 
 
 What's new in Toby alpha5:
@@ -43,10 +40,11 @@ What's new in Toby alpha5:
 - TobyLanguage no longer uses printf()-style format tags, like "%s," "%d,"
   etc, since this prevents true language abstraction. Now tags are simply
   "%1," "%2," etc., so they may be in any order in the text and still
-  recieve correct replacement. Furthermore, the English text is the default
-  hardcoded language, but this may be overridden at runtime by a toby.lang
-  file, so new languages may be added without a recompile or modification of
-  the source code.
+  recieve correct replacement, and we can change the output of "12" to "twelve"
+  in the source base and not have to change the local strings. Furthermore,
+  the English text is the default hardcoded language, but this may be
+  overridden at runtime by a toby.lang file, so new languages may be added
+  without a recompile or modification of the source code.
 - Toby.java is now just an entry to the code. The original Toby.java has
   become last.toby.gui.TobyFrame ...
 - Fixes to the Swing code.
