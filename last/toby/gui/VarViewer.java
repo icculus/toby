@@ -81,10 +81,12 @@ public final class VarViewer extends JComponent implements VarWatcher
         if (this.locals != null)
             localCount = this.locals.size();
 
+/*
 System.out.println("framepointer == (" + this.framePointer + ").");
 System.out.println("localCount == (" + localCount + ").");
 for (int v = 0; v < localCount; v++)
     System.out.println(" - " + ((Intrinsic) this.locals.elementAt(v)).getIdentifier());
+*/
 
         lineCount = d.height / fm.getHeight();
 
