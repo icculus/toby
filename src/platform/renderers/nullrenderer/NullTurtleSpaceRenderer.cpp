@@ -119,6 +119,18 @@ void NullTurtleSpaceRenderer::cleanup(void) throw (ExecException *)
 } // NullTurtleSpaceRenderer::cleanup
 
 
+void NullTurtleSpaceRenderer::renderToOffscreen(void)
+{
+    _D(("NullTurtleSpaceRenderer::renderToOffscreen() called!\n"));
+} // NullTurtleSpaceRenderer::renderToOffscreen
+
+
+void NullTurtleSpaceRenderer::renderToScreen(void)
+{
+    _D(("NullTurtleSpaceRenderer::renderToScreen() called!\n"));
+} // NullTurtleSpaceRenderer::renderToScreen
+
+
 TurtleSpaceRenderer *__platformBuildStandaloneRenderer(char *winTitle,
                                                        int *argc, char ***argv)
 {

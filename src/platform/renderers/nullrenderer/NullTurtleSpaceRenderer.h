@@ -52,6 +52,8 @@ public:
     virtual void renderTurtle(Turtle *turtle) throw (ExecException *);
     virtual void blankTurtle(Turtle *turtle) throw (ExecException *);
     virtual void cleanup(void) throw (ExecException *);
+    virtual void renderToOffscreen(void);
+    virtual void renderToScreen(void);
 
 private:
     double w;
