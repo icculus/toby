@@ -203,7 +203,7 @@ BINDIR := bin
 SRCDIR := src
 
 CFLAGS += $(USE_ASM) -I$(SRCDIR) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
-CFLAGS += -Wall -Werror -fexceptions -frtti
+CFLAGS += -Wall -Werror -fexceptions -frtti -D_REENTRANT
 
 ifeq ($(strip $(debugging)),true)
   CFLAGS += -DDEBUG -g -fno-omit-frame-pointer
@@ -238,6 +238,7 @@ ifeq ($(strip $(platform_threads)),pthreads)
   THREADSRCS := platform/threads/pthreads/PthreadsThread.cpp \
                 platform/threads/pthreads/PthreadsMutex.cpp
   THREADSDIR := pthreads
+  LDFLAGS += -lpthread
   valid_threads_target := true
 endif
 
