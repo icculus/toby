@@ -113,7 +113,7 @@ bool TokenizerRules::testRules(Tokenizer *toker) throw (IOException *)
     toker->setNumbersAreWords(convertNumsToWords);
 
     return(true);
-} // testRules
+} // TokenizerRules::testRules
 
 // end of TokenizerRules.cpp ...
 

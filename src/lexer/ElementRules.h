@@ -37,13 +37,13 @@ public:
         //  by the XML parser), so we don't make a copy, and just keep the
         //  original reference. This reference will be deleted at destruction,
         //  so don't delete it yourself!
-    ElementRules(int _rollback, int numKids, LexerRules **kids);
+    ElementRules(int _rollback, size_t numKids, LexerRules **kids);
     virtual ~ElementRules(void);
     virtual bool testRules(Tokenizer *toker) throw (IOException *);
 
 protected:
     int rollback;
-    int numChildren;
+    size_t numChildren;
     LexerRules **children;
 }; // class ElementRules
 

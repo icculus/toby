@@ -41,7 +41,7 @@ public:
         //  so don't delete it yourself!
     LanguageRules(const char *_name, const char *_ext,
                   LexerRules *_firstElem, LexerRules *_tokRule,
-                  int numKids, LexerRules **kids);
+                  size_t numKids, LexerRules **kids);
     virtual ~LanguageRules(void);
 
     const char *getName(void);
@@ -50,7 +50,7 @@ public:
     virtual bool testRules(Tokenizer *toker) throw (IOException *);
 
 protected:
-    int numChildren;
+    size_t numChildren;
     LexerRules **children;
     LexerRules *firstElement;
     LexerRules *tokRule;

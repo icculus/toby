@@ -21,7 +21,7 @@
 
 LanguageRules::LanguageRules(const char *_name, const char *_ext,
                              LexerRules *_firstElem, LexerRules *_tokRule,
-                             int numKids, LexerRules **kids)
+                             size_t numKids, LexerRules **kids)
     : numChildren(numKids),
       children(kids),
       firstElement(_firstElem),
@@ -39,14 +39,7 @@ LanguageRules::LanguageRules(const char *_name, const char *_ext,
 
 LanguageRules::~LanguageRules(void)
 {
-    if (children)
-    {
-        assert(numChildren > 0);
-        for (int i = 0; i < numChildren; i++)
-            delete children[i];
-
-        delete[] children;
-    } // if
+    deleteRuleList(numChildren, children);
 
     if (tokRule != NULL)
         delete tokRule;
@@ -84,7 +77,7 @@ bool LanguageRules::testRules(Tokenizer *toker) throw (IOException *)
         return(false);
 
     return(firstElement->testRules(toker));
-} // testRules
+} // LanguageRules::testRules
 
 // end of LanguageRules.cpp ...
 

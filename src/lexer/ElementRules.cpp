@@ -19,7 +19,7 @@
 
 #include "lexer/ElementRules.h"
 
-ElementRules::ElementRules(int _rollback, int numKids, LexerRules **kids)
+ElementRules::ElementRules(int _rollback, size_t numKids, LexerRules **kids)
     : rollback(_rollback),
       numChildren(numKids),
       children(kids)
@@ -29,20 +29,13 @@ ElementRules::ElementRules(int _rollback, int numKids, LexerRules **kids)
 
 ElementRules::~ElementRules(void)
 {
-    if (children)
-    {
-        assert(numChildren > 0);
-        for (int i = 0; i < numChildren; i++)
-            delete children[i];
-
-        delete[] children;
-    } // if
+    deleteRuleList(numChildren, children);
 } // Destructor
 
 
 bool ElementRules::testRules(Tokenizer *toker) throw (IOException *)
 {
-    for (int i = 0; i < numChildren; i++)
+    for (size_t i = 0; i < numChildren; i++)
     {
         if (children[i]->testRules(toker) == false)
         {
@@ -56,7 +49,7 @@ bool ElementRules::testRules(Tokenizer *toker) throw (IOException *)
     } // for
 
     return(true);
-} // testRules
+} // ElementRules::testRules
 
 // end of ElementRules.cpp ...
 
