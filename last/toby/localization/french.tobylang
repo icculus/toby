@@ -1,5 +1,5 @@
 #
-# This text written by Oliver Scalbert.
+# This text written by Ryan C. Gordon.
 #
 # If you are translating to a new language, do this:
 #
@@ -44,7 +44,7 @@
 #  What the % values are suppose to represent are pretty obvious.
 last.toby.util.TobyLanguage.LANGIOEXCEPT    = LANGUAGE: IOException pendant lecture des données linguistiques.
 last.toby.util.TobyLanguage.LANGBOGUSLINE   = LANGUAGE: Ligne %0 est fausse à partir de colonne %1.
-last.toby.util.TobyLanguage.LANGNOSUCHCLASS = LANGUAGE: Classe: [%0] inexistante à la ligne %1 colonne %2.
+last.toby.util.TobyLanguage.LANGNOSUCHCLASS = LANGUAGE: Classe: [%0]inexistante à la ligne %1 colonne %2.
 last.toby.util.TobyLanguage.LANGNOSUCHFIELD = LANGUAGE: Pas de champ [%0] à la ligne %1 colnone  %2.
 last.toby.util.TobyLanguage.LANGNOTPUBLIC   = LANGUAGE: Champ [%0] n'est pas publique à la ligne  %1 colonne %2.
 last.toby.util.TobyLanguage.LANGNOTSTATIC   = LANGUAGE: Champ [%0] n'est pas statique à la ligne %1 colonne %2.
@@ -58,9 +58,10 @@ last.toby.util.TobyLanguage.USAGE = USAGE: Toby.class [--langfile=xxx] [sourceFi
 
 
 # Please change this to be your name, and the language you translated to.
-last.toby.util.TobyLanguage.TRANSLATION_BY = Texte francais par Oliver Scalbert.
+last.toby.util.TobyLanguage.TRANSLATION_BY = English language text by Ryan C. Gordon.
 
-# Don't change my name.  :)
+
+# Translate the text, but don't change my name.  :)
 last.toby.util.TobyLanguage.WRITTENBY = Written by Ryan C. Gordon.
 last.toby.util.TobyLanguage.COPYRIGHT = Copyright (C) 1999 Ryan C. Gordon
 
@@ -183,7 +184,6 @@ last.toby.util.TobyLanguage.SYNTAX_ERROR    = Erreur de syntaxe
 last.toby.util.TobyLanguage.BAD_ASSIGNMENT  = Assignation non autorisée
 last.toby.util.TobyLanguage.DOUBLE_DEF      = Définition dupliquée
 last.toby.util.TobyLanguage.ORPHAN_CODE     = Code en dehors de fonction
-last.toby.util.TobyLanguage.INTERNAL        = Erreur interne
 last.toby.util.TobyLanguage.BAD_TYPE        = Type de variable incorrect
 last.toby.util.TobyLanguage.NOT_VAR         = Variable attendue
 last.toby.util.TobyLanguage.NO_MAINLINE     = Point d'entrée du programme exigé
@@ -210,9 +210,18 @@ last.toby.util.TobyLanguage.ELIF_AFTER_ELSE = SINONSI après SINON
 last.toby.util.TobyLanguage.ELSE_AFTER_ELSE = Multiples SINON 
 last.toby.util.TobyLanguage.NO_VAR_DECL     = Ne peut pas déclarer de variable ici
 last.toby.util.TobyLanguage.FUNC_IN_FUNC    = FONCTION dans fonction
-last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division par Zero
+last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division par zero
 last.toby.util.TobyLanguage.NOCURTURTLE     = Pas de tortue courante
 last.toby.util.TobyLanguage.TURTLE_FENCED   = Tortue a dépassé la barrière
+
+# !!! FIXME: Localize this text!
+last.toby.util.TobyLanguage.OUT_OF_RANGE    = Out of range
+last.toby.util.TobyLanguage.OVERFLOW        = Overflow
+last.toby.util.TobyLanguage.NOT_AN_ARRAY    = Expected array
+last.toby.util.TobyLanguage.NO_RARRAY       = Expected "]"
+last.toby.util.TobyLanguage.NO_LARRAY       = Expected "["
+last.toby.util.TobyLanguage.NOT_WHOLE_NUM   = Expected whole number
+
 
 
 # This is an internal error alert message.

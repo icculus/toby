@@ -61,7 +61,7 @@ last.toby.util.TobyLanguage.USAGE = USAGE: Toby.class [--langfile=xxx] [sourceFi
 last.toby.util.TobyLanguage.TRANSLATION_BY = English language text by Ryan C. Gordon.
 
 
-# Don't change my name.  :)
+# Translate the text, but don't change my name.  :)
 last.toby.util.TobyLanguage.WRITTENBY = Written by Ryan C. Gordon.
 last.toby.util.TobyLanguage.COPYRIGHT = Copyright (C) 1999 Ryan C. Gordon
 
@@ -178,13 +178,12 @@ last.toby.util.TobyLanguage.ERR_OUT_FUNC = %0 on line %1
 #   in last.toby.parsers.toby.TobyParser, too, but those
 #   changes will not be accepted in an official Toby
 #   distribution.)
-last.toby.util.TobyLanguage.INTERNAL_ERROR  = Internal Error
+last.toby.util.TobyLanguage.INTERNAL_ERROR  = Internal error
 last.toby.util.TobyLanguage.EXPECTED_TOKEN  = Expected token
 last.toby.util.TobyLanguage.SYNTAX_ERROR    = Syntax error
 last.toby.util.TobyLanguage.BAD_ASSIGNMENT  = Assignment not allowed
-last.toby.util.TobyLanguage.DOUBLE_DEF      = Duplicate Definition
+last.toby.util.TobyLanguage.DOUBLE_DEF      = Duplicate definition
 last.toby.util.TobyLanguage.ORPHAN_CODE     = Code outside function
-last.toby.util.TobyLanguage.INTERNAL        = Internal error
 last.toby.util.TobyLanguage.BAD_TYPE        = Bad variable type
 last.toby.util.TobyLanguage.NOT_VAR         = Expected variable
 last.toby.util.TobyLanguage.NO_MAINLINE     = Expected mainline
@@ -211,9 +210,15 @@ last.toby.util.TobyLanguage.ELIF_AFTER_ELSE = ELSEIF after ELSE
 last.toby.util.TobyLanguage.ELSE_AFTER_ELSE = Multiple ELSE statements
 last.toby.util.TobyLanguage.NO_VAR_DECL     = Can't declare variables here
 last.toby.util.TobyLanguage.FUNC_IN_FUNC    = FUNCTION within function
-last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division by Zero
+last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division by zero
 last.toby.util.TobyLanguage.NOCURTURTLE     = No current turtle
 last.toby.util.TobyLanguage.TURTLE_FENCED   = Turtle past fence
+last.toby.util.TobyLanguage.OUT_OF_RANGE    = Out of range
+last.toby.util.TobyLanguage.OVERFLOW        = Overflow
+last.toby.util.TobyLanguage.NOT_AN_ARRAY    = Expected array
+last.toby.util.TobyLanguage.NO_RARRAY       = Expected "]"
+last.toby.util.TobyLanguage.NO_LARRAY       = Expected "["
+last.toby.util.TobyLanguage.NOT_WHOLE_NUM   = Expected whole number
 
 
 # This is an internal error alert message.

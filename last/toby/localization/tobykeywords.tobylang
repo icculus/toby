@@ -24,15 +24,20 @@ last.toby.parsers.toby.TobyParser.OPER_GREATER    = >
 last.toby.parsers.toby.TobyParser.OPER_LESS       = <
 last.toby.parsers.toby.TobyParser.OPER_GREATEREQL = >=
 last.toby.parsers.toby.TobyParser.OPER_LESSEQL    = <=
+last.toby.parsers.toby.TobyParser.OPER_LARRAY     = [
+last.toby.parsers.toby.TobyParser.OPER_RARRAY     = ]
 last.toby.parsers.toby.TobyParser.KEYWORD_NUMBER  = number
 last.toby.parsers.toby.TobyParser.KEYWORD_BOOLEAN = boolean
 last.toby.parsers.toby.TobyParser.KEYWORD_NOTHING = nothing
+last.toby.parsers.toby.TobyParser.KEYWORD_ARRAY   = array
+last.toby.parsers.toby.TobyParser.KEYWORD_STRING  = string
 last.toby.parsers.toby.TobyParser.KEYWORD_IF          = if
 last.toby.parsers.toby.TobyParser.KEYWORD_ELSEIF      = elseif
 last.toby.parsers.toby.TobyParser.KEYWORD_ELSE        = else
 last.toby.parsers.toby.TobyParser.KEYWORD_ENDIF       = endif
 last.toby.parsers.toby.TobyParser.KEYWORD_BEGINFOR    = for
 last.toby.parsers.toby.TobyParser.KEYWORD_TO          = to
+last.toby.parsers.toby.TobyParser.KEYWORD_OF          = of
 last.toby.parsers.toby.TobyParser.KEYWORD_DOWNTO      = downto
 last.toby.parsers.toby.TobyParser.KEYWORD_STEP        = step
 last.toby.parsers.toby.TobyParser.KEYWORD_ENDFOR      = endfor
@@ -80,6 +85,14 @@ last.toby.parsers.toby.TobyParser.PROCNAME_CLEANUP        = cleanupturtlespace
 last.toby.parsers.toby.TobyParser.PROCNAME_ENABLEFENCE    = enablefence
 last.toby.parsers.toby.TobyParser.PROCNAME_DISABLEFENCE   = disablefence
 last.toby.parsers.toby.TobyParser.PROCNAME_SETFENCE       = setfence
+last.toby.parsers.toby.TobyParser.PROCNAME_SUBSTRING      = substring
+last.toby.parsers.toby.TobyParser.PROCNAME_LEFTSTRING     = leftstring
+last.toby.parsers.toby.TobyParser.PROCNAME_RIGHTSTRING    = rightstring
+last.toby.parsers.toby.TobyParser.PROCNAME_UCASESTRING    = uppercasestring
+last.toby.parsers.toby.TobyParser.PROCNAME_LCASESTRING    = lowercasestring
+last.toby.parsers.toby.TobyParser.PROCNAME_DRAWSTRING     = drawstring
+last.toby.parsers.toby.TobyParser.PROCNAME_STRINGLEN      = stringlength
+last.toby.parsers.toby.TobyParser.PROCNAME_JOINSTRINGS    = joinstrings
 
 # end of tobykeywords.tobylang ...
 
