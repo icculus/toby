@@ -1,0 +1,231 @@
+#
+# This text written by Oliver Scalbert.
+#
+# If you are translating to a new language, do this:
+#
+#  1. Ask yourself, "Do I have a good enough grasp of Java and Toby to
+#     understand this file, and what its purpose is? Do I have sufficient
+#     translating skills? Do I have the ethics to NOT put naughty words that
+#     the Toby maintainers will not understand in here?" If you answered
+#     "no" to any of these questions, stop now.
+#  2. Change the "This text written by" line above to contain your
+#     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
+#     work, but by submitting your work, the maintainers of Toby gain
+#     sole ownership of it. If you don't like that, stop now.
+#  3. E-mail your completed work to Ryan at icculus@lokigames.com. He'll
+#     incorporate it into the next release of Toby.
+#  4. Lines beginning with '#' are ignored when this file is parsed.
+#     Lines with nothing but whitespace are also ignored.
+#  5. Only translate the text after the equal sign on each line. That is,
+#     a line that reads: "last.toby.util.TobyLanguage.MENUNAME_FILE   = File"
+#     You would translate "File", and not "last.toby.util..."
+#  6. Whitespace is trimmed from each side of the translated string at runtime.
+#  7. Sometimes strings need dynamic content. For example, there might be
+#     a string that needs to convey, "error in "MyFunction" on line 15.",
+#     to accomodate this, such strings would have "%0" and "%1", with
+#     a description of what each represents. You may move the tokens to
+#     whatever order they need to be in; %1 can come before %0 if your
+#     language requires this, so long as all of those replacing tokens
+#     continue to exist somewhere in the translated string.
+#  8. Please try out your translation in the program to make sure that the
+#     program parses the langfile correctly, and that everything looks good.
+#  9. Expect to be notified if we have more translating work for you
+#     in the future.  :)
+# 10. Questions about context of strings and other concerns can be addressed
+#     to icculus@lokigames.com. Please understand that I only speak English,
+#     and even that poorly.  :)
+#
+#                                   Have fun,
+#                                      --ryan.
+#
+
+# These are printed if there are problems in loading this langfile.
+#  Therefore, it's best to parse these at the top of the file.
+#  What the % values are suppose to represent are pretty obvious.
+last.toby.util.TobyLanguage.LANGIOEXCEPT    = LANGUAGE: IOException pendant lecture des données linguistiques.
+last.toby.util.TobyLanguage.LANGBOGUSLINE   = LANGUAGE: Ligne %0 est fausse à partir de colonne %1.
+last.toby.util.TobyLanguage.LANGNOSUCHCLASS = LANGUAGE: Classe: [%0]inexistante à la ligne %1 colonne %2.
+last.toby.util.TobyLanguage.LANGNOSUCHFIELD = LANGUAGE: Pas de champ [%0] à la ligne %1 colnone  %2.
+last.toby.util.TobyLanguage.LANGNOTPUBLIC   = LANGUAGE: Champ [%0] n'est pas publique à la ligne  %1 colonne %2.
+last.toby.util.TobyLanguage.LANGNOTSTATIC   = LANGUAGE: Champ [%0] n'est pas statique à la ligne %1 colonne %2.
+last.toby.util.TobyLanguage.LANGNOTSTRING   = LANGUAGE: Champ [%0] n'est pas une chaine à la ligne %1 colonne %2.
+last.toby.util.TobyLanguage.LANGISFINAL     = LANGUAGE: Champ [%0] est final à la ligne %1 colonne %2.
+last.toby.util.TobyLanguage.LANGSETFAILED   = LANGUAGE: Erreur assignation champ [%0] avec message [%1] à la ligne %2 colonne %3.
+
+
+# The usage/commandline information. Printed to stderr.
+last.toby.util.TobyLanguage.USAGE = USAGE: Toby.class [--langfile=xxx] [sourceFile.toby]
+
+
+# Please change this to be your name, and the language you translated to.
+last.toby.util.TobyLanguage.TRANSLATION_BY = French language text by Oliver Scalbert.
+
+
+# Don't change my name.  :)
+last.toby.util.TobyLanguage.WRITTENBY = Written by Ryan C. Gordon.
+last.toby.util.TobyLanguage.COPYRIGHT = Copyright (C) 1999 Ryan C. Gordon
+
+
+# This is a string in a message box's title bar.
+last.toby.util.TobyLanguage.ERROR = Erreur
+
+
+# This is a title bar string of a Yes/No "overwrite this file?" message box.
+last.toby.util.TobyLanguage.FILE_EXISTS = Fichier existe
+
+
+# This is the string in the title bar of a Yes/No message box.
+last.toby.util.TobyLanguage.PLEASE_CONFIRM = Confirmez SVP
+
+
+# Question in a yes/no message box.
+last.toby.util.TobyLanguage.SAVE_MODIFIED_PROG = Sauver programme modifié?
+
+
+# This is shown in the main window's title bar before a program is saved.
+#  Once saved, this is replaced with the filename where the program is stored.
+last.toby.util.TobyLanguage.NEW_PROGRAM = nouveau programme
+
+
+# %0 is replaced with a filename at runtime in these strings...
+last.toby.util.TobyLanguage.FILE_NOT_FOUND = Fichier "%0" non trouvé.
+last.toby.util.TobyLanguage.CANNOT_LOAD_FILE = Ne peut charger fichier "%0".
+last.toby.util.TobyLanguage.OVERWRITE_FILENAME = Ecraser "%0"?
+last.toby.util.TobyLanguage.CANNOT_WRITE_TO = Ne peux écrire vers "%0".
+
+
+# These three are printed to stderr on three separate lines if there's
+#  a class loading problem. Try not to use more than 80 characters per string.
+last.toby.util.TobyLanguage.MISSING_CLASS1 = Ne peut pas trouver un fichier .class nécessaire.
+last.toby.util.TobyLanguage.MISSING_CLASS2 = Vérifier la valeur de CLASSPATH?
+last.toby.util.TobyLanguage.MISSING_CLASS3 = Vérifier la version JDK (>=JDK1.2) !
+
+
+# These are three separate strings that make up one sentence:
+#  one string per line; try not to use more than 80 characters per string,
+#  as this is printed to stderr.
+last.toby.util.TobyLanguage.NO_GUI1 = Votre machine virtuelle Java à lancé une exception...peut être n'avez vous pas
+last.toby.util.TobyLanguage.NO_GUI2 = le support graphique nécessaire. Démarrer votre système de fenêtre avant de démarrer
+last.toby.util.TobyLanguage.NO_GUI3 = ce programme.
+
+
+# This is printed to stderr after the NO_GUI strings, and is followed by
+#  whatever information is attached to the thrown error.
+last.toby.util.TobyLanguage.HERES_THE_ERR = Pour mémoire, voici l'erreur:
+
+
+# Other warnings and errors...
+last.toby.util.TobyLanguage.MSG_BAD_JAVA = Votre machine virtuelle Java est trop ancienne; aller à http://java.sun.com/ ...
+last.toby.util.TobyLanguage.SETICON_BROKEN = ATTENTION: setIconImage() ne fonctionne pas sur cette machine virtuelle Java!
+last.toby.util.TobyLanguage.TOOMANYFILES = Plusieurs fichiers spécifiés sur la ligne de commande! Utilise seulement le premier.
+
+
+# This is printed to stderr when a warning can be worked around (currently,
+#  the only warning is the setIconImage(), above).
+last.toby.util.TobyLanguage.WORK_AROUND_IT = (Nous continuons quand même.)
+
+
+# Menu items.
+last.toby.util.TobyLanguage.MENUNAME_FILE   = Fichier
+last.toby.util.TobyLanguage.MENUITEM_NEW    = Nouveau
+last.toby.util.TobyLanguage.MENUITEM_OPEN   = Ouvrir...
+last.toby.util.TobyLanguage.MENUITEM_SAVE   = Sauver
+last.toby.util.TobyLanguage.MENUITEM_SAVEAS = Sauver sous...
+last.toby.util.TobyLanguage.MENUITEM_PRINT  = Imprimer...
+last.toby.util.TobyLanguage.MENUITEM_QUIT   = Quitter
+
+last.toby.util.TobyLanguage.MENUNAME_HELP  = Aide
+last.toby.util.TobyLanguage.MENUITEM_HELP  = Aide...
+last.toby.util.TobyLanguage.MENUITEM_ABOUT = A propos...
+
+last.toby.util.TobyLanguage.MENUNAME_RUN       = Action
+last.toby.util.TobyLanguage.MENUITEM_STARTCODE = Démarrer programme
+last.toby.util.TobyLanguage.MENUITEM_STOPCODE  = Arrêter programme
+last.toby.util.TobyLanguage.MENUITEM_CLEAR     = Effacer zone tortue
+
+last.toby.util.TobyLanguage.MENUNAME_DEBUG     = Mis au point
+last.toby.util.TobyLanguage.MENUITEM_TRACE     = Trace
+last.toby.util.TobyLanguage.MENUITEM_STEP      = Pas à pas
+last.toby.util.TobyLanguage.MENUITEM_WATCHVARS = Voir variables
+
+
+# This is a file description for the file open dialog, and shows up in
+#  the dropdown for "show files of type" ...
+last.toby.util.TobyLanguage.TOBY_FILE_DESCRIPTION = TOBY code source
+
+
+# This is the current position of the text cursor in the editing window.
+#  %0 and %1 are replaced with numbers at runtime.
+last.toby.util.TobyLanguage.CARET_POSITION = ligne %0, colonne %1
+
+
+# %0 is another string (probably one of the ones below), that tells what
+#  sort of error occurred, such as "Syntax error."
+# %1 is a numeric. %2 is the name of a function in the user's Toby program.
+last.toby.util.TobyLanguage.ERR_IN_FUNC = %0 à la ligne %1 dans la fonction %2
+
+
+# Same as above, but the error didn't occur inside a function.
+last.toby.util.TobyLanguage.ERR_OUT_FUNC = %0 à la ligne %1
+
+
+
+# Error messages.
+#
+#  Please note that the capitalized words are keywords
+#  in the Toby language, and should not be translated.
+#  (unless you are also translating the keywords in
+#   in last.toby.parsers.toby.TobyParser, too, but those
+#   changes will not be accepted in an official Toby
+#   distribution.)
+last.toby.util.TobyLanguage.INTERNAL_ERROR  = Erreur interne
+last.toby.util.TobyLanguage.EXPECTED_TOKEN  = Expected token
+last.toby.util.TobyLanguage.SYNTAX_ERROR    = Erreur de syntaxe
+last.toby.util.TobyLanguage.BAD_ASSIGNMENT  = Assignation non autorisée
+last.toby.util.TobyLanguage.DOUBLE_DEF      = Définition dupliquée
+last.toby.util.TobyLanguage.ORPHAN_CODE     = Code en dehors de fonction
+last.toby.util.TobyLanguage.INTERNAL        = Erreur interne
+last.toby.util.TobyLanguage.BAD_TYPE        = Type de variable incorrect
+last.toby.util.TobyLanguage.NOT_VAR         = Variable attendue
+last.toby.util.TobyLanguage.NO_MAINLINE     = Point d'entrée du programme exigé
+last.toby.util.TobyLanguage.NO_RPAREN       = ")" attendu
+last.toby.util.TobyLanguage.NO_LPAREN       = "(" attendu
+last.toby.util.TobyLanguage.NO_ASSIGN       = "=" attendu
+last.toby.util.TobyLanguage.NOT_A_FUNC      = Fonction indéfinie
+last.toby.util.TobyLanguage.BADNUM_ARGS     = Arguments invalides
+last.toby.util.TobyLanguage.BAD_IDENT       = Identifiant invalide
+last.toby.util.TobyLanguage.NO_ENDFOR       = POUR sans FINPOUR
+last.toby.util.TobyLanguage.NO_FOR          = FINPOUR sans POUR
+last.toby.util.TobyLanguage.NO_ENDWHILE     = TANTQUE sans FINTANTQUE
+last.toby.util.TobyLanguage.NO_WHILE        = FINTANTQUE sans TANTQUE
+last.toby.util.TobyLanguage.ORPHAN_ELIF     = SINONSI sans SI
+last.toby.util.TobyLanguage.ORPHAN_ELSE     = SINON sans SI
+last.toby.util.TobyLanguage.ORPHAN_ENDIF    = FINSI sans SI
+last.toby.util.TobyLanguage.TYPE_MMATCH     = Confusion de type
+last.toby.util.TobyLanguage.BAD_ARGUMENT    = Argument invalide
+last.toby.util.TobyLanguage.MAIN_RETVAL     = PRINCIPAL retourne une valeur
+last.toby.util.TobyLanguage.BAD_GLOBAL      = Variable ou FONCTION attendue
+last.toby.util.TobyLanguage.EXPECTED_END    = FINFONCTION attendu
+last.toby.util.TobyLanguage.NO_RETTYPE      = RETOUR attendu
+last.toby.util.TobyLanguage.ELIF_AFTER_ELSE = SINONSI après SINON
+last.toby.util.TobyLanguage.ELSE_AFTER_ELSE = Multiples SINON 
+last.toby.util.TobyLanguage.NO_VAR_DECL     = Ne peut pas déclarer de variable ici
+last.toby.util.TobyLanguage.FUNC_IN_FUNC    = FONCTION dans fonction
+last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division par Zero
+last.toby.util.TobyLanguage.NOCURTURTLE     = Pas de tortue courante
+last.toby.util.TobyLanguage.TURTLE_FENCED   = Tortue a dépassé la barrière
+
+
+# This is an internal error alert message.
+last.toby.util.TobyLanguage.SHOULDNOTBE = Ceci ne devrait pas arriver. Envoyer un Email à icculus@lokigames.com! (en Anglais seulement!)
+
+
+# Other stuff.
+last.toby.util.TobyLanguage.NOT_YET_IMPLEMENTED = Fonctionalité non implémentée.
+
+
+# end of example.tobylang ...
+
+
+
+
