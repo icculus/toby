@@ -112,6 +112,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String PROCERR_ORPHAN_ELSE  = "ELSE without IF";
     public final static String PROCERR_ORPHAN_ENDIF = "ENDIF without IF";
     public final static String PROCERR_TYPE_MMATCH  = "Type mismatch";
+    public final static String PROCERR_BAD_ARGUMENT = "Invalid argument.";
+    public final static String PROCERR_MAIN_RETVAL  = "Main returned value.";
 
         // Static variables...
     protected static String[] operatorTable  = null;
@@ -121,7 +123,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
 
         // Instance variables...
-    private boolean codeRunning = false;
     private boolean terminateCode = false;
     private Vector procList;
     private Stack globals;
@@ -164,13 +165,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         if (stdFuncTable == null)
             buildStdFuncTable();
     } // buildTables
-
-
-    public boolean isCodeRunning()
-    {
-        return(codeRunning);
-    } // isCodeRunning
-
 
     public void haltInterpreter()
     {
@@ -573,12 +567,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // deInitGraphics
 
 
-    public void paint(Graphics g)
+    public void paintComponent(Graphics g)
     /**
      *  Note that while Turtle isn't actually derived from Component, it
-     *   needs paint()'s Graphics parameter, so it may modify TurtleSpace's
-     *   canvas. This method works as such: we'll bitblt copyImage to the
-     *    screen, if it exists, or just draw a blank if all else fails.
+     *   needs paintComponent()'s Graphics parameter, so it may modify
+     *   TurtleSpace's canvas. This method works as such: we'll bitblt
+     *   copyImage to the screen, if it exists, or just draw a blank
+     *   if all else fails.
      *
      *      params : g == the "device context;" see Component::paint().
      *     returns : void.
@@ -600,7 +595,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             g.setColor(getBackground());
             g.drawRect(0, 0, getWidth(), getHeight());
         } // else
-    } // paint
+    } // paintComponent
 
 
 
@@ -822,6 +817,28 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         return(highToken);
     } // findHighestOperator
 
+
+    private boolean priorTokens(String[] src, int tokIndex)
+    /**
+     * Check indexes from (tokIndex) to (0) in (src) to see if any elements
+     *  are NOT (null). This will tell us if there are any prior existing
+     *  tokens on the line.
+     *
+     *      params : src == array of tokens.
+     *               tokIndex == leftmost token to check.
+     *     returns : (true) if prior tokens, (false) otherwise.
+     */
+    {
+        int i;
+
+        for (i = tokIndex; i <= 0; i--)
+        {
+            if (src[i] != null)
+                return(true);
+        } // for
+
+        return(false);
+    } // priorTokens
 
 
     private int findLeftValue(String[] src, int tokIndex)
@@ -1101,8 +1118,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     private void dealWithParens(String[] src, int tokIndex)
                                        throws TobyParseException
     /**
-     *   !!! comment !!!
+     * Handle parentheses. This can signify either a function call or
+     *  just a logical grouping.
      *
+     *      params : src == the array of tokens we are evaluating.
+     *               tokIndex == index of left parenthesis.
+     *     returns : void.
+     *      throws : TobyParseException on panic.
      */
     {
         TobyProcedure procCall;
@@ -1113,7 +1135,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         if (innerToks == null)
             TobyParseException.throwException(PROCERR_NO_RPAREN, null);
 
-        if ((tokIndex == 0) ||                   // first token or operator?
+        if ((priorTokens(src, tokIndex) == false) ||   // 1st token or operator?
             (searchTable(operatorTable, src[tokIndex - 1]) != -1))
         {
             calculate(innerToks);
@@ -1317,7 +1339,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         else if (funcName.equals(PROCNAME_SETPENCOL))
         {
             args = buildArguments(argToks, 1);
-            turtle.setPenColor(convStrToDouble((String) args.elementAt(0)));
+            
+            if (!turtle.setPenColor(convStrToDouble((String)args.elementAt(0))))
+                TobyParseException.throwException(PROCERR_BAD_ARGUMENT, null);
         } // else if
         else
             retVal = null;  // function not found.
@@ -1548,14 +1572,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     private void dealWithReturn(TobyProcedure proc, String[] src)
                                  throws TobyParseException, Intrinsic
-    /*
-     * The main Toby procedure executing loop
-     *
-     *
-     *
-     *
-     *
-     */
     {
         String retType = proc.getReturnType();
 
@@ -1568,7 +1584,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         {
              src[0] = null;   // blank KEYWORD_RETURN...
              calculate(src);
-             throw(intrinsicByTypeStr(retType, src[findLeftValue(src, 2)]));
+             throw(intrinsicByTypeStr(retType, src[findLeftValue(src, 1)]));
         } // else
     } // dealWithReturn
 
@@ -2217,15 +2233,15 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *
      *     params : proc == TOBY function to parse.
      *              args == arguments to the function. null if none.
-     *    returns : String representing possible TOBY return value. null if
-     *              returns void.
+     *    returns : String representing possible TOBY return value. (nothing)
+     *               if returns "nothing"  (a NothingIntrinsic).
      *     throws : TobyParseException on pukes.
      */
     {
         String[] src;
         int srcLine = 0;
         int lineChange;
-        Intrinsic retVal = null;
+        Intrinsic retVal = nothing;
 
 
             /*
@@ -2306,11 +2322,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public void run()
     {
         TobyProcedure mainLine = findProcedure(PROCNAME_MAINLINE);
+        boolean normalTermination = true;
 
         if (mainLine != null)
         {
             initGraphics();
-            codeRunning = true;
             terminateCode = false;
 
             turtle.setPenUp(false);
@@ -2319,15 +2335,20 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
             notifyBeginInterpretation();
 
-            stack.removeAllElements();   // clear the stack.
+            stack.removeAllElements();   // clear the stack, just in case.
             stack.push(mainLine);
 
             try
             {
-                runCode(mainLine);    // !!! bitch if main returns value?
+                if (runCode(mainLine) != nothing)
+                {
+                    TobyParseException.throwException(PROCERR_MAIN_RETVAL,
+                                                      mainLine.getProcName());
+                } // if
             } // try
             catch (TobyParseException tpe)
             {
+                normalTermination = false;
                 if (tpe.terminated == false)
                 {
                     notifySourceError(tpe.errLine);
@@ -2336,9 +2357,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             } // catch
 
             deleteProcedures();   // get rid of code, now that it has ran...
-            codeRunning = false;
             terminateCode = false;
-            notifyEndInterpretation();
+            notifyEndInterpretation(normalTermination);
             deInitGraphics();
         } // if
     } // run
@@ -2348,7 +2368,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     public void componentResized(ComponentEvent e)
     {
-        if (codeRunning == false)
+        if (isCodeRunning() == false)
         {
             if (copyImage != null)
                 copyImage.flush();
