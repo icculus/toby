@@ -2,6 +2,11 @@
 # Don't change this unless you know what you are doing.
 #  Please refer to example.tobylang for basic instructions.
 #
+# EVERYTHING IN HERE MUST BE LOWERCASE, OR YOU WILL GET STRANGE RUNTIME
+#  ERRORS. The Toby language is case insensitive to the end user, but for
+#  efficiency, some of the data sorting internally expects these strings to
+#  be lowercase.
+#
 #    --ryan c. gordon (icculus@lokigames.com)
 #
 
