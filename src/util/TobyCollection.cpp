@@ -20,6 +20,9 @@
 #include "util/TobyCollection.h"
 
 
+// !!! FIXME : This whole thing seems really inefficient.
+
+
 TobyCollection::TobyCollection(void) : list(NULL)
 {
 } // Constructor
@@ -38,30 +41,53 @@ TobyCollection::~TobyCollection(void)
 } // Destructor
 
 
-void TobyCollection::insertElement(void *elem, int pos)
+bool TobyCollection::insertElement(void *elem, int pos)
 {
     int count = 0;
+    TobyLinkedList *prev = NULL;
 
     for (TobyLinkedList *i = list; i != NULL; i = i->next)
     {
         if (count == pos)
         {
             TobyLinkedList *node = new TobyLinkedList;
-            assert(node != NULL);
-
             node->obj = elem;
-            node->next = i;
-            node->prev = i->prev;
-            i->prev = node;
-            if (node->prev != NULL)
-                node->prev->next = node;
-
-            return;
+            node->next = i->next;
+            node->prev = i;
+            i->next = node;
+            return(true);
         } // if
 
+        prev = i;
         count++;
     } // for
+
+        // check end of list addition.
+        // !!! FIXME: Duplicate code.
+    if (count == pos)
+    {
+        TobyLinkedList *node = new TobyLinkedList;
+        assert(node != NULL);
+
+        node->obj = elem;
+        node->next = NULL;
+        node->prev = prev;
+        if (prev == NULL)
+            list = node;
+        else
+            prev->next = node;
+        return(true);
+    } // if
+
+    return(false);
 } // TobyCollection::insertElement
+
+
+// !!! really inefficient.
+void TobyCollection::addElement(void *elem)
+{
+    insertElement(elem, size());
+} // TobyCollection::addElement
 
 
 void *TobyCollection::elementAt(int pos)
@@ -91,6 +117,8 @@ void *TobyCollection::remove(int pos)
             void *retval = i->obj;
             if (i->prev != NULL)
                 i->prev->next = i->next;
+            else
+                list = i->next;
 
             if (i->next != NULL)
                 i->next->prev = i->prev;
@@ -107,6 +135,7 @@ void *TobyCollection::remove(int pos)
 
 bool TobyCollection::isEmpty(void)
 {
+    // O(1) not O(n).
     return(list == NULL);
 } // TobyCollection::isEmpty
 

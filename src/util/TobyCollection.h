@@ -44,7 +44,8 @@ class TobyCollection : public TobyObject
 public:
     TobyCollection(void);
     virtual ~TobyCollection(void);
-    virtual void insertElement(void *elem, int pos);
+    virtual void addElement(void *elem);
+    virtual bool insertElement(void *elem, int pos);
     virtual void *elementAt(int pos);
     virtual void *remove(int pos);
     virtual bool isEmpty(void);
