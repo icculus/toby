@@ -21,7 +21,7 @@
 #define _INCLUDE_XMLNODE_H_
 
 #include "util/TobyObject.h"
-#include "util/HashTable.h"
+#include "util/TobyCollection.h"
 
 /*
  * One node in an XML tree.
@@ -38,29 +38,37 @@
  *
  *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
+typedef struct
+{
+    const char *name;
+    const char *value;
+} XMLAttribute;
+
+
 class XMLNode : public TobyObject
 {
 public:
-    XMLNode(void);
-    virtual void ~XMLNode(void);
+    XMLNode(XMLNode *_parent);
+    virtual ~XMLNode(void);
 
     void setText(const char *str);
     const char *getText(void);
     void setTag(const char *str);
     const char *getTag(void);
-    HashTable *getAttribs(void);
+    TobyCollection *getAttributes(void);
     TobyCollection *getChildren(void);
-    class XMLNode *getParent(void);
+    XMLNode *getParent(void);
 
 protected:
     const char *tag;
     const char *text;
-    HashTable *attribs;
-    class XMLNode *parent;
+    TobyCollection *attribs;
+    XMLNode *parent;
     TobyCollection *children;
-} // class XMLNode
+}; // class XMLNode
 
 #endif // !defined _INCLUDE_XMLNODE_H_
 
 // end of XMLNode.h ...
+
 

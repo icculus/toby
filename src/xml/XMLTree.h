@@ -21,9 +21,11 @@
 #define _INCLUDE_XMLTREE_H_
 
 #include "util/TobyObject.h"
+#include "util/TobyString.h"
+#include "xml/XMLNode.h"
 #include "exceptions/IOException.h"
 #include "io/TobyReader.h"
-#include "util/XMLNode.h"
+#include "io/Tokenizer.h"
 
 /*
  *  A quick-and-dirty XML parser.
@@ -58,7 +60,14 @@ public:
 private:
     XMLNode *root;
     TobyReader *in;
-} // class XMLTree
+
+    bool parseTagText(XMLNode *node, Tokenizer *toker) throw (IOException *);
+    bool parseTag(XMLNode *parent, Tokenizer *toker) throw (IOException *);
+    bool parseHeader(Tokenizer *toker) throw (IOException *);
+    bool _parseXMLThrowException(void) throw (IOException *);
+    bool parseTagAttributes(XMLNode *node, Tokenizer *toker)
+                                            throw (IOException *);
+}; // class XMLTree
 
 #endif // !defined _INCLUDE_XMLTREE_H_
 

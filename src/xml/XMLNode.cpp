@@ -17,15 +17,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "util/XMLNode.h"
+#include "xml/XMLNode.h"
 
-XMLNode::XMLNode(void)
+XMLNode::XMLNode(XMLNode *_parent)
     : tag(NULL),
       text(NULL),
-      attribs(new HashTable()),
-      parent(NULL),
+      attribs(new TobyCollection()),
+      parent(_parent),
       children(new TobyCollection())
 {
+    if (parent != NULL)
+    {
+        TobyCollection *c = parent->getChildren();
+        c->addElement((void *) this);
+    } // if
 } // Constructor
 
 
@@ -37,14 +42,20 @@ XMLNode::~XMLNode(void)
     if (text != NULL)
         delete[] text;
 
+    while (!attribs->isEmpty())
+    {
+        XMLAttribute *attr = (XMLAttribute *) attribs->remove(0);
+        delete[] attr->name;
+        delete[] attr->value;
+        delete attr;
+    } // while
     delete attribs;
 
     while (!children->isEmpty())
     {
-        XMLNode *node = (XMLNode *) children->remove();
+        XMLNode *node = (XMLNode *) children->remove(0);
         delete node;
     } // while
-
     delete children;
 } // Destructor
 
@@ -59,7 +70,7 @@ void XMLNode::setTag(const char *str)
     else
     {
         tag = new char[strlen(str) + 1];
-        strcpy(tag, str);
+        strcpy((char *) tag, str);
     } // else
 } // XMLNode::setTag
 
@@ -80,7 +91,7 @@ void XMLNode::setText(const char *str)
     else
     {
         text = new char[strlen(str) + 1];
-        strcpy(text, str);
+        strcpy((char *) text, str);
     } // else
 } // XMLNode::setText
 
@@ -91,7 +102,7 @@ const char *XMLNode::getText(void)
 } // XMLNode::getText
 
 
-HashTable *XMLNode::getAttribs(void)
+TobyCollection *XMLNode::getAttributes(void)
 {
     return(attribs);
 } // XMLNode::getAttribs
@@ -103,7 +114,7 @@ TobyCollection *XMLNode::getChildren(void)
 } // XMLNode::getChildren
 
 
-TobyCollection *XMLNode::getParent(void)
+XMLNode *XMLNode::getParent(void)
 {
     return(parent);
 } // XMLNode::getParent
