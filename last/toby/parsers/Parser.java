@@ -55,10 +55,10 @@ public abstract class Parser
          *   @param expression true or false expression.
          *   @throw ParseException if (expression) is true.
          */
-    public static void assert(boolean expression) throws ParseException
+    public static void _assert(boolean expression) throws ParseException
     {
-        BugSquasher.assert(expression);
-    } // assert
+        BugSquasher._assert(expression);
+    } // _assert
 
         /**
          * A simple bubble sort to alphabetize an array of strings.

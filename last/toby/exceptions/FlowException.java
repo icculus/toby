@@ -47,7 +47,7 @@ public abstract class FlowException extends java.lang.Exception
      *   returns : Constructor; void.
      */
     {
-        super(null);
+        super((java.lang.String) null);
     } // Constructor
 
 

@@ -39,14 +39,14 @@ public class BugSquasher
          *   @param expression true or false expression.
          *   @throw ParseException if (expression) is true.
          */
-    public static void assert(boolean expression) throws ParseException
+    public static void _assert(boolean expression) throws ParseException
     {
         if (debugging == true)
         {
             if (expression == true)
                 ParseException._throw(TobyLanguage.INTERNAL_ERROR);
         } // if
-    } // assert
+    } // _assert
 
 
         /**
