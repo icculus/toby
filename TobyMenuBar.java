@@ -271,7 +271,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         clearItem.setEnabled(false);
     } // beginInterpretation
 
-    public void endInterpretation()
+    public void endInterpretation(boolean normalTermination)
     {
         codeRunning = false;
         startStopItem.setText(MENUITEM_STARTCODE);

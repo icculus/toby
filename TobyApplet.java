@@ -281,7 +281,7 @@ public class TobyApplet extends JApplet implements ActionListener, Runnable,
     } // beginInterpretation
 
 
-    public void endInterpretation()
+    public void endInterpretation(boolean normalTermination)
     {
         runButton.setText(MSG_CLICKTOSTART);
     } // endInterpretation

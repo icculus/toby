@@ -26,7 +26,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
         lineIndexes = new Vector();
 
         buildComponents(frame);
-        setBackground(Color.gray);
+        setBackground(Color.red);
         setForeground(Color.black);
         setLayout(this);
     } // Constructor
@@ -189,7 +189,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
     } // beginInterpretation
 
 
-    public void endInterpretation()
+    public void endInterpretation(boolean normalTermination)
     {
         inputArea.setEditable(true);
     } // endInterpretation

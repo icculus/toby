@@ -10,7 +10,7 @@
 public interface SourceWatcher
 {
     public void beginInterpretation();
-    public void endInterpretation();
+    public void endInterpretation(boolean normalTermination);
     public void sourceUpdated(int newSourceLine);
     public void sourceError(int errLine);
 } // SourceWatcher

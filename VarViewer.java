@@ -25,7 +25,7 @@ public final class VarViewer extends JComponent implements VarWatcher
     } // Constructor
 
 
-    public void paint(Graphics g)
+    public void paintComponent(Graphics g)
     {
         int i;
         Intrinsic var;
@@ -63,6 +63,14 @@ public final class VarViewer extends JComponent implements VarWatcher
     {
         vars.removeAllElements();
     } // varBeginInterpretation
+
+
+    public void varEndInterpretation(boolean normalTermination)
+    {
+        if (normalTermination)
+            vars.removeAllElements();
+    } // varEndInterpretation
+
 
     public void varUpdated(Intrinsic var)
     {
