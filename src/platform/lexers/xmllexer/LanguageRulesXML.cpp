@@ -126,7 +126,7 @@ const char *LanguageRulesXML::outputDefinitions(void)
     str.append(numChildren);
     str.append("];\n");
 
-    for (int i = 0; i < numChildren; i++)
+    for (size_t i = 0; i < numChildren; i++)
     {
         str.append("    kids[");
         str.append(i);

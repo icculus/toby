@@ -107,13 +107,13 @@ const char *RepeatRulesXML::outputDefinitions(void)
     str.append(" == NULL);\n#endif\n\n");
 
     str.append("    LexerRules **kids = new LexerRules *[");
-    str.append((long) numChildren);
+    str.append(numChildren);
     str.append("];\n");
 
     for (size_t i = 0; i < numChildren; i++)
     {
         str.append("    kids[");
-        str.append((long) i);
+        str.append(i);
         str.append("] = ");
         const char *kidConstructor = children[i]->outputConstructor();
         str.append(kidConstructor);
@@ -128,7 +128,7 @@ const char *RepeatRulesXML::outputDefinitions(void)
     str.append(", ");
     str.append(maxRepeats);
     str.append(", ");
-    str.append((long) numChildren);
+    str.append(numChildren);
     str.append(", kids);\n");
 
     str.append("return(repeat_");

@@ -224,7 +224,7 @@ const char *TokenizerRulesXML::outputConstructor(void)
     str.append(", \"");
     appendEscapedString(&str, whitespaceChars, numWhitespaceChars);
     str.append("\", ");
-    str.append((long) numWhitespaceChars);
+    str.append(numWhitespaceChars);
     str.append(", ");
     str.append(ignoreWhitespace);
     str.append(", ");
@@ -242,7 +242,7 @@ const char *TokenizerRulesXML::outputConstructor(void)
     str.append(", \"");
     appendEscapedString(&str, quoteChars, numQuoteChars);
     str.append("\", ");
-    str.append((long) numQuoteChars);
+    str.append(numQuoteChars);
     str.append(", ");
     str.append(escaping);
     str.append(", \'");
