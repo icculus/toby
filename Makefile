@@ -47,6 +47,14 @@ cygwin := autodetect
 debug := true
 
 #-----------------------------------------------------------------------------#
+# Set this to true to link with Electric Fence. If you don't
+#  know what that is, you better not set it.
+#  ElectricFence can be found at ftp://ftp.perens.com/pub/ElectricFence/
+#-----------------------------------------------------------------------------#
+use_efence := false
+#use_efence := true
+
+#-----------------------------------------------------------------------------#
 # Set this to what your platform has.
 #   Current option(s): "pthreads", "sdl", "null".
 #-----------------------------------------------------------------------------#
@@ -112,9 +120,9 @@ platform_loader := unix
 #
 #   Current option(s): "xml", "static", "null"
 #-----------------------------------------------------------------------------#
-#platform_lexer := static
+platform_lexer := static
 #platform_lexer := null
-platform_lexer := xml
+#platform_lexer := xml
 
 #-----------------------------------------------------------------------------#
 # Choose all that apply. These are parsers for languages that you will be
@@ -310,12 +318,16 @@ CFLAGS += -Wall -Werror -fexceptions -frtti -D_REENTRANT
 
 LDFLAGS += -lm
 
+ifeq ($(strip $(use_efence)),true)
+  EFENCELIB := /usr/lib/libefence.a
+endif
+
 ifeq ($(strip $(debug)),true)
   CFLAGS += -DDEBUG -g -fno-omit-frame-pointer
   LDFLAGS += -g -fno-omit-frame-pointer
 else
-  CFLAGS += -D_NDEBUG -O2 -fomit-frame-pointer
-  LDFLAGS += -O2 -fomit-frame-pointer
+  CFLAGS += -DNDEBUG -s -O2 -fomit-frame-pointer
+  LDFLAGS += -s -O2 -fomit-frame-pointer
 endif
 
 ifneq ($(strip $(USE_ASM)),-DUSE_PORTABLE_C)
@@ -458,14 +470,17 @@ ifeq ($(strip $(platform_lexer)),xml)
                platform/lexers/xmllexer/ReqWhitespaceRulesXML.cpp \
                platform/lexers/xmllexer/ReqSingleLineCommentRulesXML.cpp \
                platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.cpp \
-               platform/lexers/xmllexer/ReqNumberRulesXML.cpp
+               platform/lexers/xmllexer/ReqNumberRulesXML.cpp \
+               platform/lexers/xmllexer/ReqWordCharsRulesXML.cpp \
+               platform/lexers/xmllexer/ReqCharRulesXML.cpp \
+               platform/lexers/xmllexer/ReqElementRulesXML.cpp
   LEXERDIR  := xmllexer
   valid_lexer_target := true
 endif
 
 ifeq ($(strip $(platform_lexer)),static)
   LEXERSRCS := platform/lexers/staticlexer/StaticLexer.cpp
-  LEXERSRCS += $(foreach f,$(static_parsers),platform/lexers/staticlexer/$(f).cpp)
+  LEXERSRCS += $(foreach f,$(static_parsers),platform/lexers/staticlexer/Static$(f)Lexer.cpp)
   LEXERDIR  := staticlexer
   valid_lexer_target := true
 endif
@@ -500,8 +515,13 @@ endif
 
 MAINEXE := $(BINDIR)/toby$(strip $(EXE_EXT))
 STANDALONEEXE := $(BINDIR)/standalone/toby$(strip $(EXE_EXT))
+LEXGENEXE := $(BINDIR)/standalone/tobylexgen$(strip $(EXE_EXT))
 
 EXES := $(STANDALONEEXE) #$(MAINEXE)
+ifeq ($(strip $(platform_lexer)),xml)
+  EXES += $(LEXGENEXE)
+endif
+
 TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
 TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
 TESTGRAMMAREXE := $(BINDIR)/test/grammar$(strip $(EXE_EXT))
@@ -528,8 +548,9 @@ LEXERSRCS += lexer/Lexer.cpp lexer/LexerRules.cpp lexer/LanguageRules.cpp \
              lexer/ReqEOFRules.cpp lexer/ReqWordRules.cpp \
              lexer/ReqNewlineRules.cpp lexer/ReqLiteralStringRules.cpp \
              lexer/ReqWhitespaceRules.cpp lexer/ReqMultiLineCommentRules.cpp \
-             lexer/ReqSingleLineCommentRules.cpp lexer/ReqNumberRules.cpp
-
+             lexer/ReqSingleLineCommentRules.cpp lexer/ReqNumberRules.cpp \
+             lexer/ReqWordCharsRules.cpp lexer/ReqCharRules.cpp \
+             lexer/ReqElementRules.cpp
 #-----------------------------------------------------------------------------#
 # Source and object parsing...
 #-----------------------------------------------------------------------------#
@@ -574,6 +595,9 @@ $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 
 $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone/toby.o
+
+$(LEXGENEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone/tobylexgen.o
+	$(LINKER) -o $(LEXGENEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone/tobylexgen.o $(EFENCELIB)
 
 tests: $(BINDIR) $(TESTEXES)
 
@@ -625,6 +649,7 @@ showcfg:
 	@echo "Using CygWin          : $(cygwin)"
 	@echo "Debugging             : $(debug)"
 	@echo "ASM flag              : $(USE_ASM)"
+	@echo "Using ElectricFence   : $(use_efence)"
 	@echo "Video module          : $(platform_video)"
 	@echo "Thread module         : $(platform_threads)"
 	@echo "Clock module          : $(platform_clock)"
