@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<language name="toby" firstelement="TOPLEVEL">
+
+    <tokenizer casesensitive="false"
+               whitespacechars=" \t"
+               ignorewhitespace="true"
+               ignorenewlines="false"
+               singlelinecommentstart="//"
+               ignoresinglelinecomments="true"
+               multilinecommentstart=""
+               multilinecommentend=""
+               ignoremultilinecomments="true"
+               quotechars='"'
+               escaping="true"
+               escapechar="\\"
+               convertnumstowords="false"
+    />
+
+
+    <!-- Stuff that gets used all over the place...             -->
+    <!-- EXPRESSION almost needs to be first, since most lexing -->
+    <!-- ends up looking for this at some point or another.     -->
+
+    <element name="EXPRESSION">
+        <reqelement name="OPERAND"/>
+        <optional>
+            <reqelement name="BINARYEXPRESSION"/>
+        </optional>
+
+        <element name="OPERAND">
+            <optional><reqelement name="PREFIXEDUNARYOPERATOR"/></optional>
+            <pickone>
+                <reqelement name="PARENTHESES"/>
+                <reqelement name="FUNCTIONCALL"/>
+                <reqelement name="INDENTIFIER"/>
+                <reqelement name="BOOLEANVALUE"/>
+                <reqnumber/>
+                <reqliteralstring/>
+            </pickone>
+
+            <!-- (that's it, right now.) -->
+            <element name="PREFIXEDUNARYOPERATOR">
+                <reqword lookup="true" text="TOBYI18N_OPER_SUBTRACT"/>
+            </element>
+
+            <element name="PARENTHESES">
+                <reqword lookup="true" text="TOBYI18N_OPER_LPAREN"/>
+                <reqelement name="EXPRESSION"/>
+                <reqword lookup="true" text="TOBYI18N_OPER_RPAREN"/>
+            </element>
+
+            <element name="BOOLEANVALUE">
+                <pickone>
+                    <reqword lookup="true" text="TOBYI18N_KEYWORD_TRUE"/>
+                    <reqword lookup="true" text="TOBYI18N_KEYWORD_FALSE"/>
+                </pickone>
+            </element>
+        </element>
+
+        <element name="BINARYEXPRESSION">
+            <reqelement name="BINARYOPERATOR"/>
+            <reqelement name="OPERAND"/>
+            <optional><reqelement name="BINARYEXPRESSION"/></optional>
+
+            <element name="BINARYOPERATOR">
+                <pickone>
+                    <reqword lookup="true" text="TOBYI18N_OPER_EQUALS"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_MULTIPLY"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_DIVIDE"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_MODULO"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_ADD"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_SUBTRACT"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_GREATER"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_LESS"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_GREATEREQL"/>
+                    <reqword lookup="true" text="TOBYI18N_OPER_LESSEQL"/>
+                </pickone>
+            </element>
+        </element>
+    </element>
+
+    <element name="IDENTIFIER">
+        <reqchar type="letter"/>
+        <repeat min="0" max="n">
+            <pickone>
+                <reqchar type="letter"/>
+                <reqchar type="number"/>
+                <reqchar type="specific" char="_"/>
+            </pickone>
+        </repeat>
+    </element>
+
+    <element name="FUNCTIONCALL">
+        <reqelement name="IDENTIFIER"/>
+        <reqword lookup="true" text="TOBYI18N_OPER_LARRAY"/>
+        <repeat min="0" max="n">
+            <reqelement name="EXPRESSION"/>
+            <reqword lookup="true" text="TOBYI18N_OPER_SEPERATOR"/>
+        </repeat>
+        <optional>
+            <reqelement name="EXPRESSION"/>
+        </optional>
+        <reqword lookup="true" text="TOBYI18N_OPER_RARRAY"/>
+    </element>
+
+    <element name="VARDEFINE">
+        <reqelement name="VARIABLETYPE"/>
+        <reqelement name="IDENTIFIER"/>
+        <optional>
+            <reqelement name="VARINIT"/>
+        </optional>
+        <reqnewline/>
+
+        <element name="VARIABLETYPE">
+            <pickone>
+                <reqelement name="INTRINSICTYPE"/>
+                <reqelement name="ARRAYTYPE"/>
+            </pickone>
+
+            <element name="INTRINSICTYPE">
+                <pickone>
+                    <reqword lookup="true" text="TOBYI18N_KEYWORD_NUMBER"/>
+                    <reqword lookup="true" text="TOBYI18N_KEYWORD_BOOLEAN"/>
+                    <reqword lookup="true" text="TOBYI18N_KEYWORD_STRING"/>
+                </pickone>
+            </element>
+
+            <element name="ARRAYTYPE">
+                <reqword lookup="true" text="TOBYI18N_KEYWORD_ARRAY"/>
+                <reqword lookup="true" text="TOBYI18N_KEYWORD_OF"/>
+                <reqelement name="INTRINSICTYPE"/>
+                <reqword lookup="true" text="TOBYI18N_OPER_LARRAY"/>
+                <reqnumber integer="true"/>
+                <reqword lookup="true" text="TOBYI18N_KEYWORD_TO"/>
+                <reqnumber integer="true"/>
+                <reqword lookup="true" text="TOBYI18N_OPER_RARRAY"/>
+            </element>
+        </element>
+
+        <element name="VARINIT">
+            <reqword lookup="true" text="TOBYI18N_OPER_ASSIGNMENT"/>
+            <reqelement name="EXPRESSION"/>
+        </element>
+    </element>
+
+
+
+    <!-- lexing starts with this element... -->
+    <element name="TOPLEVEL">
+        <repeat min="0" max="n"><reqelement name="GLOBALVARS"/></repeat>
+        <repeat min="0" max="n"><reqelement name="FUNCTION"/></repeat>
+
+        <element name="GLOBALVARS">
+            <optional>
+                <reqelement name="VARDEFINE"/>
+            </optional>
+        </element>
+
+        <element name="FUNCTION">
+            <reqelement name="FUNCTIONDECLARATION"/>
+            <repeat min="0" max="n">
+                <reqelement name="LOCALVARS"/>
+            </repeat>
+            <repeat min="0" max="n">
+                <reqelement name="STATEMENT"/>
+            </repeat>
+            <reqword lookup="true" text="TOBYI18N_KEYWORD_ENDFUNC"/>
+            <reqnewline/>
+
+            <element name="FUNCTIONDECLARATION">
+                <reqword lookup="true" text="TOBYI18N_KEYWORD_BEGINFUNC"/>
+                <reqelement name="IDENTIFIER"/>
+                <reqword lookup="true" text="TOBYI18N_OPER_LPAREN"/>
+                <reqelement name="FUNCTIONPARAMETERLIST"/>
+                <reqword lookup="true" text="TOBYI18N_OPER_RPAREN"/>
+                <reqword lookup="true" text="TOBYI18N_KEYWORD_RETURNS"/>
+                <reqelement name="RETURNTYPE"/>
+                <reqnewline/>
+
+                <element name="FUNCTIONPARAMETERLIST">
+                    <repeat min="0" max="n">
+                        <reqelement name="FUNCTIONPARAMETER"/>
+                        <reqword lookup="true" text="TOBYI18N_OPER_SEPARATOR"/>
+                    </repeat>
+                    <optional>
+                        <reqelement name="FUNCTIONPARAMETER"/>
+                    </optional>
+
+                    <element name="FUNCTIONPARAMETER">
+                        <reqelement name="VARIABLETYPE"/>
+                        <reqelement name="INDENTIFIER"/>
+                    </element>
+                </element>
+
+                <element name="RETURNTYPE">
+                    <pickone>
+                        <reqelement name="VARIABLETYPE"/>
+                        <reqword lookup="true" name="TOBYI18N_KEYWORD_NOTHING"/>
+                    </pickone>
+                </element>
+            </element>
+
+            <element name="LOCALVARS">
+                <optional>
+                    <reqelement name="VARDEFINE"/>
+                </optional>
+            </element>
+
+            <element name="STATEMENT">
+                <pickone>
+                    <reqelement name="ASSIGNMENTSTATEMENT"/>
+                    <reqelement name="FORSTATEMENT"/>
+                    <reqelement name="WHILESTATEMENT"/>
+                    <reqelement name="IFSTATEMENT"/>
+                    <reqelement name="RETURNSTATEMENT"/>
+                    <reqelement name="FUNCTIONCALLSTATEMENT"/>
+                </pickone>
+
+                <element name="ASSIGNMENTSTATEMENT">
+                    <reqelement name="IDENTIFIER"/>
+                    <reqword lookup="true" name="TOBYI18N_OPER_ASSIGNMENT"/>
+                    <reqelement name="EXPRESSION"/>
+                    <reqnewline/>
+                </element>
+
+                <element name="FORSTATEMENT">
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_FOR"/>
+                    <reqelement name="IDENTIFIER"/>
+                    <reqword lookup="true" name="TOBYI18N_OPER_ASSIGNMENT"/>
+                    <reqelement name="EXPRESSION"/>
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_TO"/>
+                    <reqelement name="EXPRESSION"/>
+                    <optional>
+                        <reqelement name="FORSTEP"/>
+                    </optional>
+                    <reqnewline/>
+                    <repeat min="0" max="n">
+                        <reqelement name="STATEMENT"/>
+                    </repeat>
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDFOR"/>
+                    <reqnewline/>
+
+                    <element name="FORSTEP">
+                        <reqword lookup="true" name="TOBYI18N_KEYWORD_STEP"/>
+                        <reqelement name="EXPRESSION"/>
+                    </element>
+                </element>
+
+                <element name="WHILESTATEMENT">
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_WHILE"/>
+                    <reqelement name="EXPRESSION"/>
+                    <reqnewline/>
+                    <repeat min="0" max="n">
+                        <reqelement name="STATEMENT"/>
+                    </repeat>
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDWHILE"/>
+                    <reqnewline/>
+                </element>
+
+                <element name="IFSTATEMENT">
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_IF"/>
+                    <reqelement name="EXPRESSION"/>
+                    <reqnewline/>
+                    <repeat min="0" max="n">
+                        <reqelement name="STATEMENT"/>
+                    </repeat>
+                    <repeat min="0" max="n">
+                        <reqelement name="ELSEIFSTATEMENT"/>
+                    </repeat>
+                    <optional>
+                        <reqelement name="ELSESTATEMENT"/>
+                    </optional>
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDIF"/>
+                    <reqnewline/>
+
+                    <element name="ELSEIFSTATEMENT">
+                        <reqword lookup="true" name="TOBYI18N_KEYWORD_ELSEIF"/>
+                        <reqelement name="EXPRESSION"/>
+                        <reqnewline/>
+                        <repeat min="0" max="n">
+                            <reqelement name="STATEMENT"/>
+                        </repeat>
+                    </element>
+
+                    <element name="ELSESTATEMENT">
+                        <reqword lookup="true" name="TOBYI18N_KEYWORD_ELSE"/>
+                        <reqnewline/>
+                        <repeat min="0" max="n">
+                            <reqelement name="STATEMENT"/>
+                        </repeat>
+                    </element>
+                </element>
+
+                <element name="RETURNSTATEMENT">
+                    <reqword lookup="true" name="TOBYI18N_KEYWORD_RETURN"/>
+                    <reqelement name="EXPRESSION"/>
+                    <reqnewline/>
+                </element>
+
+                <element name="FUNCTIONCALLSTATEMENT">
+                    <reqelement name="FUNCTIONCALL"/>
+                    <reqnewline/>
+                </element>
+            </element>
+        </element>
+    </element>
+</language>
+
+<!-- end of toby.xml ... -->
+
