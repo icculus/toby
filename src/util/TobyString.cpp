@@ -63,6 +63,9 @@ void TobyString::append(unsigned char ch)
 
 void TobyString::append(const char *_str)
 {
+    if (_str == NULL)
+        _str = "(null)";
+
     int strSize = strlen(str);
     int newStrSize = strlen(_str);
     str = (char *) realloc(str, strSize + newStrSize + 1);
@@ -79,7 +82,7 @@ void TobyString::append(bool trueFalse)
 void TobyString::append(signed int num)
 {
     char buffer[32];
-    sprintf(buffer, "%d.30", num);
+    sprintf(buffer, "%d", num);
     append(buffer);
 } // TobyString::append
 
@@ -87,7 +90,7 @@ void TobyString::append(signed int num)
 void TobyString::append(unsigned int num)
 {
     char buffer[32];
-    sprintf(buffer, "%u.30", num);
+    sprintf(buffer, "%u", num);
     append(buffer);
 } // TobyString::append
 
@@ -107,7 +110,7 @@ void TobyString::append(unsigned short num)
 void TobyString::append(signed long num)
 {
     char buffer[32];
-    sprintf(buffer, "%ld.30", num);
+    sprintf(buffer, "%ld", num);
     append(buffer);
 } // TobyString::append
 
@@ -115,7 +118,7 @@ void TobyString::append(signed long num)
 void TobyString::append(unsigned long num)
 {
     char buffer[32];
-    sprintf(buffer, "%lu.30", num);
+    sprintf(buffer, "%lu", num);
     append(buffer);
 } // TobyString::append
 
