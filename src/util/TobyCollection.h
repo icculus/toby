@@ -32,11 +32,11 @@
  */
 
 // internally, this is just a linked list.
-typedef struct TobyLinkedListStruct
+typedef struct __S_TobyLinkedList
 {
     void *obj;
-    struct TobyLinkedListStruct *prev;
-    struct TobyLinkedListStruct *next;
+    struct __S_TobyLinkedList *prev;
+    struct __S_TobyLinkedList *next;
 } TobyLinkedList;
 
 class TobyCollection : public TobyObject
