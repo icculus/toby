@@ -38,7 +38,7 @@ TobyCollection::~TobyCollection(void)
 } // Destructor
 
 
-void TobyCollection::insertElement(TobyObject *elem, int pos)
+void TobyCollection::insertElement(void *elem, int pos)
 {
     int count = 0;
 
@@ -64,7 +64,7 @@ void TobyCollection::insertElement(TobyObject *elem, int pos)
 } // TobyCollection::insertElement
 
 
-TobyObject *TobyCollection::elementAt(int pos)
+void *TobyCollection::elementAt(int pos)
 {
     int count = 0;
 
@@ -80,7 +80,7 @@ TobyObject *TobyCollection::elementAt(int pos)
 } // TobyCollection::insertElement
 
 
-TobyObject *TobyCollection::remove(int pos)
+void *TobyCollection::remove(int pos)
 {
     int count = 0;
 
@@ -88,7 +88,7 @@ TobyObject *TobyCollection::remove(int pos)
     {
         if (count == pos)
         {
-            TobyObject *retval = i->obj;
+            void *retval = i->obj;
             if (i->prev != NULL)
                 i->prev->next = i->next;
 
@@ -121,6 +121,32 @@ int TobyCollection::size(void)
 
     return(retval);
 } // TobyCollection::size
+
+
+void TobyCollection::swapElements(int pos1, int pos2)
+{
+    int count = 0;
+    TobyLinkedList *elem1 = NULL;
+    TobyLinkedList *elem2 = NULL;
+
+    for (TobyLinkedList *i = list; i != NULL; i = i->next)
+    {
+        if (count == pos1)
+            elem1 = i;
+        else if (count == pos2)
+            elem2 = i;
+
+        if ((elem1 != NULL) && (elem2 != NULL))
+        {
+            void *tmp = elem1->obj;
+            elem1->obj = elem2->obj;
+            elem2->obj = tmp;
+            return;
+        } // if
+
+        count++;
+    } // for
+} // TobyCollection::swapElement
 
 // end of TobyCollection.cpp ...
 

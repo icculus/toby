@@ -24,6 +24,9 @@
 
 /*
  * This is a base class for linear collections: lists, stacks, etc.
+ *  For speed, these classes are NOT thread safe! If you are going to have
+ *  two threads modifying a collection at the same time, rethink your design,
+ *  and then add TobyMutexes to your calling code.
  *
  *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
  */
@@ -31,7 +34,7 @@
 // internally, this is just a linked list.
 typedef struct TobyLinkedListStruct
 {
-    TobyObject *obj;
+    void *obj;
     struct TobyLinkedListStruct *prev;
     struct TobyLinkedListStruct *next;
 } TobyLinkedList;
@@ -41,11 +44,12 @@ class TobyCollection : public TobyObject
 public:
     TobyCollection(void);
     virtual ~TobyCollection(void);
-    virtual void insertElement(TobyObject *elem, int pos);
-    virtual TobyObject *elementAt(int pos);
-    virtual TobyObject *remove(int pos);
+    virtual void insertElement(void *elem, int pos);
+    virtual void *elementAt(int pos);
+    virtual void *remove(int pos);
     virtual bool isEmpty(void);
     virtual int size(void);
+    virtual void swapElements(int pos1, int pos2);
 
 protected:
     TobyLinkedList *list;
