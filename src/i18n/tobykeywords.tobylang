@@ -123,5 +123,5 @@ TOBYSTR(TOBYI18N_PROCNAME_JOINSTRINGS, "joinstrings")
 
 /* --- END TOBY I18N LANGUAGE DATA --- */
 
-# end of tobykeywords.tobylang ...
+/* end of tobykeywords.tobylang ... */
 

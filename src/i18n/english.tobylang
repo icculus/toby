@@ -33,7 +33,7 @@
  *     sole ownership of it. If you don't like that, stop now.
  *  3. E-mail your completed work to Ryan at icculus@linuxgames.com. He'll
  *     incorporate it into the next release of Toby.
- *  4. C++ comments are acceptable, both in the "/* */" and "//" form. They
+ *  4. C++ comments are acceptable, both in the multiline and "//" form. They
  *     are ignored when this file is parsed. Lines with nothing but whitespace
  *     are also ignored.
  *  5. Only translate the text after the comma in a TOBYSTR section. That is,
