@@ -1,0 +1,25 @@
+//---------------------------------------------------
+// If globals are working correctly, this should
+//  draw a line north, WAY off the edge of
+//  TurtleSpace. Otherwise, it'll just draw a 
+//  line about 5 pixels wide or give an error
+//  or something like that.
+//
+//Copyright (c) 1999 Lighting and Sound Technologies.
+// Written by Ryan C. Gordon.
+//---------------------------------------------------
+
+number thisIsGlobal
+
+function main() returns nothing
+	thisIsGlobal = 10000
+	testGlob()
+	goForward(thisIsGlobal)
+endfunction
+
+function testGlob() returns nothing
+	number thisIsGlobal
+
+	thisIsGlobal = 5
+endfunction
+
