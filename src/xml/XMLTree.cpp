@@ -54,7 +54,7 @@ bool XMLTree::parseTagText(XMLNode *node, Tokenizer *toker)
     bool retval = true;
     TobyString text;
 
-    toker->setIgnoreWhitespace(false);
+    //toker->setIgnoreWhitespace(false);
 
     while (true)
     {
@@ -79,7 +79,7 @@ bool XMLTree::parseTagText(XMLNode *node, Tokenizer *toker)
         } // else
     } // while
 
-    toker->setIgnoreWhitespace(true);
+    //toker->setIgnoreWhitespace(true);
 
     if (retval)
         node->setText(text.c_str());
@@ -240,7 +240,7 @@ bool XMLTree::_parseXMLThrowException(void) throw (IOException *)
     toker.setIgnoreSingleLineComments(true);
     toker.setMultiLineComment("<!--", "-->");
     toker.setIgnoreMultiLineComments(true);
-    toker.setQuoteChars("\"", 1);
+    toker.setQuoteChars("\"\'", 2);
     toker.setEscapeChar('\\');
     toker.setEscaping(true);
     toker.setConvertNumbers(false);
