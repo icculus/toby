@@ -190,7 +190,8 @@ public class SaneTokenizer extends StreamTokenizer
                 {
                     if (quotedAreWords)
                         ttype = TT_WORD;
-                    sval = qChar + sval + qChar;
+                    String qStr = new Character((char) qChar).toString();
+                    sval = qStr + sval + qStr;
                 } // if
 
                 else if (charsAreWords)
