@@ -26,11 +26,11 @@
 
 // This is all done with preprocessor voodoo.
 
-#ifdef TOBYSTR
-#error TOBYSTR should not be defined at this point.
+#ifdef TOBYI18N
+#error TOBYI18N should not be defined at this point.
 #endif
 
-#define TOBYSTR(sym, str) char *sym = str;
+#define TOBYI18N(sym, str) char *sym = str "\0";
 
 #include "util/TobyLanguage.h"
 

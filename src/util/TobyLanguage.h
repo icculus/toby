@@ -36,8 +36,8 @@ extern "C" {
 #error CALLED_FROM_TOBYLANGUAGE should not be defined in your program.
 #endif
 
-#if (!defined TOBYSTR)  /* TobyLanguage.cpp defines this, too. */
-#define TOBYSTR(sym, str) extern char *sym;
+#if (!defined TOBYI18N)  /* TobyLanguage.cpp defines this, too. */
+#define TOBYI18N(sym, str) extern char *sym;
 #endif
 
 #define CALLED_FROM_TOBYLANGUAGE
@@ -63,7 +63,7 @@ extern "C" {
 
 
 #undef CALLED_FROM_TOBYLANGUAGE
-#undef TOBYSTR
+#undef TOBYI18N
 
 #ifdef __cplusplus
 }

@@ -36,6 +36,8 @@ standalone program for initial testing.)
             which is implemented in the subclasses' source files. Moved the
             tiny bit of code in util/TobyClock.h to util/TobyClock.cpp, and
             added it to the Makefile.
+08062001 - Started defining io/Tokenizer.h.
+08082001 - Updated i18n docs, and changed TOBYSTR to TOBYI18N in the langfiles.
 
 // end of changelog.txt ...
 
