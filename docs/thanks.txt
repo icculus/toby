@@ -10,7 +10,7 @@ At this point, TOBY has been entirely written, and maintained by
   and being a bizarre sort of soul mate. Get yer slack on.
 - Sabrina Blanks, April Andrews, and Nicki Publick for being unwitting test
   subjects for Toby.
-- Loren Osborne, for many hours of debate and discussion of implementation.
+- Loren Osborn, for many hours of debate and discussion of implementation.
 - Michael Roessler, who managed to sleep through the noise of my clicky
   keyboard on many consecutive nights of hacking.
 - The journal list gang, for listening to Ryan ramble about his life.
