@@ -39,9 +39,10 @@ attributes  :
         If true, blocks of whitespace are skipped by the tokenizer. This means
         that the <reqnewline> tag will always fail, but it also means that
         you don't have to check for it. Default is true.
-    singlelinecommentstart="string"
+    singlelinecomment="string"
         (string) signifies the sequence of characters that comprise a
         single line comment. If you were tokenizing C++, it would be "//".
+        Default is undefined.
     ignoresinglelinecomments="[true|false]"
         If true, single line comments are skipped by the tokenizer. This means
         that the <reqsinglelinecomment> tag will always fail, but it also
@@ -51,9 +52,11 @@ attributes  :
     multilinecommentstart="string"
         (string) signifies the sequence of characters that comprise the start
         of a multiline comment. If you were tokenizing C++, it would be "/*".
+        Default is undefined.
     multilinecommentend="string"
         (string) signifies the sequence of characters that comprise the end
         of a multiline comment. If you were tokenizing C++, it would be "*/".
+        Default is undefined.
     ignoremultilinecomments="[true|false]"
         If true, multiline comments are skipped by the tokenizer. This means
         that the <reqmultilinecomment> tag will always fail, but it also
@@ -61,7 +64,7 @@ attributes  :
     quotechars="string"
         (string) signifies a list of characters that can define a literal
         string. In C++, this would be "\"" (or, alternately, '"'). In Perl, it
-        would be "\"\'". Default is "\"\'".
+        would be "\"\'". Default is undefined.
     escaping="[true|false]"
         If true, then the value of the escapeChar attribute will be used to
         escape quote chars. Default is true.
