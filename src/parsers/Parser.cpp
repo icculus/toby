@@ -41,7 +41,7 @@ TobyCollection *Parser::alphabetizeArrayElements(TobyCollection *array)
     if (array == NULL)      // safety check.
         return(NULL);
 
-    max = array->size() - 1;
+    max = array->getSize() - 1;
 
     if (max <= 0)
         return(array);
@@ -70,7 +70,7 @@ int Parser::searchAlphabeticArray(TobyCollection *table, const char *forThis)
 {
     if (forThis != NULL)   // bullet proofing.
     {
-        int max = table->size();
+        int max = table->getSize();
         for (int i = 0; i < max; i++)
         {
             int rc = strcmp(forThis, (char *) (table->elementAt(i)));
@@ -89,7 +89,7 @@ int Parser::searchArray(TobyCollection *table, const char *forThis)
 {
     if (forThis != NULL)
     {
-        int max = table->size();
+        int max = table->getSize();
         for (int i = 0; i < max; i++)
         {
             if (strcmp((char *) table->elementAt(i), forThis) == 0)
@@ -103,7 +103,7 @@ int Parser::searchArray(TobyCollection *table, const char *forThis)
 
 int Parser::searchArrayForReference(TobyCollection *table, const char *str)
 {
-    int max = table->size();
+    int max = table->getSize();
 
     for (int i = 0; i < max; i++)
     {
