@@ -377,20 +377,26 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
             long linkTime = p.getTotalLinkTime();
             long execTime = this.globalContext.getTotalExecTime();
             long totalTime = execTime + parseTime + linkTime;
+
+
+            // !!! This needs to make it's way into the GUI, and TobyLanguage.
+
             System.err.println();
+            System.err.println(" !!! unlocalized text: !!!");
             System.err.println("Parse time : " + parseTime + " milliseconds.");
             System.err.println("Link  time : " + linkTime + " milliseconds.");
             System.err.println("Exec. time : " + execTime + " milliseconds.");
             System.err.println("Total time : " + totalTime + " milliseconds.");
             System.err.println();
+
         } // try
         catch (FlowException exc)
         {
-            String errMsg = "Error: " + exc.getMessage() +
-                            " on line " + exc.exceptionLine +
-                            " in function " + exc.procName;
-            JOptionPane.showMessageDialog(null, errMsg,
-                                          TobyLanguage.ERROR,
+            String s = TobyLanguage.ERR_IN_FUNC;
+            s = TobyLanguage.replaceFmtTokenInStr(0, s, exc.getMessage());
+            s = TobyLanguage.replaceFmtTokenInStr(1, s, exc.exceptionLine);
+            s = TobyLanguage.replaceFmtTokenInStr(2, s, exc.procName);
+            JOptionPane.showMessageDialog(null, s, TobyLanguage.ERROR,
                                           JOptionPane.ERROR_MESSAGE);
 
 
@@ -399,11 +405,9 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         } // catch
         catch (Exception exc)
         {
-
-                // !!! tobylanguage?
             String errMsg = exc.getClass().getName() + ":" + exc.getMessage();
             errMsg += "\n\n";
-            errMsg += "This should not happen. Email icculus@lokigames.com!";
+            errMsg += TobyLanguage.SHOULDNOTBE;
             JOptionPane.showMessageDialog(null, errMsg,
                                           TobyLanguage.ERROR,
                                           JOptionPane.ERROR_MESSAGE);
