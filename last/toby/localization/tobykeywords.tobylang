@@ -1,0 +1,80 @@
+#
+# Don't change this unless you know what you are doing.
+#  Please refer to example.tobylang for basic instructions.
+#
+#    --ryan c. gordon (icculus@lokigames.com)
+#
+
+last.toby.parsers.toby.TobyParser.OPER_LPAREN     = (
+last.toby.parsers.toby.TobyParser.OPER_RPAREN     = )
+last.toby.parsers.toby.TobyParser.OPER_SEPARATOR  = ,
+last.toby.parsers.toby.TobyParser.OPER_ASSIGNMENT = =
+last.toby.parsers.toby.TobyParser.OPER_EQUALS     = ==
+last.toby.parsers.toby.TobyParser.OPER_MULTIPLY   = *
+last.toby.parsers.toby.TobyParser.OPER_DIVIDE     = /
+last.toby.parsers.toby.TobyParser.OPER_MODULO     = %
+last.toby.parsers.toby.TobyParser.OPER_ADD        = +
+last.toby.parsers.toby.TobyParser.OPER_SUBTRACT   = -
+last.toby.parsers.toby.TobyParser.OPER_GREATER    = >
+last.toby.parsers.toby.TobyParser.OPER_LESS       = <
+last.toby.parsers.toby.TobyParser.OPER_GREATEREQL = >=
+last.toby.parsers.toby.TobyParser.OPER_LESSEQL    = <=
+last.toby.parsers.toby.TobyParser.KEYWORD_NUMBER  = number
+last.toby.parsers.toby.TobyParser.KEYWORD_BOOLEAN = boolean
+last.toby.parsers.toby.TobyParser.KEYWORD_NOTHING = nothing
+last.toby.parsers.toby.TobyParser.KEYWORD_IF          = if
+last.toby.parsers.toby.TobyParser.KEYWORD_ELSEIF      = elseif
+last.toby.parsers.toby.TobyParser.KEYWORD_ELSE        = else
+last.toby.parsers.toby.TobyParser.KEYWORD_ENDIF       = endif
+last.toby.parsers.toby.TobyParser.KEYWORD_BEGINFOR    = for
+last.toby.parsers.toby.TobyParser.KEYWORD_TO          = to
+last.toby.parsers.toby.TobyParser.KEYWORD_DOWNTO      = downto
+last.toby.parsers.toby.TobyParser.KEYWORD_STEP        = step
+last.toby.parsers.toby.TobyParser.KEYWORD_ENDFOR      = endfor
+last.toby.parsers.toby.TobyParser.KEYWORD_RETURN      = return
+last.toby.parsers.toby.TobyParser.KEYWORD_BEGINFUNC   = function
+last.toby.parsers.toby.TobyParser.KEYWORD_ENDFUNC     = endfunction
+last.toby.parsers.toby.TobyParser.KEYWORD_TRUE        = true
+last.toby.parsers.toby.TobyParser.KEYWORD_FALSE       = false
+last.toby.parsers.toby.TobyParser.KEYWORD_RETURNS     = returns
+last.toby.parsers.toby.TobyParser.KEYWORD_BEGINWHILE  = while
+last.toby.parsers.toby.TobyParser.KEYWORD_ENDWHILE    = endwhile
+last.toby.parsers.toby.TobyParser.KEYWORD_MAINLINE    = main
+last.toby.parsers.toby.TobyParser.PROCNAME_ADDTURTLE      = addturtle
+last.toby.parsers.toby.TobyParser.PROCNAME_USETURTLE      = useturtle
+last.toby.parsers.toby.TobyParser.PROCNAME_REMTURTLE      = removeturtle
+last.toby.parsers.toby.TobyParser.PROCNAME_REMALLTURTLES  = removeallturtles
+last.toby.parsers.toby.TobyParser.PROCNAME_HIDETURTLE     = hideturtle
+last.toby.parsers.toby.TobyParser.PROCNAME_SHOWTURTLE     = showturtle
+last.toby.parsers.toby.TobyParser.PROCNAME_HIDEALLTURTLES = hideallturtles
+last.toby.parsers.toby.TobyParser.PROCNAME_SHOWALLTURTLES = showallturtles
+last.toby.parsers.toby.TobyParser.PROCNAME_FORWARD        = goforward
+last.toby.parsers.toby.TobyParser.PROCNAME_BACKWARD       = gobackward
+last.toby.parsers.toby.TobyParser.PROCNAME_RIGHT          = turnright
+last.toby.parsers.toby.TobyParser.PROCNAME_LEFT           = turnleft
+last.toby.parsers.toby.TobyParser.PROCNAME_SETPEN         = setpencolor
+last.toby.parsers.toby.TobyParser.PROCNAME_SETPENRGB      = setpencolorrgb
+last.toby.parsers.toby.TobyParser.PROCNAME_PENUP          = setpenup
+last.toby.parsers.toby.TobyParser.PROCNAME_PENDOWN        = setpendown
+last.toby.parsers.toby.TobyParser.PROCNAME_ISPENUP        = ispenup
+last.toby.parsers.toby.TobyParser.PROCNAME_ISPENDOWN      = ispendown
+last.toby.parsers.toby.TobyParser.PROCNAME_RANDOM         = random
+last.toby.parsers.toby.TobyParser.PROCNAME_ROUND          = round
+last.toby.parsers.toby.TobyParser.PROCNAME_TSPACEHIGH     = getturtlespaceheight
+last.toby.parsers.toby.TobyParser.PROCNAME_TSPACEWIDE     = getturtlespacewidth
+last.toby.parsers.toby.TobyParser.PROCNAME_STOP           = stopprogram
+last.toby.parsers.toby.TobyParser.PROCNAME_SETANGLE       = setangle
+last.toby.parsers.toby.TobyParser.PROCNAME_GETANGLE       = getangle
+last.toby.parsers.toby.TobyParser.PROCNAME_PAUSE          = pause
+last.toby.parsers.toby.TobyParser.PROCNAME_GETTURTLEX     = getturtlex
+last.toby.parsers.toby.TobyParser.PROCNAME_GETTURTLEY     = getturtley
+last.toby.parsers.toby.TobyParser.PROCNAME_SETTURTXY      = setturtlexy
+last.toby.parsers.toby.TobyParser.PROCNAME_HOMETURTLE     = hometurtle
+last.toby.parsers.toby.TobyParser.PROCNAME_HOMEALLTURTLES = homeallturtles
+last.toby.parsers.toby.TobyParser.PROCNAME_CLEANUP        = cleanupturtlespace
+last.toby.parsers.toby.TobyParser.PROCNAME_ENABLEFENCE    = enablefence
+last.toby.parsers.toby.TobyParser.PROCNAME_DISABLEFENCE   = disablefence
+last.toby.parsers.toby.TobyParser.PROCNAME_SETFENCE       = setfence
+
+# end of tobykeywords.tobylang ...
+
