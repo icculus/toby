@@ -440,15 +440,10 @@ public class TobyProcedure
         if (sToker.nextToken() != SaneTokenizer.TT_WORD)
             throwSyntaxError(lineNum);
 
-        if (sToker.sval.equals(TobyInterpreter.KEYWORD_NOTHING))
-            returnType = null;
+        if (TobyInterpreter.isIntrinsic(sToker.sval))
+            returnType = sToker.sval;
         else
-        {
-            if (TobyInterpreter.isIntrinsic(sToker.sval))
-                returnType = sToker.sval;
-            else
-                throwSyntaxError(lineNum);
-        } // else
+            throwSyntaxError(lineNum);
     } // setReturnType
 
 
