@@ -109,6 +109,8 @@ standalone program for initial testing.)
             TobyString::append(double), and TobyString::append(long). Added
             caseSensitive and ignoreNewlines flags to Tokenizer. Added
             XMLNode::getAttributeDefault() for even more convenience.
+09062001 - Screw it: added append() methods for every type I could imagine
+            in TobyString. More LexerRules subclass implementations.
 
 // end of changelog.txt ...
 
