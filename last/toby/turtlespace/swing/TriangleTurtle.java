@@ -159,7 +159,7 @@ public final class TriangleTurtle extends Turtle
         /**
          * We need to take into account the direction that the turtle is
          *  facing when we draw him. This complicates the drawing process
-         *  considerably, but makes me greatful that I occasionally picked
+         *  considerably, but makes me grateful that I occasionally picked
          *  up on what my high school math teachers were trying to explain.
          *  (Thanks Mrs. Strohm and Mrs. Tannery!)
          *
