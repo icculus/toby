@@ -1,22 +1,32 @@
 // Things still to be done for TOBY...
 
 ongoing bugfixes :
+    Graphics2D does antialiasing?
+    override update() in TurtleSpace?
+    Make TriangleTurtle only recalculate when rotated/resized.
+        Painting should only draw out the end result of the calculations.
+    Toby overwrites files without concern.
+    Make inputarea use sane keys...
+    Unify error displaying interface between parsing and running...
+    Functions can specify a return type and then return nothing.
+    Thread.yield() doesn't seem to be doing so...
     Toby's JFrame Icon locks when you try to set it. see Toby.setTobyIcon();
     FIX VARVIEWER. It BADLY BROKEN.
     Even on a cancel save, JFrame closes.
-    Right edge of TurtleSpace isn't drawing correctly...
     Fix menubar while running, if possible.
     Fix equality operator
     Maximize window instead of sizing...
 
 alpha2 : completed.
-    Get ready for presentation at interview.
+    Convert to Swing.                       (COMPLETED)
+    remove dependency on last.* package.    (COMPLETED)
+    remove glaring bugs.                    (COMPLETED)
 
 alpha3 : in progress.
-    Add globals
-    descending FOR loops and STEPs...
-    WHILEs...
-    line/column readout.
+    Add globals                             (COMPLETED)
+    descending FOR loops and STEPs...       (COMPLETED)
+    WHILEs...                               (COMPLETED)
+    line/column readout in TobyInputArea.   (COMPLETED)
 
 alpha4 : not yet begun.
     more standard functions...
@@ -26,23 +36,28 @@ alpha4 : not yet begun.
 
 alpha5 : not yet begun.
     COMMENT EVERYTHING.
-    Printing
+    Printing source code.
+    Printing current TurtleSpace.
+    Undo/redo
     Make TurtleSpace into a bean.
     Build splash screen/remove System.out.println() stuff...
 
 beta1 : not yet begun.
-    fix all significant outstanding bugs.
+    fix all significant/crippling bugs.
     design webpage.
     write tutorial.
-    release.
+    change version and release.
 
 beta2 : not yet begun.
+    convert comments to javadoc format.
     fix bugs reported from beta1.
     Write up a "how it works" doc.
+    Clean up interface from reports from beta1.
     release.
 
 1.0 : not yet begun.
     fix bugs reported from beta2.
+    Clean up interface problems reported in beta2.
     fix all outstanding bugs.
     release.
 
