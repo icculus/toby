@@ -3,9 +3,9 @@
 function clockwise(number size) returns nothing
     number i
     for i = 1 to 360
-        penDown()
+        setPenDown()
         goForward(size)
-        penUp()
+        setPenUp()
         goBackward(size)
         turnRight(1)
     endfor
@@ -31,6 +31,8 @@ function main() returns nothing
 endfunction
 
 // end of theLight.toby ...
+
+
 
 
 

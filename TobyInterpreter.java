@@ -243,12 +243,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         operatorTable[9]  = OPCODE_MODULO;
         operatorTable[8]  = OPCODE_ADD;
         operatorTable[7]  = OPCODE_SUBTRACT;
-        operatorTable[6]  = OPCODE_EQUALS;
-        operatorTable[5]  = OPCODE_GREATEREQL;
-        operatorTable[4]  = OPCODE_LESSEQL;
-        operatorTable[3]  = OPCODE_GREATER;
-        operatorTable[2]  = OPCODE_LESS;
-        operatorTable[1]  = OPCODE_ASSIGNMENT;
+        operatorTable[6]  = OPCODE_ASSIGNMENT;
+        operatorTable[5]  = OPCODE_EQUALS;
+        operatorTable[4]  = OPCODE_GREATEREQL;
+        operatorTable[3]  = OPCODE_LESSEQL;
+        operatorTable[2]  = OPCODE_GREATER;
+        operatorTable[1]  = OPCODE_LESS;
         operatorTable[0]  = OPCODE_SEPARATOR;
      } // buildOperatorTable
 

@@ -1,6 +1,12 @@
 /**
  *  TurtleSpace class; where all the good little turtles play...
  *
+ *  This is an abstract class that handles the graphical display of
+ *   TurtleSpace. An language interpreting class (i.e. - TobyInterpreter)
+ *   should extend this and implement the abstracts at the bottom of the
+ *   class. This is in case you'd like to "plug in" a LOGO interpreter, or
+ *   any other language you can dream up.
+ *
  *   Copyright (c) Lighting and Sound Technologies, 1997.
  *    Written by Ryan C. Gordon.
  */

@@ -1,5 +1,11 @@
 /**
- *  This class contains individual TOBY procedures.
+ *  This class contains individual TOBY procedures. All parsing of a given
+ *   procedure is done here. Once all the TobyProcedures are created (and
+ *   therefore all the program's code has been parsed for bogus syntax), the
+ *   TobyInterpreter class will perform the actual execution of the procedures,
+ *   starting with the TobyProcedure named "main", and interprets code line
+ *   by line by requesting strings from this procedure. All sorts of other
+ *   nifty information can be retrieved from these objects, too.
  *
  *    Copyright (c) Lighting and Sound Technologies, 1997.
  *     Written by Ryan C. Gordon.

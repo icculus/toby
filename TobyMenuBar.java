@@ -109,7 +109,7 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
         add(fileMenu);
 
         runMenu    = setupMenu(MENUNAME_RUN, true, KeyEvent.VK_R);
-        startItem  = setupMenuItem(runMenu, MENUITEM_STARTCODE, KeyEvent.VK_S, true);
+        startItem  = setupMenuItem(runMenu, MENUITEM_STARTCODE, KeyEvent.VK_F5, true);
         stopItem   = setupMenuItem(runMenu, MENUITEM_STOPCODE, KeyEvent.VK_P, false);
         clearItem  = setupMenuItem(runMenu, MENUITEM_CLEAR, KeyEvent.VK_C, true);
         add(runMenu);
@@ -123,7 +123,7 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
         add(debugMenu);
 
         helpMenu   = setupMenu(MENUNAME_HELP, true, KeyEvent.VK_H);
-        aboutItem  = setupMenuItem(helpMenu, MENUITEM_ABOUT, KeyEvent.VK_A, true);
+        aboutItem  = setupMenuItem(helpMenu, MENUITEM_ABOUT, KeyEvent.VK_B, true);
         helpItem   = setupMenuItem(helpMenu, MENUITEM_HELP, KeyEvent.VK_H, true);
         add(helpMenu);
     } // Constructor

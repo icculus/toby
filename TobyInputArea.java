@@ -19,7 +19,7 @@ public class TobyInputArea extends Panel implements LayoutManager,
 
     public TobyInputArea()
     {
-        endl = "\n";        // !!! System.getProperty("line.separator");
+        endl = System.getProperty("line.separator");
         lineIndexes = new Vector();
 
         buildComponents();
@@ -244,6 +244,7 @@ public class TobyInputArea extends Panel implements LayoutManager,
 
     public void addLayoutComponent(String name, Component comp) {}
     public void removeLayoutComponent(Component comp) {}
+
 } // TobyInputArea
 
 // end of TobyInputArea.java ...

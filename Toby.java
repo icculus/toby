@@ -16,7 +16,7 @@ public final class Toby extends Frame
 {
         // Global Constants...
     public static final String TITLE   = "Toby";
-    public static final String VERSION = "v0.28alpha";
+    public static final String VERSION = "v0.29alpha";
 
     public static final String USAGE = "USAGE: Toby.class [sourceFile.toby]";
 
@@ -129,12 +129,11 @@ public final class Toby extends Frame
 
     private String selectFileName(String frameTitle, int fileMode)
     {
-        FileDialog fd = new FileDialog(new Frame(), frameTitle, fileMode);
+        FileDialog fd = new FileDialog(this, frameTitle, fileMode);
         String retVal;
 
+        fd.setFilenameFilter(new TobyFilenameFilter());
         fd.show();
-        requestFocus();       // get focus back after dialog is disposed.
-
         retVal = fd.getFile();
         if (retVal != null)
             retVal = fd.getDirectory() + retVal;
@@ -195,7 +194,6 @@ public final class Toby extends Frame
     public void saveFile(String fileName)
     {
         BufferedWriter bw;
-        FileDialog fd;
         String src;
 
         if (fileName == null)
@@ -246,6 +244,12 @@ public final class Toby extends Frame
                 System.exit(0);
             } // else
         } // try
+
+        catch (NoClassDefFoundError e)
+        {
+            System.err.println("Cannot find a necessary .class file.");
+            System.err.println(" Perhaps you need to set your CLASSPATH?");
+        } // catch
 
         catch (InternalError e)
         {

@@ -1,27 +1,23 @@
-function clockwise(number size) returns nothing
+function box(number size) returns nothing
     number i
-    for i = 1 to 360
-        penDown()
+
+    for i = 1 to 4
         goForward(size)
-        penUp()
-        goBackward(size)
-        turnRight(1)
+        turnRight(90)
     endfor
 endfunction
 
 
 function main() returns nothing
-    clockwise(50)
-    clockwise(100)
-    clockwise(150)
-    clockwise(200)
-    clockwise(250)
-    clockwise(300)
-    clockwise(350)
-    clockwise(400)
-    clockwise(450)
-    clockwise(500)
+    number i
+
+    for i = 1 to 360 / 4
+        box(15)
+        turnRight(4)
+    endfor
 endfunction
+
+
 
 
 

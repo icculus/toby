@@ -12,7 +12,7 @@ public final class TobyPanel extends Panel implements LayoutManager
 {
     private TurtleSpace tspace = null;
     private TobyInputArea tia = null;
-    private VarViewer varViewer = null;    
+    private VarViewer varViewer = null;
 
     private void buildComponents()
     /**
