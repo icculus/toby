@@ -1,239 +1,251 @@
-#
-# This text written by Ryan C. Gordon.
-#
-# If you are translating to a new language, do this:
-#
-#  1. Ask yourself, "Do I have a good enough grasp of Java and Toby to
-#     understand this file, and what its purpose is? Do I have sufficient
-#     translating skills? Do I have the ethics to NOT put naughty words that
-#     the Toby maintainers will not understand in here?" If you answered
-#     "no" to any of these questions, stop now.
-#  2. Change the "This text written by" line above to contain your
-#     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
-#     work, but by submitting your work, the maintainers of Toby gain
-#     sole ownership of it. If you don't like that, stop now.
-#  3. E-mail your completed work to Ryan at icculus@lokigames.com. He'll
-#     incorporate it into the next release of Toby.
-#  4. Lines beginning with '#' are ignored when this file is parsed.
-#     Lines with nothing but whitespace are also ignored.
-#  5. Only translate the text after the equal sign on each line. That is,
-#     a line that reads: "last.toby.util.TobyLanguage.MENUNAME_FILE   = File"
-#     You would translate "File", and not "last.toby.util..."
-#  6. Whitespace is trimmed from each side of the translated string at runtime.
-#  7. Sometimes strings need dynamic content. For example, there might be
-#     a string that needs to convey, "error in "MyFunction" on line 15.",
-#     to accomodate this, such strings would have "%0" and "%1", with
-#     a description of what each represents. You may move the tokens to
-#     whatever order they need to be in; %1 can come before %0 if your
-#     language requires this, so long as all of those replacing tokens
-#     continue to exist somewhere in the translated string.
-#  8. Please try out your translation in the program to make sure that the
-#     program parses the langfile correctly, and that everything looks good.
-#  9. Expect to be notified if we have more translating work for you
-#     in the future.  :)
-# 10. Questions about context of strings and other concerns can be addressed
-#     to icculus@lokigames.com. Please understand that I only speak English,
-#     and even that poorly.  :)
-#
-#                                   Have fun,
-#                                      --ryan.
-#
+/*
+ * TOBY -- An abstract interpreter engine and system for learning.
+ * Copyright (C) 1999  Ryan C. Gordon.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 
-# These are printed if there are problems in loading this langfile.
-#  Therefore, it's best to parse these at the top of the file.
-#  What the % values are suppose to represent are pretty obvious.
-last.toby.util.TobyLanguage.LANGIOEXCEPT    = LANGUAGE: IOException pendant lecture des données linguistiques.
-last.toby.util.TobyLanguage.LANGBOGUSLINE   = LANGUAGE: Ligne %0 est fausse à partir de colonne %1.
-last.toby.util.TobyLanguage.LANGNOSUCHCLASS = LANGUAGE: Classe: [%0]inexistante à la ligne %1 colonne %2.
-last.toby.util.TobyLanguage.LANGNOSUCHFIELD = LANGUAGE: Pas de champ [%0] à la ligne %1 colnone  %2.
-last.toby.util.TobyLanguage.LANGNOTPUBLIC   = LANGUAGE: Champ [%0] n'est pas publique à la ligne  %1 colonne %2.
-last.toby.util.TobyLanguage.LANGNOTSTATIC   = LANGUAGE: Champ [%0] n'est pas statique à la ligne %1 colonne %2.
-last.toby.util.TobyLanguage.LANGNOTSTRING   = LANGUAGE: Champ [%0] n'est pas une chaine à la ligne %1 colonne %2.
-last.toby.util.TobyLanguage.LANGISFINAL     = LANGUAGE: Champ [%0] est final à la ligne %1 colonne %2.
-last.toby.util.TobyLanguage.LANGSETFAILED   = LANGUAGE: Erreur assignation champ [%0] avec message [%1] à la ligne %2 colonne %3.
+/*
+ * This text written by Ryan C. Gordon.
+ *
+ * If you are translating to a new language, do this:
+ *
+ *  1. Ask yourself, "Do I have a good enough grasp of Toby to understand this
+ *     file, and what its purpose is? Do I have sufficient translating skills?
+ *     Do I have the ethics to NOT put naughty words that the Toby maintainers
+ *     will not understand in here?" If you answered "no" to any of these
+ *     questions, stop now.
+ *  2. Change the "This text written by" line above to contain your
+ *     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
+ *     work, but by submitting your work, the maintainers of Toby gain
+ *     sole ownership of it. If you don't like that, stop now.
+ *  3. E-mail your completed work to Ryan at icculus@linuxgames.com. He'll
+ *     incorporate it into the next release of Toby.
+ *  4. C++ comments are acceptable, both in the "/* */" and "//" form. They
+ *     are ignored when this file is parsed. Lines with nothing but whitespace
+ *     are also ignored.
+ *  5. Only translate the text after the comma in a TOBYSTR section. That is,
+ *     in a line that reads: 'TOBYSTR(TOBYI18N_MENUNAME_FILE, "File")'
+ *     You would translate "File", and not TOBYSTR nor TOBYI18N_MENUNAME_FILE.
+ *  6. Things in quotes follow C++ literal string standards. If you wanted
+ *     to have a string with a quotation mark in it, you'd have to write it
+ *     like this:  TOBYSTR(MYSTR, "He said, \"hello.\"")
+ *  7. Please refer to docs/subsystems/i18n.txt in the source distribution
+ *     if you're curious about how this works under the hood or why we did
+ *     this like we did.
+ *  8. Sometimes strings need dynamic content. For example, there might be
+ *     a string that needs to convey, "error in "MyFunction" on line 15.",
+ *     to accomodate this, such strings would have "%0" and "%1", with
+ *     a description of what each represents. You may move the tokens to
+ *     whatever order they need to be in; %1 can come before %0 if your
+ *     language requires this, so long as all of those replacing tokens
+ *     continue to exist somewhere in the translated string.
+ *  9. Please try out your translation in the program to make sure that the
+ *     program parses the langfile correctly, and that everything looks good.
+ * 10. Expect to be notified if we have more translating work for you
+ *     in the future.  :)
+ * 11. Questions about context of strings and other concerns can be addressed
+ *     to icculus@linuxgames.com. Please understand that I only speak English,
+ *     and even that poorly.  :)
+ *
+ *                                   Have fun,
+ *                                      --ryan.
+ */
 
-
-# The usage/commandline information. Printed to stderr.
-last.toby.util.TobyLanguage.USAGE = USAGE: Toby.class [--langfile=xxx] [sourceFile.toby]
-
-
-# Please change this to be your name, and the language you translated to.
-last.toby.util.TobyLanguage.TRANSLATION_BY = English language text by Ryan C. Gordon.
-
-
-# Translate the text, but don't change my name.  :)
-last.toby.util.TobyLanguage.WRITTENBY = Written by Ryan C. Gordon.
-last.toby.util.TobyLanguage.COPYRIGHT = Copyright (C) 1999 Ryan C. Gordon
-
-
-# This is a string in a message box's title bar.
-last.toby.util.TobyLanguage.ERROR = Erreur
-
-
-# This is a title bar string of a Yes/No "overwrite this file?" message box.
-last.toby.util.TobyLanguage.FILE_EXISTS = Fichier existe
-
-
-# This is the string in the title bar of a Yes/No message box.
-last.toby.util.TobyLanguage.PLEASE_CONFIRM = Confirmez SVP
-
-
-# Question in a yes/no message box.
-last.toby.util.TobyLanguage.SAVE_MODIFIED_PROG = Sauver programme modifié?
-
-
-# This is shown in the main window's title bar before a program is saved.
-#  Once saved, this is replaced with the filename where the program is stored.
-last.toby.util.TobyLanguage.NEW_PROGRAM = nouveau programme
-
-
-# %0 is replaced with a filename at runtime in these strings...
-last.toby.util.TobyLanguage.FILE_NOT_FOUND = Fichier "%0" non trouvé.
-last.toby.util.TobyLanguage.CANNOT_LOAD_FILE = Ne peut charger fichier "%0".
-last.toby.util.TobyLanguage.OVERWRITE_FILENAME = Ecraser "%0"?
-last.toby.util.TobyLanguage.CANNOT_WRITE_TO = Ne peux écrire vers "%0".
-
-
-# These three are printed to stderr on three separate lines if there's
-#  a class loading problem. Try not to use more than 80 characters per string.
-last.toby.util.TobyLanguage.MISSING_CLASS1 = Ne peut pas trouver un fichier .class nécessaire.
-last.toby.util.TobyLanguage.MISSING_CLASS2 = Vérifier la valeur de CLASSPATH?
-last.toby.util.TobyLanguage.MISSING_CLASS3 = Vérifier la version JDK (>=JDK1.2) !
-
-
-# These are three separate strings that make up one sentence:
-#  one string per line; try not to use more than 80 characters per string,
-#  as this is printed to stderr.
-last.toby.util.TobyLanguage.NO_GUI1 = Votre machine virtuelle Java à lancé une exception...peut être n'avez vous pas
-last.toby.util.TobyLanguage.NO_GUI2 = le support graphique nécessaire. Démarrer votre système de fenêtre avant de démarrer
-last.toby.util.TobyLanguage.NO_GUI3 = ce programme.
-
-
-# This is printed to stderr after the NO_GUI strings, and is followed by
-#  whatever information is attached to the thrown error.
-last.toby.util.TobyLanguage.HERES_THE_ERR = Pour mémoire, voici l'erreur:
-
-
-# Other warnings and errors...
-last.toby.util.TobyLanguage.MSG_BAD_JAVA = Votre machine virtuelle Java est trop ancienne; aller à http://java.sun.com/ ...
-last.toby.util.TobyLanguage.SETICON_BROKEN = ATTENTION: setIconImage() ne fonctionne pas sur cette machine virtuelle Java!
-last.toby.util.TobyLanguage.TOOMANYFILES = Plusieurs fichiers spécifiés sur la ligne de commande! Utilise seulement le premier.
-
-
-# This is printed to stderr when a warning can be worked around (currently,
-#  the only warning is the setIconImage(), above).
-last.toby.util.TobyLanguage.WORK_AROUND_IT = (Nous continuons quand même.)
-
-
-# Menu items.
-last.toby.util.TobyLanguage.MENUNAME_FILE   = Fichier
-last.toby.util.TobyLanguage.MENUITEM_NEW    = Nouveau
-last.toby.util.TobyLanguage.MENUITEM_OPEN   = Ouvrir...
-last.toby.util.TobyLanguage.MENUITEM_SAVE   = Sauver
-last.toby.util.TobyLanguage.MENUITEM_SAVEAS = Sauver sous...
-last.toby.util.TobyLanguage.MENUITEM_PRINT  = Imprimer...
-last.toby.util.TobyLanguage.MENUITEM_QUIT   = Quitter
-
-last.toby.util.TobyLanguage.MENUNAME_HELP  = Aide
-last.toby.util.TobyLanguage.MENUITEM_HELP  = Aide...
-last.toby.util.TobyLanguage.MENUITEM_ABOUT = A propos...
-
-last.toby.util.TobyLanguage.MENUNAME_RUN       = Action
-last.toby.util.TobyLanguage.MENUITEM_STARTCODE = Démarrer programme
-last.toby.util.TobyLanguage.MENUITEM_STOPCODE  = Arrêter programme
-last.toby.util.TobyLanguage.MENUITEM_CLEAR     = Effacer zone tortue
-
-last.toby.util.TobyLanguage.MENUNAME_DEBUG     = Mis au point
-last.toby.util.TobyLanguage.MENUITEM_TRACE     = Trace
-last.toby.util.TobyLanguage.MENUITEM_STEP      = Pas à pas
-last.toby.util.TobyLanguage.MENUITEM_WATCHVARS = Voir variables
-
-
-# This is a file description for the file open dialog, and shows up in
-#  the dropdown for "show files of type" ...
-last.toby.util.TobyLanguage.TOBY_FILE_DESCRIPTION = TOBY code source
-
-
-# This is the current position of the text cursor in the editing window.
-#  %0 and %1 are replaced with numbers at runtime.
-last.toby.util.TobyLanguage.CARET_POSITION = ligne %0, colonne %1
-
-
-# %0 is another string (probably one of the ones below), that tells what
-#  sort of error occurred, such as "Syntax error."
-# %1 is a numeric. %2 is the name of a function in the user's Toby program.
-last.toby.util.TobyLanguage.ERR_IN_FUNC = %0 à la ligne %1 dans la fonction %2
-
-
-# Same as above, but the error didn't occur inside a function.
-last.toby.util.TobyLanguage.ERR_OUT_FUNC = %0 à la ligne %1
+#ifndef CALLED_FROM_TOBYLANGUAGE
+#error Do not include this directly; use util/TobyLanguage.h instead.
+#endif
 
 
 
-# Error messages.
-#
-#  Please note that the capitalized words are keywords
-#  in the Toby language, and should not be translated.
-#  (unless you are also translating the keywords in
-#   in last.toby.parsers.toby.TobyParser, too, but those
-#   changes will not be accepted in an official Toby
-#   distribution.)
-last.toby.util.TobyLanguage.INTERNAL_ERROR  = Erreur interne
-last.toby.util.TobyLanguage.EXPECTED_TOKEN  = Expected token
-last.toby.util.TobyLanguage.SYNTAX_ERROR    = Erreur de syntaxe
-last.toby.util.TobyLanguage.BAD_ASSIGNMENT  = Assignation non autorisée
-last.toby.util.TobyLanguage.DOUBLE_DEF      = Définition dupliquée
-last.toby.util.TobyLanguage.ORPHAN_CODE     = Code en dehors de fonction
-last.toby.util.TobyLanguage.BAD_TYPE        = Type de variable incorrect
-last.toby.util.TobyLanguage.NOT_VAR         = Variable attendue
-last.toby.util.TobyLanguage.NO_MAINLINE     = Point d'entrée du programme exigé
-last.toby.util.TobyLanguage.NO_RPAREN       = ")" attendu
-last.toby.util.TobyLanguage.NO_LPAREN       = "(" attendu
-last.toby.util.TobyLanguage.NO_ASSIGN       = "=" attendu
-last.toby.util.TobyLanguage.NOT_A_FUNC      = Fonction indéfinie
-last.toby.util.TobyLanguage.BADNUM_ARGS     = Arguments invalides
-last.toby.util.TobyLanguage.BAD_IDENT       = Identifiant invalide
-last.toby.util.TobyLanguage.NO_ENDFOR       = POUR sans FINPOUR
-last.toby.util.TobyLanguage.NO_FOR          = FINPOUR sans POUR
-last.toby.util.TobyLanguage.NO_ENDWHILE     = TANTQUE sans FINTANTQUE
-last.toby.util.TobyLanguage.NO_WHILE        = FINTANTQUE sans TANTQUE
-last.toby.util.TobyLanguage.ORPHAN_ELIF     = SINONSI sans SI
-last.toby.util.TobyLanguage.ORPHAN_ELSE     = SINON sans SI
-last.toby.util.TobyLanguage.ORPHAN_ENDIF    = FINSI sans SI
-last.toby.util.TobyLanguage.TYPE_MMATCH     = Confusion de type
-last.toby.util.TobyLanguage.BAD_ARGUMENT    = Argument invalide
-last.toby.util.TobyLanguage.MAIN_RETVAL     = PRINCIPAL retourne une valeur
-last.toby.util.TobyLanguage.BAD_GLOBAL      = Variable ou FONCTION attendue
-last.toby.util.TobyLanguage.EXPECTED_END    = FINFONCTION attendu
-last.toby.util.TobyLanguage.NO_RETTYPE      = RETOUR attendu
-last.toby.util.TobyLanguage.ELIF_AFTER_ELSE = SINONSI après SINON
-last.toby.util.TobyLanguage.ELSE_AFTER_ELSE = Multiples SINON 
-last.toby.util.TobyLanguage.NO_VAR_DECL     = Ne peut pas déclarer de variable ici
-last.toby.util.TobyLanguage.FUNC_IN_FUNC    = FONCTION dans fonction
-last.toby.util.TobyLanguage.DIV_BY_ZERO     = Division par zero
-last.toby.util.TobyLanguage.NOCURTURTLE     = Pas de tortue courante
-last.toby.util.TobyLanguage.TURTLE_FENCED   = Tortue a dépassé la barrière
 
-# !!! FIXME: Localize this text!
-last.toby.util.TobyLanguage.OUT_OF_RANGE    = Out of range
-last.toby.util.TobyLanguage.OVERFLOW        = Overflow
-last.toby.util.TobyLanguage.NOT_AN_ARRAY    = Expected array
-last.toby.util.TobyLanguage.NO_RARRAY       = Expected "]"
-last.toby.util.TobyLanguage.NO_LARRAY       = Expected "["
-last.toby.util.TobyLanguage.NOT_WHOLE_NUM   = Expected whole number
+/* --- BEGIN TOBY I18N LANGUAGE DATA --- */
 
 
+// These are printed if there are problems in loading this langfile.
+//  Therefore, it's best to parse these at the top of the file, so they have
+//  a better chance of being translated when a real problem arises.
+//  What the % values are suppose to represent are pretty obvious.
+TOBYSTR(TOBYI18N_LANGIOEXCEPT, "LANGUAGE: IOException pendant lecture des données linguistiques.")
+TOBYSTR(TOBYI18N_LANGBOGUSLINE, "LANGUAGE: Ligne %0 est fausse à partir de colonne %1.")
+TOBYSTR(TOBYI18N_LANGNOSUCHFIELD, "LANGUAGE: Pas de champ [%0] à la ligne %1 colnone  %2.")
 
-# This is an internal error alert message.
-last.toby.util.TobyLanguage.SHOULDNOTBE = Ceci ne devrait pas arriver. Envoyer un Email à icculus@lokigames.com! (en Anglais seulement!)
+// Don't touch this without good reason.
+TOBYSTR(TOBYI18N_NAME, "Toby")
+
+// !!! TRANSLATE ME!
+// %0 will be my proper name (Ryan C. Gordon), but it's inserted at runtime,
+//  so some jerk won't just change my name in the langfile. Of course, they
+//  could always just alter the source and recompile, but oh well.  :)
+TOBYSTR(TOBYI18N_WRITTENBY, "Written by %0.")
+
+// !!! TRANSLATE ME!
+// %0 is a year (format: "1999") and %1 is "Ryan C. Gordon" at runtime.
+TOBYSTR(TOBYI18N_COPYRIGHT, "Copyright (C) %0 %1")
+
+// !!! TRANSLATE ME!
+// The usage/commandline information. Printed to stderr. %0 is the
+//  name of the executable file that was run.
+TOBYSTR(TOBYI18N_USAGE, "USAGE: %0 [--langfile=xxx] [sourceFile.toby]")
+
+// !!! TRANSLATE ME!
+// Please change this to be your name, and the language you translated to.
+TOBYSTR(TOBYI18N_TRANSLATION_BY, "English language text by Ryan C. Gordon.")
+
+// This is a string in a message box's title bar.
+TOBYSTR(TOBYI18N_ERROR, "Erreur")
+
+// This is shown in the main window's title bar before a program is saved.
+//  Once saved, this is replaced with the filename where the program is stored.
+TOBYSTR(TOBYI18N_NEW_PROGRAM, "nouveau programme")
+
+// This is the string in the title bar of a Yes/No message box.
+TOBYSTR(TOBYI18N_PLEASE_CONFIRM, "Confirmez SVP")
+
+// %0 is replaced with a filename at runtime in these strings...
+TOBYSTR(TOBYI18N_FILE_NOT_FOUND, "Fichier \"%0\" non trouvé.")
+TOBYSTR(TOBYI18N_CANNOT_LOAD_FILE, "Ne peut charger fichier \"%0\".")
+TOBYSTR(TOBYI18N_OVERWRITE_FILENAME, "Ecraser \"%0\"?")
+TOBYSTR(TOBYI18N_CANNOT_WRITE_TO, "Ne peux écrire vers \"%0\".")
+
+// Question in a yes/no message box.
+TOBYSTR(TOBYI18N_SAVE_MODIFIED_PROG, "Sauver programme modifié?")
+
+// This is a title bar string of a Yes/No "overwrite this file?" message box.
+TOBYSTR(TOBYI18N_FILE_EXISTS, "Fichier existe")
+
+// Other warnings and errors...
+TOBYSTR(TOBYI18N_TOOMANYFILES, "Plusieurs fichiers spécifiés sur la ligne de commande! Utilise seulement le premier.")
+TOBYSTR(TOBYI18N_REPLACE_FORMAT_ERR, "Format string contains no \"%\" sequence!")
+TOBYSTR(TOBYI18N_REPLACE_RANGE_ERR, "Replace index must be between (0) and (9).")
 
 
-# Other stuff.
-last.toby.util.TobyLanguage.NOT_YET_IMPLEMENTED = Fonctionalité non implémentée.
+// These are three separate strings that make up one sentence:
+//  one string per line; try not to use more than 80 characters per string,
+//  as this is printed to stderr.
+TOBYSTR(TOBYI18N_NO_GUI1, "Votre machine virtuelle Java à lancé une exception...peut être n'avez vous")
+TOBYSTR(TOBYI18N_NO_GUI2, " pas le support graphique nécessaire. Démarrer votre système de fenêtre")
+TOBYSTR(TOBYI18N_NO_GUI3, "  avant de démarrer ce programme.")
+
+// This is printed to stderr after the NO_GUI strings, and is followed by
+//  whatever information is attached to the thrown error.
+TOBYSTR(TOBYI18N_HERES_THE_ERR, "Pour mémoire, voici l'erreur:")
+
+// Hopefully, the end user will never see these messages.
+TOBYSTR(TOBYI18N_NOT_YET_IMPLEMENTED, "Fonctionalité non implémentée.")
+TOBYSTR(TOBYI18N_SHOULDNOTBE, "Ceci ne devrait pas arriver. Envoyer un Email à icculus@linuxgames.com! (en Anglais seulement!)")
+// !!! TRANSLATE ME!
+TOBYSTR(TOBYI18N_NODETREE_LOCKED, "NodeTree already locked.")
+TOBYSTR(TOBYI18N_NODETREE_ULOCKED, "NodeTree already unlocked.")
+TOBYSTR(TOBYI18N_BAD_CHILD_NODE, "Adding bad child type to NodeTree")
+TOBYSTR(TOBYI18N_USING_FREE_NODE, "Attempt to use NodeTree that has already called freeResources()!")
+
+// This is a file description for the file open dialog, and shows up in
+//  the dropdown for "show files of type" ...
+TOBYSTR(TOBYI18N_TOBY_FILE_DESCRIPTION, "TOBY code source")
+
+// Menu items...
+TOBYSTR(TOBYI18N_MENUNAME_FILE, "Fichier")
+TOBYSTR(TOBYI18N_MENUITEM_NEW, "Nouveau")
+TOBYSTR(TOBYI18N_MENUITEM_OPEN, "Ouvrir...")
+TOBYSTR(TOBYI18N_MENUITEM_SAVE, "Sauver")
+TOBYSTR(TOBYI18N_MENUITEM_SAVEAS, "Sauver sous...")
+TOBYSTR(TOBYI18N_MENUITEM_PRINT, "Imprimer...")
+TOBYSTR(TOBYI18N_MENUITEM_QUIT, "Quitter")
+TOBYSTR(TOBYI18N_MENUNAME_HELP, "Aide")
+TOBYSTR(TOBYI18N_MENUITEM_HELP, "Aide...")
+TOBYSTR(TOBYI18N_MENUITEM_ABOUT, "A propos...")
+TOBYSTR(TOBYI18N_MENUNAME_RUN, "Action")
+TOBYSTR(TOBYI18N_MENUITEM_STARTCODE, "Démarrer programme")
+TOBYSTR(TOBYI18N_MENUITEM_STOPCODE, "Arrêter programme")
+TOBYSTR(TOBYI18N_MENUITEM_CLEAR, "Effacer zone tortue")
+TOBYSTR(TOBYI18N_MENUNAME_DEBUG, "Mis au point")
+TOBYSTR(TOBYI18N_MENUITEM_TRACE, "Trace")
+TOBYSTR(TOBYI18N_MENUITEM_STEP, "Pas à pas")
+TOBYSTR(TOBYI18N_MENUITEM_WATCHVARS, "Voir variables")
+
+// This is the current position of the text cursor in the editing window.
+//  %0 and %1 are replaced with numbers at runtime.
+TOBYSTR(TOBYI18N_CARET_POSITION, "ligne %0, colonne %1")
+
+// %0 is another string (probably one of the ones below), that tells what
+//  sort of error occurred, such as "Syntax error."
+// %1 is a numeric. %2 is the name of a function in the user's Toby program.
+TOBYSTR(TOBYI18N_ERR_IN_FUNC, "%0 à la ligne %1 dans la fonction %2")
+
+// Same as above, but the error didn't occur inside a function.
+TOBYSTR(TOBYI18N_ERR_OUT_FUNC, "%0 à la ligne %1")
+
+// Error messages...
+//  Please note that the capitalized words are keywords
+//  in the Toby language, and should not be translated.
+//  (unless you are also translating the keywords in
+//   in toby.tobylang, too, but those changes will not
+//   be accepted in an official Toby distribution.)
+TOBYSTR(TOBYI18N_INTERNAL_ERROR, "Erreur interne")
+
+// !!! Is that correct, or was this one missed?
+TOBYSTR(TOBYI18N_EXPECTED_TOKEN, "Expected token")
+
+TOBYSTR(TOBYI18N_SYNTAX_ERROR, "Erreur de syntaxe")
+TOBYSTR(TOBYI18N_BAD_ASSIGNMENT, "Assignation non autorisée")
+TOBYSTR(TOBYI18N_DOUBLE_DEF, "Définition dupliquée")
+TOBYSTR(TOBYI18N_ORPHAN_CODE, "Code en dehors de fonction")
+TOBYSTR(TOBYI18N_BAD_TYPE, "Type de variable incorrect")
+TOBYSTR(TOBYI18N_NOT_VAR, "Variable attendue")
+TOBYSTR(TOBYI18N_NO_MAINLINE, "Point d'entrée du programme exigé")
+TOBYSTR(TOBYI18N_NO_RPAREN, "\")\" attendu")
+TOBYSTR(TOBYI18N_NO_LPAREN, "\"(\" attendu")
+TOBYSTR(TOBYI18N_NO_ASSIGN, "\"=\" attendu")
+TOBYSTR(TOBYI18N_NOT_A_FUNC, "Fonction indéfinie")
+TOBYSTR(TOBYI18N_BADNUM_ARGS, "Arguments invalides")
+TOBYSTR(TOBYI18N_BAD_IDENT, "Identifiant invalide")
+TOBYSTR(TOBYI18N_NO_ENDFOR, "FOR sans ENDFOR")
+TOBYSTR(TOBYI18N_NO_FOR, "ENDFOR sans FOR")
+TOBYSTR(TOBYI18N_NO_ENDWHILE, "WHILE sans ENDWHILE")
+TOBYSTR(TOBYI18N_NO_WHILE, "ENDWHILE sans WHILE")
+TOBYSTR(TOBYI18N_ORPHAN_ELIF, "ELSEIF sans IF")
+TOBYSTR(TOBYI18N_ORPHAN_ELSE, "ELSE sans IF")
+TOBYSTR(TOBYI18N_ORPHAN_ENDIF, "ENDIF sans IF")
+TOBYSTR(TOBYI18N_TYPE_MMATCH, "Confusion de type")
+TOBYSTR(TOBYI18N_BAD_ARGUMENT, "Argument invalide")
+TOBYSTR(TOBYI18N_MAIN_RETVAL, "MAIN retourne une valeur")
+TOBYSTR(TOBYI18N_BAD_GLOBAL, "Variable ou FUNCTION attendue")
+TOBYSTR(TOBYI18N_EXPECTED_END, "ENDFUNCTION attendu")
+TOBYSTR(TOBYI18N_NO_RETTYPE, "RETURNS attendu")
+TOBYSTR(TOBYI18N_ELIF_AFTER_ELSE, "ELSEIF après ELSE")
+TOBYSTR(TOBYI18N_ELSE_AFTER_ELSE, "Multiples ELSE")
+TOBYSTR(TOBYI18N_NO_VAR_DECL, "Ne peut pas déclarer de variable ici")
+TOBYSTR(TOBYI18N_FUNC_IN_FUNC, "FUNCTION dans fonction")
+TOBYSTR(TOBYI18N_DIV_BY_ZERO, "Division par zero")
+TOBYSTR(TOBYI18N_NOCURTURTLE, "Pas de tortue courante")
+TOBYSTR(TOBYI18N_TURTLE_FENCED, "Tortue a dépassé la barrière")
 
 
-# end of example.tobylang ...
+// !!! TRANSLATE ME!
+TOBYSTR(TOBYI18N_OUT_OF_RANGE, "Out of range")
+TOBYSTR(TOBYI18N_OVERFLOW, "Overflow")
+TOBYSTR(TOBYI18N_NOT_AN_ARRAY, "Expected array")
+TOBYSTR(TOBYI18N_NO_RARRAY, "Expected \"]\"")
+TOBYSTR(TOBYI18N_NO_LARRAY, "Expected \"[\"")
+TOBYSTR(TOBYI18N_NOT_WHOLE_NUM, "Expected whole number")
+TOBYSTR(TOBYI18N_FILE_NOT_OPEN, "File not open")
+TOBYSTR(TOBYI18N_END_OF_FILE, "End of file")
 
 
+/* --- END TOBY I18N LANGUAGE DATA --- */
 
+// end of french.tobylang ...
 
