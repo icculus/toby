@@ -30,6 +30,12 @@ TobyCollection::TobyCollection(void) : list(NULL)
 
 TobyCollection::~TobyCollection(void)
 {
+    clear();
+} // Destructor
+
+
+void TobyCollection::clear(void)
+{
     TobyLinkedList *next = NULL;
 
     while (list != NULL)
@@ -38,12 +44,12 @@ TobyCollection::~TobyCollection(void)
         delete list;
         list = next;
     } // while
-} // Destructor
+} // TobyCollection::clear
 
 
-bool TobyCollection::insertElement(void *elem, int pos)
+bool TobyCollection::insertElement(void *elem, size_t pos)
 {
-    int count = 0;
+    size_t count = 0;
     TobyLinkedList *prev = NULL;
 
     for (TobyLinkedList *i = list; i != NULL; i = i->next)
@@ -90,9 +96,9 @@ void TobyCollection::addElement(void *elem)
 } // TobyCollection::addElement
 
 
-void *TobyCollection::elementAt(int pos)
+void *TobyCollection::elementAt(size_t pos)
 {
-    int count = 0;
+    size_t count = 0;
 
     for (TobyLinkedList *i = list; i != NULL; i = i->next)
     {
@@ -106,9 +112,9 @@ void *TobyCollection::elementAt(int pos)
 } // TobyCollection::insertElement
 
 
-void *TobyCollection::remove(int pos)
+void *TobyCollection::remove(size_t pos)
 {
-    int count = 0;
+    size_t count = 0;
 
     for (TobyLinkedList *i = list; i != NULL; i = i->next)
     {
@@ -140,10 +146,10 @@ bool TobyCollection::isEmpty(void)
 } // TobyCollection::isEmpty
 
 
-int TobyCollection::getSize(void)
+size_t TobyCollection::getSize(void)
 {
     // O(n), not O(1).
-    int retval = 0;
+    size_t retval = 0;
 
     for (TobyLinkedList *i = list; i != NULL; i = i->next)
         retval++;
@@ -152,9 +158,9 @@ int TobyCollection::getSize(void)
 } // TobyCollection::getSize
 
 
-void TobyCollection::swapElements(int pos1, int pos2)
+void TobyCollection::swapElements(size_t pos1, size_t pos2)
 {
-    int count = 0;
+    size_t count = 0;
     TobyLinkedList *elem1 = NULL;
     TobyLinkedList *elem2 = NULL;
 

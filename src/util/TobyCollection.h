@@ -45,12 +45,13 @@ public:
     TobyCollection(void);
     virtual ~TobyCollection(void);
     virtual void addElement(void *elem);
-    virtual bool insertElement(void *elem, int pos);
-    virtual void *elementAt(int pos);
-    virtual void *remove(int pos);
+    virtual bool insertElement(void *elem, size_t pos);
+    virtual void *elementAt(size_t pos);
+    virtual void *remove(size_t pos);
     virtual bool isEmpty(void);
-    virtual int getSize(void);
-    virtual void swapElements(int pos1, int pos2);
+    virtual void clear(void);
+    virtual size_t getSize(void);
+    virtual void swapElements(size_t pos1, size_t pos2);
 
 protected:
     TobyLinkedList *list;
