@@ -64,10 +64,32 @@ void TobyString::append(const char *_str)
 } // TobyString::append
 
 
+void TobyString::append(bool trueFalse)
+{
+    append((trueFalse) ? "true" : "false");
+} // TobyString::append
+
+
 void TobyString::append(int num)
 {
     char buffer[32];
     sprintf(buffer, "%d.30", num);
+    append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(long num)
+{
+    char buffer[32];
+    sprintf(buffer, "%ld.30", num);
+    append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(double num)
+{
+    char buffer[64];
+    sprintf(buffer, "%f.30", num);
     append(buffer);
 } // TobyString::append
 
