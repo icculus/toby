@@ -37,6 +37,7 @@ public final class Toby extends JFrame implements DocumentListener,
     private File currentDirectory = null;
     private boolean textModified = false;
 
+
     public Toby()
     {
         super();
@@ -44,7 +45,7 @@ public final class Toby extends JFrame implements DocumentListener,
         Container rootPane = getContentPane();
         TobyMenuBar tmb = new TobyMenuBar(this);
         TurtleSpace tspace;
-
+        
         currentDirectory = new File(".");   // !!! is this kosher?
         setTitle();
  
@@ -64,6 +65,28 @@ public final class Toby extends JFrame implements DocumentListener,
         show();
     } // Constructor
 
+/*
+    private void setTobyIcon()
+    {
+        System.out.println("in setTobyIcon.");
+        Turtle turtle = new TriangleTurtle();
+        Image image = createImage(24, 24);
+        Graphics g = image.getGraphics();
+
+        System.out.println("painting...");
+
+        g.setColor(Color.black);
+        g.fillRect(0, 0, 24, 24);
+        turtle.paint(g, null);
+        g.dispose();
+
+        System.out.println("doing it...");
+
+        setIconImage(null);
+
+        System.out.println("done.");
+    } // setTobyIcon
+*/
 
     public void setTitle()
     {
@@ -392,7 +415,11 @@ public final class Toby extends JFrame implements DocumentListener,
         System.exit(0);
     } // windowClosed
 
-    public void windowOpened(WindowEvent e) {}
+    public void windowOpened(WindowEvent e)
+    {
+//        setTobyIcon();
+    } // windowOpened
+
     public void windowIconified(WindowEvent e) {}
     public void windowDeiconified(WindowEvent e) {}
     public void windowActivated(WindowEvent e) {}

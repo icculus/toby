@@ -2,13 +2,13 @@
 
 
 - Even on a cancel save, JFrame closes.
+- Right edge of TurtleSpace isn't drawing correctly...
+- Fix "!!!" comments...
 - Fix menubar while running, if possible.
 - FIX VARVIEWER. It BADLY BROKEN.
 - COMMENT EVERYTHING.
 - Write up a "how it works" doc.
-- Make TobyInterpreter work off one thread...
 - Add globals
-- Make turtle into a component/make it drawable during execution...
 - Fix equality operator
 - multithread/multiturtle?
 - descending FOR loops and STEPs...
@@ -21,5 +21,7 @@
 - maximize window instead of sizing...
 - line/column readout.
 - Make TurtleSpace into a bean.
+- Printing?
 
 // end of todo ...
+

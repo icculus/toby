@@ -106,7 +106,10 @@ public final class TobyPanel extends JComponent implements LayoutManager
         Dimension d = target.getSize();
         Insets insets = target.getInsets();
 
+        d.width -= (insets.left + insets.right);
         d.width /= 2;
+
+        d.height -= (insets.top + insets.bottom);
 
         tspace.setSize(d.width, d.height);
         tspace.setLocation(insets.left, insets.top);
@@ -114,7 +117,7 @@ public final class TobyPanel extends JComponent implements LayoutManager
         tia.setSize(d.width, (int) (d.height * 0.75));
         tia.setLocation(d.width + insets.left, insets.top);
 
-        varScrollPane.setSize(d.width, ((int) (d.height * 0.25) + insets.top));
+        varScrollPane.setSize(d.width, ((int) (d.height * 0.25)));
         varScrollPane.setLocation(d.width + insets.left,
                                   ((int) (d.height * 0.75)) + insets.top);
     } // layoutContainer

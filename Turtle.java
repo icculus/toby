@@ -80,7 +80,8 @@ public abstract class Turtle implements ImageObserver
     {
         if (isVisible)
         {
-            blankTurtle(g, copyImage);
+            if (copyImage != null)
+                blankTurtle(g, copyImage);
             paintImpl(g);
         } // if
     } // paint
@@ -252,12 +253,18 @@ public abstract class Turtle implements ImageObserver
     } // getPenColor
 
 
-    public final void setPenColor(double colorNum)
+    public final boolean setPenColor(double colorNum)
     {
+        boolean retVal = false;
         Color color = colorByNumber(colorNum);
 
         if (color != null)
+        {
             penColor = color;
+            retVal = true;
+        } // if
+
+        return(retVal);
     } // setPenColor
 
 
