@@ -20,8 +20,7 @@
 package last.toby.gui;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.*;
 import last.toby.interpreter.*;
 
@@ -33,26 +32,59 @@ import last.toby.interpreter.*;
      */
 public final class VarViewer extends JComponent implements VarWatcher
 {
-    private Vector vars;
+    protected Stack globals = null;
+    protected Stack locals = null;
+    protected int framePointer = 0;
 
     public VarViewer()
     {
         super();
-        vars = new Vector();
         setBackground(Color.white);
         setDoubleBuffered(true);
     } // Constructor
 
 
+    private void drawVar(Graphics g, Intrinsic var,
+                         boolean changed,
+                         int varX, int valX, int y,
+                         FontMetrics fm)
+    {
+        String str;
+
+        g.setColor((changed) ? Color.red : Color.blue);
+
+        str = var.getIdentifier();
+        g.drawString((str == null) ? "(null)" : str, varX + 2, y);
+
+        str = var.toString();
+        if (str == null)
+            str = "(null)";
+        int valOffset = fm.stringWidth(str);
+        g.drawString(str, (valX - 2) - valOffset, y);
+    } // drawVar
+
+
     public void paintComponent(Graphics g)
     {
         int i;
-        VarReferenceIntrinsic var;
         int y = 0;
         int lineCount;
         Dimension d = getSize();
+        int halfWidth = d.width / 2;
         FontMetrics fm = g.getFontMetrics(getFont());
-        String str;
+        int globalCount = -1;
+        int localCount = -1;
+
+        if (this.globals != null)
+            globalCount = this.globals.size();
+
+        if (this.locals != null)
+            localCount = this.locals.size();
+
+System.out.println("framepointer == (" + this.framePointer + ").");
+System.out.println("localCount == (" + localCount + ").");
+for (int v = 0; v < localCount; v++)
+    System.out.println(" - " + ((Intrinsic) this.locals.elementAt(v)).getIdentifier());
 
         lineCount = d.height / fm.getHeight();
 
@@ -61,74 +93,50 @@ public final class VarViewer extends JComponent implements VarWatcher
             g.setColor(Color.black);
             y += fm.getHeight();
             g.drawLine(0, y, d.width, y);
-            if (vars.size() > i)
+
+                // !!! falses in drawVar calls need to change!
+
+            if (i < globalCount)
             {
-                var = (VarReferenceIntrinsic) vars.elementAt(i);
-                str = var.getIdentifier();
-// !!!
-//                if (var.getInScope() == true)
-                    g.setColor(Color.blue);
-//                else
-//                {
-//                    g.setColor(Color.darkGray);
-//                    g.drawString((str == null) ? "(null)" : str, 1, y + 1);
-//                    g.setColor(Color.lightGray);
-                    g.drawString((str == null) ? "(null)" : str, 0, y);
-//                } // else
-                g.setColor(Color.red);
-                str = var.toString();
-                g.drawString((str == null) ? "(null)" : str,
-                             (int) (d.width * 0.75), y);
+                drawVar(g, (Intrinsic) this.globals.elementAt(i),
+                        false, 0, halfWidth, y, fm);
+            } // if
+
+            if ((this.locals != null) && (this.framePointer + i < localCount))
+            {
+                drawVar(g,
+                        (Intrinsic) this.locals.elementAt(this.framePointer+i),
+                        false, halfWidth, d.width, y, fm);
             } // if
         } // for
+
+        g.setColor(Color.black);
+        g.drawLine(halfWidth, 0, halfWidth, d.height);
     } // paint
 
 
         // VarWatcher implementation...
 
-    public void varBeginInterpretation()
+    public void varDefineGlobals(Stack _globalStack)
     {
-        vars.removeAllElements();
-    } // varBeginInterpretation
+        this.globals = _globalStack;
+    } // varSetGlobals
 
-
-    public void varEndInterpretation(boolean normalTermination)
+    public void varDefineLocalStack(Stack _localStack)
     {
-        if (normalTermination)
-            vars.removeAllElements();
-    } // varEndInterpretation
+        this.locals = _localStack;
+    } // varSetLocalStack
 
+    public void varNewStackFrame(int pos)
+    {
+        this.framePointer = pos;
+        paintImmediately(0, 0, getWidth(), getHeight());
+    } // varSetFramePointer
 
     public void varUpdated(VarReferenceIntrinsic var)
     {
-        repaint();
-    } // varUpdate
-
-
-    public void varCreated(VarReferenceIntrinsic var)
-    {
-        vars.addElement(var);
-        repaint();
-    } // varCreated
-
-
-    public void varDestroyed(VarReferenceIntrinsic var)
-    {
-        vars.removeElement(var);
-        repaint();
-    } // varDestroyed
-
-
-    public void varInScope(VarReferenceIntrinsic var)
-    {
-        repaint();
-    } // varInScope
-
-
-    public void varOutOfScope(VarReferenceIntrinsic var)
-    {
-        repaint();
-    } // varOutOfScope
+        paintImmediately(0, 0, getWidth(), getHeight());
+    } // varUpdated
 
 } // VarViewer
 
