@@ -31,7 +31,7 @@
 
 
     // print (count) copies of (ch) to stdout.
-void printMultiChars(char ch, int count)
+static void printMultiChars(char ch, int count)
 {
     for (int i = 0; i < count; i++)
         printf("%c", ch);
@@ -39,11 +39,10 @@ void printMultiChars(char ch, int count)
 
 
     // Spit back out the XML as the parser saw it.
-void reoutputXML(XMLNode *node, int depth)
+static void reoutputXML(XMLNode *node, int depth)
 {
     int i, max;
 
-    printf("*");
     printMultiChars(' ', (depth + 1) * 2);
     printf("<%s", node->getTag());
 
@@ -59,13 +58,16 @@ void reoutputXML(XMLNode *node, int depth)
     if (text == NULL)
     {
         assert(children->isEmpty());
-        printf(" />\n");
+        printf("/>\n");
     } // if
     else
     {
-        printf(">\n*");
-        printMultiChars(' ', (depth + 2) * 2);
-        printf("%s\n", text);
+        printf(">\n");
+        if (text[0] != '\0')
+        {
+            printMultiChars(' ', (depth + 2) * 2);
+            printf("%s\n", text);
+        } // if
 
         for (i = 0, max = children->size(); i < max; i++)
         {
@@ -74,7 +76,6 @@ void reoutputXML(XMLNode *node, int depth)
             reoutputXML(child, depth + 1);
         } // for
 
-        printf("*");
         printMultiChars(' ', (depth + 1) * 2);
         printf("</%s>\n", node->getTag());
     } // else
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
     {
         try
         {
-            printf("+ NEW FILE: [%s].\n", argv[i]);
+            printf("\n+ NEW FILE: [%s].\n", argv[i]);
 
             XMLTree tree(new FileReader(argv[i]));
 
