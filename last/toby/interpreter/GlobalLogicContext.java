@@ -38,12 +38,15 @@ public class GlobalLogicContext extends LogicContext
     protected boolean caseSensitive = true;
     private long execStartTime = -1;
     private long execTotalTime = -1;
-
+    private static Stack stackFrames = new Stack();
+    private int currentStackFrame = 0;
 
     public GlobalLogicContext(String mainlineName)
     {
         super(0);
         this.mainlineName = mainlineName;
+
+        // !!! this should probably be done by the parsers.
         loadStandardFunctions();
     } // Constructor
 
@@ -222,6 +225,7 @@ public class GlobalLogicContext extends LogicContext
     public int addGlobal(Object type, String identifier, Intrinsic global)
     {
         addScopedSymbol(type, identifier);
+        global.setIdentifier(identifier);
         globalStack.push(global);
 
 //        _D("addGlobal", "Added [" + identifier + "] at index (" +
@@ -238,9 +242,33 @@ public class GlobalLogicContext extends LogicContext
 
     public Intrinsic globalFromTopOfStack(int offset)
     {
-        int pos = globalStack.size() - offset - 1;
-        return((Intrinsic) globalStack.elementAt(pos));
+        return((Intrinsic) globalStack.elementAt(offset));
     } // globalFromTopOfStack
+
+    protected void clearLocalStack()
+    {
+        this.localStack.clear();
+        this.stackFrames.clear();
+        this.currentStackFrame = 0;
+    } // clearLocalStack
+
+    protected void pushStackFrame()
+    {
+            // !!! this seems like it's inefficient.
+
+        Integer num = new Integer(currentStackFrame);
+        this.currentStackFrame = this.localStack.size();
+        this.stackFrames.push(num);
+        notifyNewStackFrame(this.currentStackFrame);
+    } // pushStackFrame
+
+    protected void popStackFrame()
+    {
+            // !!! this seems like it's inefficient.
+        Integer num = (Integer) stackFrames.pop();
+        this.currentStackFrame = (num == null) ? 0 : num.intValue();
+        notifyNewStackFrame(this.currentStackFrame);
+    } // popStackFrame
 
     public void popMultipleLocals(int count)
     {
@@ -256,12 +284,14 @@ public class GlobalLogicContext extends LogicContext
     {
         Intrinsic retVal = null;
 
+        notifyDefineGlobals(this.globalStack);
+        notifyDefineLocalStack(this.localStack);
+        clearLocalStack();
+
         notifyBeginInterpretation();
 
-        localStack.clear();
-
-        execTotalTime = -1;
-        execStartTime = System.currentTimeMillis();
+        this.execTotalTime = -1;
+        this.execStartTime = System.currentTimeMillis();
 
         try
         {
@@ -290,7 +320,7 @@ public class GlobalLogicContext extends LogicContext
         finally
         {
                 // cleanup...
-            execTotalTime = System.currentTimeMillis() - execStartTime;
+            this.execTotalTime = System.currentTimeMillis() - this.execStartTime;
             notifyEndInterpretation((retVal == null) ? true : false);
         } // finally
 
