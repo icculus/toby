@@ -123,6 +123,7 @@ public final class TobyParser extends last.toby.parsers.Parser
     protected static String[] intrinsicTable = null;
     protected static String[] keywordTable = null;
     protected static String[] stdFuncTable = null;
+    protected static String[] internalStdFuncTable = null;
 
         // Instance variables...
     private TobyTokenizer toker = null;
@@ -349,7 +350,84 @@ public final class TobyParser extends last.toby.parsers.Parser
                                         PROCNAME_DISABLEFENCE
                                     };
 
-        alphabetizeArrayElements(stdFuncTable);
+            // this must be in the exact same order as the above list.
+        internalStdFuncTable = new String[] {
+                                        "__$STDFUNC$__goBackward",
+                                        "__$STDFUNC$__goForward",
+                                        "__$STDFUNC$__cleanupTurtleSpace",
+                                        "__$STDFUNC$__showTurtle",
+                                        "__$STDFUNC$__hideTurtle",
+                                        "__$STDFUNC$__showAllTurtles",
+                                        "__$STDFUNC$__hideAllTurtles",
+                                        "__$STDFUNC$__getAngle",
+                                        "__$STDFUNC$__setPenColor",
+                                        "__$STDFUNC$__setPenColorRGB",
+                                        "__$STDFUNC$__getTurtleX",
+                                        "__$STDFUNC$__getTurtleY",
+                                        "__$STDFUNC$__setTurtleXY",
+                                        "__$STDFUNC$__setAngle",
+                                        "__$STDFUNC$__homeTurtle",
+                                        "__$STDFUNC$__isPenUp",
+                                        "__$STDFUNC$__isPenDown",
+                                        "__$STDFUNC$__turnLeft",
+                                        "__$STDFUNC$__turnRight",
+                                        "__$STDFUNC$__pause",
+                                        "__$STDFUNC$__setPenDown",
+                                        "__$STDFUNC$__setPenUp",
+                                        "__$STDFUNC$__random",
+                                        "__$STDFUNC$__round",
+                                        "__$STDFUNC$__stopProgram",
+                                        "__$STDFUNC$__getTurtleSpaceHeight",
+                                        "__$STDFUNC$__getTurtleSpaceWidth",
+                                        "__$STDFUNC$__addTurtle",
+                                        "__$STDFUNC$__useTurtle",
+                                        "__$STDFUNC$__removeTurtle",
+                                        "__$STDFUNC$__removeAllTurtles",
+                                        "__$STDFUNC$__homeAllTurtles",
+                                        "__$STDFUNC$__setFence",
+                                        "__$STDFUNC$__enableFence",
+                                        "__$STDFUNC$__disableFence"
+                                    };
+
+
+            // gotta sort this ourselves. Ugh.
+
+        int i;
+        int j;
+        int max;
+        String tmp;
+        boolean sorted;
+
+        max = stdFuncTable.length - 1;
+
+        do
+        {
+            sorted = true;
+            for (i = 0; i < max; i++)
+            {
+                if (stdFuncTable[i].compareTo(stdFuncTable[i + 1]) > 0)
+                {
+                    sorted = false;
+
+                    tmp = stdFuncTable[i];
+                    stdFuncTable[i] = stdFuncTable[i + 1];
+                    stdFuncTable[i + 1] = tmp;
+
+                    tmp = internalStdFuncTable[i];
+                    internalStdFuncTable[i] = internalStdFuncTable[i + 1];
+                    internalStdFuncTable[i + 1] = tmp;
+                } // if
+            } // for
+        } while (sorted == false);
+
+        // !!! _D()  ?
+        //System.err.println("Sorted internal func tables:");
+        //for (i = 0; i < max; i++)
+        //{
+        //    System.err.println("[" + stdFuncTable[i] + "] -> [" +
+        //            internalStdFuncTable[i] + "].");
+        //} // for
+
     } // buildStdFuncTable
 
 
@@ -1389,6 +1467,7 @@ public final class TobyParser extends last.toby.parsers.Parser
         FunctionCallExprLogicContext retVal;
         String str;
         Object obj;
+        int rc;
 
 //        _D("parseFunctionCall", "called.");
 
@@ -1399,10 +1478,11 @@ public final class TobyParser extends last.toby.parsers.Parser
 //        _D("parseFunctionCall", "name of function to call is [" + str + "].");
 
             // standard function call?
-        if (searchAlphabeticArray(stdFuncTable, str) != -1)
+        rc = searchAlphabeticArray(stdFuncTable, str);
+        if (rc != -1)
         {
 //            _D("parseFunctionCall", "This is a standard function.");
-            str = "__$STDFUNC$__" + str;
+            str = internalStdFuncTable[rc];
         } // if
 
         retVal = new FunctionCallExprLogicContext(toker.lineno(), str);
