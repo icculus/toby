@@ -6,9 +6,6 @@ At this point, TOBY has been entirely written, and maintained by
 
 ...Ryan would like to give a shout out to the following:
 
-- Oliver Scalbert, who not only translated Toby to French, and exposed a
-  bunch of bugs in the localization code, but he took a chance on using Toby
-  with a group of children. My eternal thanks for all his help.
 - Gregory S. Read, for testing Toby's limits, breaking the ELSEIF statement,
   and being a bizarre sort of soul mate. Get yer slack on.
 - Sabrina Blanks, April Andrews, and Nicki Publick for being unwitting test

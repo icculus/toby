@@ -7,13 +7,15 @@ example, the fact that the keyword tables are now autosorted doesn't get
 noted, but the fact that there's now a splash screen is noted. This is
 meant to be informative, but not authoritative.
 
-Actually, mostly, I've been lazy. Now that the TUD engine rewrite is complete,
-I'll try to take better notes.
-
 
 If you want a byte-for-byte revision history, please use the CVS server:
     [hhmm...which is not currently available, since XNOT's demise. The
      repository is intact, and will be made public again sooner or later.]
+
+What's new in Toby alpha6:
+- Added (multidimensional) arrays, a String intrinsic type, and functions for
+  string manipulation to the interpreter and Toby language.
+- Added French translation by Olivier Scalbert. Thanks!
 
 
 What's new in Toby alpha5:

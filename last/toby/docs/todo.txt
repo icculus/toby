@@ -1,11 +1,39 @@
 // Things still to be done for TOBY...
+//  some are bugfixes, some are enhancements, some are hopes and dreams...
 
 ongoing bugfixes/enhancements :
     GLOBAL REFERENCING IS FUCKED.
 
-    Print out translation credit somewhere.
+    I want an alpha channel in the pen. By default, there's 15 or so colors
+    with setPenColor(). Then there's more advanced drawing with
+    setPenColorRGB. I also want a setPenColorRGBA or something.
+
+    The only pencolor StdFunction should set red, green, blue, and alpha in
+    one call. The weaker versions should be in a Toby-specific package.
+
+    I want TurtleSpace to just be graphic-specific stuff. All the turtle
+    management, etc. should be in a separate class, which makes requests
+    through the interface for drawing lines between two points, text, etc.
+
+    There should be a IntegerIntrinsic and a FloatIntrinsic (which may hold
+    a double), not a NumberIntrinsic. FloatIntrinsics should throw an
+    exeception if you call getIntValue() when it's holding an non-whole number.
+
+    Hhm...might need a CastExpressionLogicContext or something.
+
+    Strange duplicate error if I have a bogus file on the command line.
+
+    A font height stdfunction would be good.
+
+    JTurtleSpace: drawing the turtle is not resetting the GC's color.
+
+    There isn't a "!=" operator in Toby?!
+
+    Typechecking in Toby is either screwed, or nonexistant.
 
     Have the build binaries go into a separate tree.
+
+    A screenshot facility might be nice.
 
     TobyMenuBar.java : Need to not hardcode TobyParser...
     TobyMenuBar.java : Move execution to separate class.
@@ -17,6 +45,9 @@ ongoing bugfixes/enhancements :
     swing turtle should be fixed width, not based on screen size.
 
     Allow JTurtleSpace to load graphics in background.
+
+    stdfunctions should have their names assigned at construction by
+     the caller.
 
     Keep static references to the stdfunctions logic contexts, and
      have the parsers install them in the globallogiccontext themselves.
@@ -103,7 +134,7 @@ ongoing bugfixes/enhancements :
      '!!!' have been placed there to alert me that there is a bug/deficiency
      in the code that is worth revisiting, but probably isn't crippling. As
      such, they tend to build up. Feel free to fix any of these and submit
-     patches to icculus@lokigames.com ...
+     patches to rgordon@xnot.com ...
 
     Make inputarea use sane keys...I don't like the Swing defaults. Therefore
      someday I'd like to either replace the Swing component with a homegrown
@@ -165,8 +196,8 @@ alpha5 : in progress.
 
 alpha6 : not yet begun.
     COMMENT EVERYTHING.
-    add arrays?
-    add String intrinsic?
+    add arrays?                             (COMPLETED)
+    add String intrinsic?                   (COMPLETED)
     Printing source code.
     Printing current TurtleSpace.
     Undo/redo
@@ -177,6 +208,7 @@ alpha6 : not yet begun.
     Rewrite/replace text editor.
     German langfile.
     Spanish langfile.
+    French langfile.                        (COMPLETED)
     Write Spotlet version of TurtleSpace.
     Verify the applet works in a
      Java 1.2 compatible browser (HotJava?)
