@@ -45,13 +45,15 @@ const char *TobyString::c_str(void) const
     return(str);   // READ. ONLY.
 } // TobyString::c_str
 
-#if 0
-// !!!
-char *TobyString::operator char *(void)
+
+void TobyString::append(char ch)
 {
-    return((const char *) str);
-} // TobyString::operator char *
-#endif
+    int strSize = strlen(str);
+    str = (char *) realloc(str, strSize + 2);
+    str[strSize + 1] = '\0';
+    str[strSize] = ch;
+} // TobyString::append
+
 
 void TobyString::assignCStr(const char *_str)
 {

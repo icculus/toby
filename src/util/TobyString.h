@@ -40,7 +40,7 @@ public:
     virtual ~TobyString(void);
 
     const char *c_str(void) const;
-    //char * operator char *(void);
+    void append(char ch);
 
     bool replaceFormatToken(int n, const char *val);
     bool replaceFormatToken(int n, int val);
