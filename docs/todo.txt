@@ -7,6 +7,19 @@
  Java-specific.)
 
 ongoing bugfixes/enhancements :
+    We're doublebuffering the offscreen/screen rendering state between
+     turtlespace and the individual renderers. Move it into the renderer
+     baseclass.
+
+    Perhaps keep a list of dirty rectangles for flipping the offscreen buffer
+     to the screen faster?
+
+    Hhmm...lose the "Toby" in classes that aren't Toby (the language) specific.
+     (i.e. TobyReader, TobyCollection, etc.)
+
+    Have TurtleSpace prevent calls to renderTurtle() if rendering to offscreen.
+     Right now, the renderers have to check this.
+
     Build a table with all available renderers, and let the user pick them
     at runtime?  Is this worthwhile?
 
