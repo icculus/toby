@@ -111,6 +111,12 @@ standalone program for initial testing.)
             XMLNode::getAttributeDefault() for even more convenience.
 09062001 - Screw it: added append() methods for every type I could imagine
             in TobyString. More LexerRules subclass implementations.
+09072001 - More Lexer rules. Moved getBoolAttribute() from TokenizerRulesXML
+            to XMLNode (and fixed a glaring bug in it, too.). Added some
+            debugging output to UnixLoader::getSymbol(). Some
+            platform-specific base classes (TobyLoader and TobyThread,
+            specifically), did not have their getInstance() methods set to be
+            static. Fixed.
 
 // end of changelog.txt ...
 
