@@ -34,7 +34,7 @@ public class TobySplash extends JDialog implements ActionListener
     public TobySplash(String filename)
     {
         super();
-        img = Toolkit.getDefaultToolkit().createImage(filename);
+//        img = Toolkit.getDefaultToolkit().createImage(filename);
         timer = new Timer(5000, this);
         timer.setRepeats(false);
         setSize(500, 500);
