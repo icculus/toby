@@ -1,0 +1,6 @@
+function main() returns number
+	return (1.0)
+endfunction
+
+
+
