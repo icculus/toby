@@ -24,6 +24,14 @@
 #include "util/TobyObject.h"
 
 
+// These are UNSAFE macros! Do NOT use increment operators, etc with them!
+//  tobyclamp expects (low) < (high).
+#define tobymin(x, y) ((x) < (y) ? (x) : (y))
+#define tobymax(x, y) ((x) > (y) ? (x) : (y))
+#define tobyclamp(low, x, high) ( (x) > (high) ? (high) : ((x) < (low) ? (low) : (x)) )
+
+
+
 /*
  * Some needed math routines.
  *
