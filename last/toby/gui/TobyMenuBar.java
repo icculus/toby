@@ -292,7 +292,16 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
             doStep();
 
         else if (mi == clearItem)
+        {
+            try
+            {
             parent.getTobyPanel().getTurtleSpace().cleanup();
+            } // try
+            catch (ExecException ee)
+            {
+                // don't care.
+            } // catch
+        } // else if
     } // actionPerformed
 
 

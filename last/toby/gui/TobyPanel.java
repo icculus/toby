@@ -20,8 +20,8 @@
 package last.toby.gui;
 import java.awt.*;
 import javax.swing.*;
+import last.toby.turtlespace.swing.SwingRenderer;
 import last.toby.turtlespace.TurtleSpace;
-import last.toby.turtlespace.swing.JTurtleSpace;
 import last.toby.interpreter.VarWatcher;
 
     /**
@@ -31,7 +31,8 @@ import last.toby.interpreter.VarWatcher;
      */
 public final class TobyPanel extends JComponent implements LayoutManager
 {
-    private JTurtleSpace tspace = null;
+    private TurtleSpace tspace = null;
+    private SwingRenderer renderer = null;
     private TobyInputArea tia = null;
     private VarViewer varViewer = null;
     private JScrollPane varScrollPane = null;
@@ -57,8 +58,9 @@ public final class TobyPanel extends JComponent implements LayoutManager
      *    returns : void. The panel will have a bunch more stuff, though.
      */
     {
-        tspace = new JTurtleSpace();
-        add(tspace);
+        renderer = new SwingRenderer();
+        tspace = new TurtleSpace(renderer);
+        add(renderer);
 
         tia = new TobyInputArea(frame);
         add(tia);
@@ -127,8 +129,8 @@ public final class TobyPanel extends JComponent implements LayoutManager
 
         height -= (insets.top + insets.bottom);
 
-        tspace.setSize(widthHalf, height);
-        tspace.setLocation(insets.left, insets.top);
+        renderer.setSize(widthHalf, height);
+        renderer.setLocation(insets.left, insets.top);
                 
         tia.setSize(widthHalf, (int) (height * 0.75));
         tia.setLocation(insets.left + widthHalf, insets.top);
