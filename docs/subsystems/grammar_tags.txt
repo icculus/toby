@@ -12,7 +12,7 @@ attributes  :
         Element with (name) attribute that matches (string). This element will
         be the start of the lexing rules. The specified element must be in
         the global element namespace (must be an immediate child of this
-        language tag. Default is undefined.
+        language tag. This is a required attribute.
 
 -------------------------------------------------------------------------------
 tagname     : <tokenizer>
@@ -76,8 +76,8 @@ attributes  :
 
 -------------------------------------------------------------------------------
 tagname    : <element>
-parent     : <language>, <element>
-children   : <element>, <repeat>, <optional>, <pickone>, <reqelement>,
+parent     : <language>
+children   : <repeat>, <optional>, <pickone>, <reqelement>,
              <reqword>, <reqnewline>, <reqnumber>, <reqliteralstring>,
              <reqmultilinecomment>, <reqsinglelinecomment>, <reqchar>,
              <reqeof>, <requirewhitespace>, <tokenizer>

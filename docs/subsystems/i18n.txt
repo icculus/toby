@@ -6,7 +6,7 @@ the 'n', so "i18n" is easier to type.
 Toby uses an unusual method to support multiple languages. Previously,
 rewrite #3 had the benefit of the Java Reflexion API, which meant that 
 strings, separated in the namespace by packages, could be referenced 
-directly by the program during the linking phased and modified at 
+directly by the program during the linking phase and modified at
 runtime by looking them up by name. So you'd have a default value:
 
  package my.package.name
@@ -27,8 +27,9 @@ runtime by looking them up by name. So you'd have a default value:
 
 This meant that, at runtime, the user could use a text file to drop new 
 strings in place on the fly. So all you had to do was translate the 
-textfile to French, German, or whatever, and feed the file to Toby, and 
-you had a local version.
+textfile to French, German, or whatever, and feed the file to Toby (which
+would read it from a file or url with the --langfile= command line option),
+and you had a localized version.
 
 Rewrite #4 has some difficulties with this method, and I've some desires 
 for enhancement.
@@ -118,9 +119,15 @@ To choose a default langfile for inclusion in the binary, specify it in the
 Makefile. There should be a section near the top that looks like this:
 
 #-----------------------------------------------------------------------------#
-# Choose a default language.
-#   Current option(s): "english"
+# Choose a default natural language.
+#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Ryan would also love to hear from you if you are willing to translate this
+#  software to other natural languages; it's easy to do, if you are bilingual
+#  in the first place.
+#
+#   Current option(s): "english", "french"
 #-----------------------------------------------------------------------------#
+#platform_i18n := french
 platform_i18n := english
 
 
@@ -128,12 +135,17 @@ platform_i18n := english
 
 
 #-----------------------------------------------------------------------------#
-# Choose a default language.
-#   Current option(s): "english", "nigerian"
+# Choose a default natural language.
+#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Ryan would also love to hear from you if you are willing to translate this
+#  software to other natural languages; it's easy to do, if you are bilingual
+#  in the first place.
+#
+#   Current option(s): "english", "french"
 #-----------------------------------------------------------------------------#
-platform_i18n := nigerian
+#platform_i18n := french
 #platform_i18n := english
-
+platform_i18n := nigerian
 
 
 
