@@ -11,8 +11,8 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public final class TobyMenuBar extends JMenuBar implements ActionListener,
-                                                          ItemListener,
-                                                          SourceWatcher
+                                                           ItemListener,
+                                                           SourceWatcher
 {
     public static final String MENUNAME_FILE   = "File";
     public static final String MENUITEM_NEW    = "New";

@@ -18,7 +18,7 @@ public final class Toby extends JFrame implements DocumentListener,
 {
         // Global Constants...
     public static final String TITLE   = "Toby";
-    public static final String VERSION = "v0.50alpha";
+    public static final String VERSION = "v1.0alpha2";
 
     public static final String USAGE = "USAGE: Toby.class [sourceFile.toby]";
 

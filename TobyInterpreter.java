@@ -184,7 +184,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // haltRequested
 
 
-    public synchronized void cleanup()
+    public void cleanup()
     {
         Graphics gr;
         Graphics g;
@@ -548,7 +548,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // checkIfProc
 
 
-    private synchronized void initGraphics()
+    private void initGraphics()
     {
         int i;
         Dimension d = getSize();

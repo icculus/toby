@@ -60,16 +60,19 @@ public abstract class Turtle implements ImageObserver
 
     private void blankTurtle(Graphics g, Image copyImage)
     {
-        g.drawImage(copyImage,
-                    (int) turtleX,
-                    (int) turtleY,
-                    (int) (turtleX + sideLength),
-                    (int) (turtleY + sideLength),
-                    (int) turtleX,
-                    (int) turtleY,
-                    (int) (turtleX + sideLength),
-                    (int) (turtleY + sideLength),
-                    this);
+        if (isVisible)
+        {
+            g.drawImage(copyImage,
+                        (int) (turtleX - sideLength),
+                        (int) (turtleY - sideLength),
+                        (int) (turtleX + sideLength),
+                        (int) (turtleY + sideLength),
+                        (int) (turtleX - sideLength),
+                        (int) (turtleY - sideLength),
+                        (int) (turtleX + sideLength),
+                        (int) (turtleY + sideLength),
+                        this);
+        } // if
     } // blankTurtle
 
 
@@ -102,10 +105,10 @@ public abstract class Turtle implements ImageObserver
     {
         if (isVisible != visibility)
         {
-            if (visibility)
-                paint(g, copyImg);
-            else
+            if (isVisible)
                 blankTurtle(g, copyImg);
+            else
+                paint(g, copyImg);
             isVisible = visibility;
         } // if
     } // setVisible
