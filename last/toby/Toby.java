@@ -19,6 +19,10 @@
 
 package last.toby;
 
+// !!! ugh.
+import java.io.*;
+import java.net.*;
+
 import last.toby.gui.*;
 import last.toby.util.*;
 
@@ -32,6 +36,8 @@ public final class Toby
 {
     public static final String TITLE   = "Toby";
     public static final String VERSION = "v1.0alpha5";
+
+    public static String sourceToLoad = null;
 
     private static void kickOffGUI(String fileName)
     {
@@ -76,21 +82,94 @@ public final class Toby
             toby.openFile(fileName);
     } // kickOffGUI
 
+    public static void printUsage()
+    {
+        System.err.println(TobyLanguage.USAGE);
+        System.err.println();
+    } // printUsage
+
+    public static boolean checkCommandLine(String[] args)
+    {
+        int max = args.length;
+        boolean tooManyFiles = false;
+
+        for (int i = 0; i < max; i++)
+        {
+            String arg = args[i].trim();
+
+            if (arg.startsWith("--") == true)
+            {
+                if (arg.startsWith("--langfile=") == true)
+                {
+                    // !!! this is a bad system.
+                    String s = arg.substring(11);
+                    URL url = null;
+                    try
+                    {
+                        url = new URL(s);
+                    } // try
+                    catch (MalformedURLException murle)
+                    {
+                        s = "file:///" + s;
+                        try
+                        {
+                            url = new URL(s);
+                        }
+                        catch (MalformedURLException murle2)
+                        {
+                                // can't localize this.
+                            System.err.println("Bad URL in --langfile!");
+                            return(false);
+                        } // catch
+                    } // catch
+
+                    try
+                    {
+                         System.out.println("loading from URL [" + url.toString() + "].");
+                         TobyLanguage.loadLanguage(url);
+                    } // try
+                    catch (IOException ioe)
+                    {
+                            // can't localize this.
+                        System.err.println("IOException reading langfile.");
+                        System.err.println(ioe.getMessage());
+                        return(false);
+                    } // catch
+                } // if
+
+                else
+                {
+                    printUsage();
+                    return(false);
+                } // else
+            } // if
+
+            else   // a non "--commandline" ...
+            {
+                if (sourceToLoad != null)
+                    tooManyFiles = true;
+                else
+                    sourceToLoad = arg;
+            } // else
+        } // for
+
+            // this is here so --langfile gets processed before output.
+        if (tooManyFiles)
+        {
+            System.err.println(TobyLanguage.TOOMANYFILES);
+            return(false);
+        } // if
+
+        return(true);
+    } // checkCommandLine
+
 
     public static void main(String[] args)
     {
-        if (Incompatibilities.checkForIncompatibilities() == false)
-            System.exit(0);
-        else
+        if (checkCommandLine(args) == true)
         {
-            if (args.length <= 1)
-                kickOffGUI((args.length == 1) ? args[0] : null);
-            else
-            {
-                System.err.println(TobyLanguage.USAGE);
-                System.err.println();
-                System.exit(0);
-            } // else
+            if (Incompatibilities.checkForIncompatibilities() == true)
+                kickOffGUI(sourceToLoad);
         } // else
     } // main
 
