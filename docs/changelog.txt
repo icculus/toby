@@ -40,6 +40,10 @@ standalone program for initial testing.)
 08082001 - Updated i18n docs, and changed TOBYSTR to TOBYI18N in the langfiles.
 08162001 - Started implementing io/Tokenizer.cpp. Mostly done, but a
             significant amount is left to be done to it.
+08212001 - Finished implementing io/Tokenizer.cpp. Seems to work pretty well
+            for tokenizing C++ code. Added src/test/ directory and
+            src/test/tokenizer.cpp to test...guess what. Changed "debugging"
+            flag in the Makefile to "debug" and added a "tests" rule.
 
 // end of changelog.txt ...
 
