@@ -32,13 +32,13 @@ public abstract class Turtle implements ImageObserver
          * Class variables and constants...
          */
 
-    private double  sideLength = 20.0; // Size of one side of Turtle.
-    private double  angle = 0.0;       // 0 - 360 degrees. Direction faced.
-    private double  turtleX = 0.0;     // X location of Turtle.
-    private double  turtleY = 0.0;     // Y location of Turtle.
-    private boolean isVisible = true;  // Should we even paint this guy?
-    private boolean isPenUp = false;   // Should we leave trails?
-    private Color   penColor = null;   // Current pen color.
+    private double  sideLength = 20.0;    // Size of one side of Turtle.
+    private double  angle = 0.0;          // 0 - 360 degrees. Direction faced.
+    private double  turtleX = 0.0;        // X location of Turtle.
+    private double  turtleY = 0.0;        // Y location of Turtle.
+    private boolean isVisible = true;     // Should we even paint this guy?
+    private boolean shouldDraw = true;    // Should we leave trails?
+    private Color   penColor = null;      // Current pen color.
 
 
         /**
@@ -97,6 +97,19 @@ public abstract class Turtle implements ImageObserver
 
 
         /**
+         * Returns the greater of two values.
+         *
+         *   @param x1 first value to compare.
+         *   @param x2 second value to compare.
+         *  @return Greater value of <em>x1</em> and <em>x2</em>.
+         */
+    public static int max(int x1, int x2)
+    {
+        return((x1 > x2) ? x1 : x2);
+    } // max
+
+
+        /**
          * Replace the current location of the turtle with
          *  what resides in that location at copyImage.
          *
@@ -107,15 +120,14 @@ public abstract class Turtle implements ImageObserver
     {
         if (isVisible)
         {
+            int startX = max((int) (turtleX - sideLength), 0);
+            int startY = max((int) (turtleY - sideLength), 0);
+            int endX   = max((int) (turtleX + sideLength), 0);
+            int endY   = max((int) (turtleY + sideLength), 0);
+
             g.drawImage(copyImage,
-                        (int) (turtleX - sideLength),
-                        (int) (turtleY - sideLength),
-                        (int) (turtleX + sideLength),
-                        (int) (turtleY + sideLength),
-                        (int) (turtleX - sideLength),
-                        (int) (turtleY - sideLength),
-                        (int) (turtleX + sideLength),
-                        (int) (turtleY + sideLength),
+                        startX, startY, endX, endY,
+                        startX, startY, endX, endY,
                         this);
         } // if
     } // blankTurtle
@@ -284,7 +296,7 @@ public abstract class Turtle implements ImageObserver
 
         point = TobyGeometry.calculateLine(angle, distance, turtleX, turtleY);
 
-        if (!isPenUp)   // draw the line covering path turtle took?
+        if (shouldDraw)   // draw the line covering path turtle took?
         {
             for (i = 0; i < gr.length; i++)
             {
@@ -340,13 +352,13 @@ public abstract class Turtle implements ImageObserver
          * Turn the Turtle's pen on or off. If set on, future movement of
          *  the Turtle will leave lines on TurtleSpace.
          *
-         *   @param isIt <em>true</em> if pen should draw,
-         *               <em>false</em> otherwise.
+         *   @param newState <em>true</em> if pen should draw,
+         *                   <em>false</em> otherwise.
          */
-    public final void setPenUp(boolean isIt)
+    public final void setPenDown(boolean newState)
     {
-        isPenUp = isIt;
-    } // penUp
+        shouldDraw = newState;
+    } // setPenDown
 
 
         /**
@@ -354,10 +366,10 @@ public abstract class Turtle implements ImageObserver
          *
          *  @return <em>true</em> if pen is drawing, <em>false</em> otherwise.
          */
-    public final boolean isPenUp()
+    public final boolean isPenDown()
     {
-        return(isPenUp);
-    } // isPenUp
+        return(shouldDraw);
+    } // isPenDown
 
 
         /**
