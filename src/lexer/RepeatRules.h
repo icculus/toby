@@ -25,7 +25,8 @@
 #include "io/Tokenizer.h"
 
 /*
- *  Element lexer rules: a logical grouping of subrules.
+ *  Repeat lexer metarule: a logical grouping of subrules that keeps
+ *   evaluating until one of those subrules fails.
  *
  *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
