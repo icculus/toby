@@ -42,6 +42,7 @@ public final class TobyPanel extends JComponent implements LayoutManager
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(varScrollPane);
 
+        tspace.addSourceWatcher((TobyMenuBar) frame.getJMenuBar());
         tspace.addSourceWatcher(tia);
     } // buildComponents
 

@@ -1,9 +1,9 @@
 /**
- *  !!! comment
+ * This is a simple JComponent that outputs the current cursor
+ *  location in a JTextArea everytime it is updated.
  *
- *
- *
- *
+ *    Copyright (c) 1999 Lighting and Sound Technologies.
+ *     Written by Ryan C. Gordon.
  */
 
 import java.awt.*;

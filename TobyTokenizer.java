@@ -40,22 +40,22 @@ public class TobyTokenizer extends SaneTokenizer
         int retVal = super.nextToken();
 
         if ((retVal == TT_WORD) &&                 // Handle '=' correctly...
-            (sval.equals(TobyInterpreter.OPCODE_ASSIGNMENT)))
+            (sval.equals(TobyInterpreter.OPER_ASSIGNMENT)))
         {
             if (super.nextToken() != TT_WORD)
             {
                 pushBack();
                 ttype = TT_WORD;
-                sval = TobyInterpreter.OPCODE_ASSIGNMENT;
+                sval = TobyInterpreter.OPER_ASSIGNMENT;
             } // if
             else
             {
-                if (sval.equals(TobyInterpreter.OPCODE_ASSIGNMENT))
-                    sval = TobyInterpreter.OPCODE_EQUALS;
+                if (sval.equals(TobyInterpreter.OPER_ASSIGNMENT))
+                    sval = TobyInterpreter.OPER_EQUALS;
                 else
                 {
                     pushBack();
-                    sval = TobyInterpreter.OPCODE_ASSIGNMENT;
+                    sval = TobyInterpreter.OPER_ASSIGNMENT;
                 } // else
             } // else
         } // if

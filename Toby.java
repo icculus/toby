@@ -34,6 +34,8 @@ public final class Toby extends JFrame implements DocumentListener,
     public static final String MSG_BAD_JAVA =
          "Your Java Virtual Machine is too old; goto http://java.sun.com/ ...";
 
+    public static final String CURDIRSTR = ".";  // !!! system property "user.dir"
+
         // Instance variables...
     private TobyPanel tobyPanel;
     private String tobyFileName = null;
@@ -49,7 +51,7 @@ public final class Toby extends JFrame implements DocumentListener,
         TurtleSpace tspace;
         
         tmb = new TobyMenuBar(this);
-        currentDirectory = new File(".");   // !!! is this kosher?
+        currentDirectory = new File(CURDIRSTR);
         setTitle();
  
         addWindowListener(this);
@@ -61,9 +63,6 @@ public final class Toby extends JFrame implements DocumentListener,
         tobyPanel = new TobyPanel(this);
         rootPane.add("Center", tobyPanel);
 
-            // !!! Awkward. Move this?
-        tspace = tobyPanel.getTurtleSpace();
-        tspace.addSourceWatcher(tmb);
         setVisible(true);
         show();
     } // Constructor
@@ -157,7 +156,7 @@ public final class Toby extends JFrame implements DocumentListener,
 
     public void displayHelp()
     {
-            // !!! JavaHelp, perhaps?
+            // JavaHelp, perhaps?
         String msg = "Help not yet implemented.";
 
         JOptionPane.showMessageDialog(null, msg, TITLE + " " + VERSION,
@@ -285,15 +284,38 @@ public final class Toby extends JFrame implements DocumentListener,
     } // saveAndContinue
 
 
-    public boolean saveFile(String fileName)
+    public boolean saveFile(String fileName)   // !!! this feels ugly.
     {
         boolean retVal = false;
         BufferedWriter bw;
         String src;
+        int rc;
 
         if (fileName == null)
         {
             fileName = selectFileName(JFileChooser.SAVE_DIALOG);
+
+            if (fileName != null)
+            {
+                    /*
+                     * Normally we use (currentDirectory) just to extract
+                     *  the path, but it DOES contain the filename, too.
+                     */
+                if (currentDirectory.exists() == true)
+                {
+                    rc = JOptionPane.showConfirmDialog(null,
+                                            "Overwrite " + fileName + "?",
+                                            "File exists",
+                                            JOptionPane.YES_NO_CANCEL_OPTION,
+                                            JOptionPane.QUESTION_MESSAGE);
+
+                    if (rc == JOptionPane.CANCEL_OPTION)
+                        return(false);
+                    else if (rc == JOptionPane.NO_OPTION)
+                        return(saveFile(null));
+                    // JOptionPane.YES_OPTION falls through to save file.
+                } // if
+            } // if
         } // if
 
         if (fileName != null)

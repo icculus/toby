@@ -1,4 +1,10 @@
-/** !!! comment. copyright. */
+/**
+ * This is an abstract class that represents an intrinsic data type in
+ *  TOBY during interpretation.
+ *
+ *   Copyright (c) 1997-1999 Lighting and Sound Technologies.
+ *    Written by Ryan C. Gordon.
+ */
 
 public abstract class Intrinsic extends Throwable
 {
@@ -41,8 +47,8 @@ public abstract class Intrinsic extends Throwable
 
 
     public String toString()
-    {  // !!!
-        return("Intrinsic(" + identifier  + " == " + getValue() + ")");
+    {
+        return(getType() + "[" + identifier + " == " + getValue() + "]");
     } // toString
 
 

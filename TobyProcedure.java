@@ -253,11 +253,14 @@ public class TobyProcedure
         if (sToker.nextToken() != SaneTokenizer.TT_WORD)
             throwSyntaxError(lineNum);   // !!! "???" as constant?
 
-        if (TobyInterpreter.isValidIdentifier(sToker.sval) == false)
+        if (sToker.sval.equals(TobyInterpreter.PROCNAME_MAINLINE) == false)
         {
-            TobyParseException.throwException(
+            if (TobyInterpreter.isValidIdentifier(sToker.sval) == false)
+            {
+                TobyParseException.throwException(
                                            TobyInterpreter.PROCERR_BAD_IDENT,
                                            sToker.sval, lineNum);
+            } // if
         } // if
 
         procName = sToker.sval;
@@ -290,13 +293,13 @@ public class TobyProcedure
         if (sToker.nextToken() != SaneTokenizer.TT_WORD)
             throwSyntaxError(lineNum);
 
-        if (!sToker.sval.equals(TobyInterpreter.OPCODE_LPAREN))
+        if (!sToker.sval.equals(TobyInterpreter.OPER_LPAREN))
             throwSyntaxError(lineNum);
 
         paramVect = new Vector();
 
         sToker.nextToken();
-        if (!sToker.sval.equals(TobyInterpreter.OPCODE_RPAREN)) // no params?
+        if (!sToker.sval.equals(TobyInterpreter.OPER_RPAREN)) // no params?
         {
             sToker.pushBack();
             paramParseLoop(sToker, paramVect, lineNum);
@@ -386,9 +389,9 @@ public class TobyProcedure
                 break;
 
             case 3:     // either ")" ... "," ... or error.
-                if (sval.equals(TobyInterpreter.OPCODE_RPAREN))
+                if (sval.equals(TobyInterpreter.OPER_RPAREN))
                     retVal = true;
-                else if (!sval.equals(TobyInterpreter.OPCODE_SEPARATOR))
+                else if (!sval.equals(TobyInterpreter.OPER_SEPARATOR))
                     throwSyntaxError(lineNum);
                 break;
         } // switch
@@ -474,7 +477,7 @@ public class TobyProcedure
      * Ok, this following piece of logic is a little dense.
      *
      * If this method is called, then we are somewhere in the midst of
-     *  parsing a TOBY function. This is promised not to be a blank line.
+     *  parsing a TOBY function. This is promised to not be a blank line.
      *  Therefore, we either expect TOBY opcodes, or a KEYWORD_ENDFUNC token,
      *  signifying the end of the TOBY function. Hitting an EOF at this
      *  point is not karmically cool.
@@ -560,13 +563,13 @@ public class TobyProcedure
 
 
 /* !!! *****************************************************************
-               if (sToker.sval.equals(OPCODE_ASSIGNMENT))
+               if (sToker.sval.equals(OPER_ASSIGNMENT))
                 {
                     if ((sToker.nextToken() == TT_WORD) &&
-                        (sToker.sval.equals(OPCODE_ASSIGNMENT))
-                        codeLine.addElement(OPCODE_EQUALS);
+                        (sToker.sval.equals(OPER_ASSIGNMENT))
+                        codeLine.addElement(OPER_EQUALS);
                     {
-                        codeLine.addElement(OPCODE_ASSIGNMENT);
+                        codeLine.addElement(OPER_ASSIGNMENT);
                         sToker.pushBack();
                     } // else
                 } // if

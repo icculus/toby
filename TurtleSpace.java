@@ -50,6 +50,7 @@ public abstract class TurtleSpace extends JComponent
 
         turtle = new TriangleTurtle();   // change for a new Turtle class.
         tSize = ((double) getToolkit().getScreenSize().width) * TURTLE_RATIO;
+
         turtle.setTurtleSize(tSize);
     } // Constructor
 

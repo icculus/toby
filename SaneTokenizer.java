@@ -24,7 +24,6 @@ public class SaneTokenizer extends StreamTokenizer
 
 
     public SaneTokenizer(Reader reader)
-    /** !!! comment this. */
     {
         super(reader);
         quoteChar(qChar);
@@ -106,10 +105,8 @@ public class SaneTokenizer extends StreamTokenizer
                 } // if
 
                 else if (charsAreWords)
-                {                           // !!! use Character.toString()?
-                    StringBuffer sb = new StringBuffer();
-                    sb.append((char) ttype);
-                    sval = sb.toString();
+                {
+                    sval = new Character((char) ttype).toString();
                     ttype = TT_WORD;
                 } // else if
                 break;

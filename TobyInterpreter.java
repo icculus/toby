@@ -29,20 +29,20 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         // Constants representing TOBY operators...
     public final static int    OPERATOR_COUNT    = 14;
-    public final static String OPCODE_LPAREN     = "(";
-    public final static String OPCODE_RPAREN     = ")";
-    public final static String OPCODE_SEPARATOR  = ",";
-    public final static String OPCODE_ASSIGNMENT = "=";
-    public final static String OPCODE_EQUALS     = "==";
-    public final static String OPCODE_MULTIPLY   = "*";
-    public final static String OPCODE_DIVIDE     = "/";
-    public final static String OPCODE_MODULO     = "%";
-    public final static String OPCODE_ADD        = "+";
-    public final static String OPCODE_SUBTRACT   = "-";
-    public final static String OPCODE_GREATER    = ">";
-    public final static String OPCODE_LESS       = "<";
-    public final static String OPCODE_GREATEREQL = ">=";
-    public final static String OPCODE_LESSEQL    = "<=";
+    public final static String OPER_LPAREN     = "(";
+    public final static String OPER_RPAREN     = ")";
+    public final static String OPER_SEPARATOR  = ",";
+    public final static String OPER_ASSIGNMENT = "=";
+    public final static String OPER_EQUALS     = "==";
+    public final static String OPER_MULTIPLY   = "*";
+    public final static String OPER_DIVIDE     = "/";
+    public final static String OPER_MODULO     = "%";
+    public final static String OPER_ADD        = "+";
+    public final static String OPER_SUBTRACT   = "-";
+    public final static String OPER_GREATER    = ">";
+    public final static String OPER_LESS       = "<";
+    public final static String OPER_GREATEREQL = ">=";
+    public final static String OPER_LESSEQL    = "<=";
 
        // Constants representing intrinsic data types...
     public final static int    INTRINSIC_COUNT   = 3;
@@ -70,8 +70,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String KEYWORD_ENDWHILE    = "endwhile";
 
        // Constants representing standard TOBY function names...
-    public final static int    STDFUNC_COUNT       = 16;
-    public final static String PROCNAME_MAINLINE   = "main"; // not in table.
+    public final static int    STDFUNC_COUNT       = 26;
+    public final static String PROCNAME_MAINLINE   = "main";
     public final static String PROCNAME_HIDETURTLE = "hideturtle";
     public final static String PROCNAME_SHOWTURTLE = "showturtle";
     public final static String PROCNAME_FORWARD    = "goforward";
@@ -82,19 +82,21 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String PROCNAME_GETPENCOL  = "getpencolor";
     public final static String PROCNAME_PENUP      = "setpenup";
     public final static String PROCNAME_PENDOWN    = "setpendown";
-    // !!!
-    //public final static String PROCNAME_ISPENUP    = "ispenup";
-    //public final static String PROCNAME_ISPENDOWN  = "ispendown";
-    //public final static String PROCNAME_RANDOM     = "random";
-    //public final static String PROCNAME_TSPACEHIGH = "getturtlespaceheight";
-    //public final static String PROCNAME_TSPACEWIDE = "getturtlespacewidth";
-    // !!!
+    public final static String PROCNAME_ISPENUP    = "ispenup";
+    public final static String PROCNAME_ISPENDOWN  = "ispendown";
+    public final static String PROCNAME_RANDOM     = "random";
+    public final static String PROCNAME_ROUND      = "round";
+    public final static String PROCNAME_TSPACEHIGH = "getturtlespaceheight";
+    public final static String PROCNAME_TSPACEWIDE = "getturtlespacewidth";
+    public final static String PROCNAME_STOP       = "stopprogram";
     public final static String PROCNAME_SETANGLE   = "setangle";
     public final static String PROCNAME_GETANGLE   = "getangle";
     public final static String PROCNAME_PAUSE      = "pause";
     public final static String PROCNAME_GETTURTLEX = "getturtlex";
     public final static String PROCNAME_GETTURTLEY = "getturtley";
     public final static String PROCNAME_SETTURTXY  = "setturtlexy";
+    public final static String PROCNAME_HOMETURTLE = "hometurtle";
+    public final static String PROCNAME_CLEANUP    = "cleanupturtlespace";
 
         // Constants representing error messages...
     public final static String PROCERR_SYNTAX_ERR   = "Syntax error";
@@ -256,20 +258,20 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         operatorTable = new String[OPERATOR_COUNT];
 
-        operatorTable[13] = OPCODE_LPAREN;
-        operatorTable[12] = OPCODE_RPAREN;
-        operatorTable[11] = OPCODE_MULTIPLY;
-        operatorTable[10] = OPCODE_DIVIDE;
-        operatorTable[9]  = OPCODE_MODULO;
-        operatorTable[8]  = OPCODE_ADD;
-        operatorTable[7]  = OPCODE_SUBTRACT;
-        operatorTable[6]  = OPCODE_ASSIGNMENT;
-        operatorTable[5]  = OPCODE_EQUALS;
-        operatorTable[4]  = OPCODE_GREATEREQL;
-        operatorTable[3]  = OPCODE_LESSEQL;
-        operatorTable[2]  = OPCODE_GREATER;
-        operatorTable[1]  = OPCODE_LESS;
-        operatorTable[0]  = OPCODE_SEPARATOR;
+        operatorTable[13] = OPER_LPAREN;
+        operatorTable[12] = OPER_RPAREN;
+        operatorTable[11] = OPER_MULTIPLY;
+        operatorTable[10] = OPER_DIVIDE;
+        operatorTable[9]  = OPER_MODULO;
+        operatorTable[8]  = OPER_ADD;
+        operatorTable[7]  = OPER_SUBTRACT;
+        operatorTable[6]  = OPER_ASSIGNMENT;
+        operatorTable[5]  = OPER_EQUALS;
+        operatorTable[4]  = OPER_GREATEREQL;
+        operatorTable[3]  = OPER_LESSEQL;
+        operatorTable[2]  = OPER_GREATER;
+        operatorTable[1]  = OPER_LESS;
+        operatorTable[0]  = OPER_SEPARATOR;
      } // buildOperatorTable
 
 
@@ -350,6 +352,16 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         stdFuncTable[13] = PROCNAME_GETTURTLEX;
         stdFuncTable[14] = PROCNAME_GETTURTLEY;
         stdFuncTable[15] = PROCNAME_SETTURTXY;
+        stdFuncTable[16] = PROCNAME_ISPENUP;
+        stdFuncTable[17] = PROCNAME_ISPENDOWN;
+        stdFuncTable[18] = PROCNAME_RANDOM;
+        stdFuncTable[19] = PROCNAME_MAINLINE;
+        stdFuncTable[20] = PROCNAME_ROUND;
+        stdFuncTable[21] = PROCNAME_STOP;
+        stdFuncTable[22] = PROCNAME_TSPACEHIGH;
+        stdFuncTable[23] = PROCNAME_TSPACEWIDE;
+        stdFuncTable[24] = PROCNAME_HOMETURTLE;
+        stdFuncTable[25] = PROCNAME_CLEANUP;
     } // buildStdFuncTable
 
 
@@ -395,6 +407,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         return((searchArray(intrinsicTable, str) != -1) ? true : false);
     } // isIntrinsic
+
+
+    public static boolean isOperator(String str)
+    {
+        return((searchArray(operatorTable, str) != -1) ? true : false);
+    } // isIntrinsic
+
+
 
 
     private void deleteProcedures()
@@ -699,8 +719,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             retVal = Double.valueOf(conv).doubleValue();
         } // try
         catch (NumberFormatException nfe)   // not a number?
-        { //!!! change error?
-            TobyParseException.throwException(nfe.getMessage(), null);
+        {
+            TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
         } // catch
 
         return(retVal);
@@ -712,7 +732,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     /**
      *  Check to see if (type) is a valid name for an intrinsic type, and
      *   build that type of intrinsic, naming it (name)...
-     *  !!! comment params/returns/throws...
      */
     {
         Intrinsic retVal = null;
@@ -985,12 +1004,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     private String[] moveGroupingToArray(String[] src,
                                          int tokIndex,
                                          String endToken)
-    /**
-     *
-     * !!! comment !!!
-     *
-     *
-     */
     {
         int i;
         int n;
@@ -1183,7 +1196,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         src[tokIndex]     = null;     // blank assignment operator.
         src[tokIndex - 1] = null;     // blank variable name.
 
-        // !!! need to calculate()?
         assignValue = findRightValue(src, tokIndex + 1);
         setTobyVar(var, src[assignValue]);
         src[assignValue] = null;      // yeah, blank rvalue, too.
@@ -1207,13 +1219,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         String[] innerToks;
         Intrinsic retCall;
 
-        innerToks = moveGroupingToArray(src, tokIndex, OPCODE_RPAREN);
+        innerToks = moveGroupingToArray(src, tokIndex, OPER_RPAREN);
         if (innerToks == null)
             TobyParseException.throwException(PROCERR_NO_RPAREN, null);
 
-        if ((priorTokens(src, tokIndex) == false) ||   // 1st token or operator?
-                // !!! make a isOperator() function!
-            (searchArray(operatorTable, src[tokIndex - 1]) != -1))
+        if ((priorTokens(src, tokIndex) == false) ||  // 1st token or operator?
+            (isOperator(src[tokIndex - 1]) == true))
         {
             calculate(innerToks);
             src[tokIndex] = innerToks[findRightValue(innerToks, 0)];
@@ -1230,7 +1241,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     private Intrinsic dealWithFunctionCall(String funcName, String[] argToks)
                                       throws TobyParseException
-    /** !!! comment !!! */
     {
         Intrinsic retCall;    // Returned value.
 
@@ -1269,7 +1279,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         {
             args = buildArguments(argToks, proc.getParamCount());
             stack.push(proc);
-            moveArgsToStack(proc, args);
+
+            if (args != null)
+                moveArgsToStack(proc, args);
             retCall = runCode(proc);
         } // if
 
@@ -1298,20 +1310,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         Intrinsic retVal = NothingIntrinsic.nothing;    // NothingIntrinsic return is assumed.
         Vector args;
         String tmpStr;
-        int tmpInt;
+        double tmpDbl;
+
+        // These are in the order I think they'll most frequently be called...
 
         if (funcName.equals(PROCNAME_FORWARD))
         {
             args = buildArguments(argToks, 1);
             turtle.forwardTurtle(convStrToDouble((String) args.elementAt(0)),
-                                 g, g[GRAPHICS_SCREEN], copyImage);
-        } // if
-
-        else if (funcName.equals(PROCNAME_BACKWARD))
-        {
-            args = buildArguments(argToks, 1);
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.forwardTurtle(-convStrToDouble((String) args.elementAt(0)),
                                  g, g[GRAPHICS_SCREEN], copyImage);
         } // if
 
@@ -1329,49 +1335,27 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                           g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_PENUP))
+        else if (funcName.equals(PROCNAME_SETPENCOL))
         {
-            args = buildArguments(argToks, 0);
-            turtle.setPenUp(true);
-        } // else if
-
-        else if (funcName.equals(PROCNAME_PENDOWN))
-        {
-            args = buildArguments(argToks, 0);
-            turtle.setPenUp(false);
-        } // else if
-
-        else if (funcName.equals(PROCNAME_HIDETURTLE))
-        {
-            args = buildArguments(argToks, 0);
-            turtle.setVisible(false, g[GRAPHICS_SCREEN], copyImage);
-        } // else if
-
-        else if (funcName.equals(PROCNAME_SHOWTURTLE))
-        {
-            args = buildArguments(argToks, 0);
-            turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
-        } // else if
-
-        else if (funcName.equals(PROCNAME_PAUSE))
-        {
-            long currentTime = System.currentTimeMillis();
-            long stopTime;
-
             args = buildArguments(argToks, 1);
-            nap((long) convStrToDouble((String) args.elementAt(0)));
+            
+            if (!turtle.setPenColor(convStrToDouble((String)args.elementAt(0))))
+                TobyParseException.throwException(PROCERR_BAD_ARGUMENT, null);
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETTURTLEX))
+        else if (funcName.equals(PROCNAME_RANDOM))
         {
-            args = buildArguments(argToks, 0);
-            retVal = new NumberIntrinsic(null, Double.toString(turtle.getX()));
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null, Double.toString(Math.random()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETTURTLEY))
+        else if (funcName.equals(PROCNAME_ROUND))
         {
-            args = buildArguments(argToks, 0);
-            retVal = new NumberIntrinsic(null, Double.toString(turtle.getY()));
+            long tmpLng;
+            args = buildArguments(argToks, 1);
+            tmpLng = (long) (convStrToDouble((String)args.elementAt(0)) + 0.5);
+            tmpDbl = (double) tmpLng;
+            retVal = new NumberIntrinsic(null, Double.toString(tmpDbl));
         } // else if
 
         else if (funcName.equals(PROCNAME_SETTURTXY))
@@ -1386,13 +1370,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             turtle.setXY(x, y, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETANGLE))
-        {
-            args = buildArguments(argToks, 0);
-            retVal = new NumberIntrinsic(null,
-                                         Double.toString(turtle.getAngle()));
-        } // else if
-
         else if (funcName.equals(PROCNAME_SETANGLE))
         {
             args = buildArguments(argToks, 1);
@@ -1400,19 +1377,126 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                             g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
+        else if (funcName.equals(PROCNAME_BACKWARD))
+        {
+            args = buildArguments(argToks, 1);
+            tmpDbl = convStrToDouble((String) args.elementAt(0));
+            turtle.forwardTurtle(-convStrToDouble((String) args.elementAt(0)),
+                                 g, g[GRAPHICS_SCREEN], copyImage);
+        } // if
+
+        else if (funcName.equals(PROCNAME_PENUP))
+        {
+            buildArguments(argToks, 0);
+            turtle.setPenUp(true);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_PENDOWN))
+        {
+            buildArguments(argToks, 0);
+            turtle.setPenUp(false);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_PAUSE))
+        {
+            long currentTime = System.currentTimeMillis();
+            long stopTime;
+
+            args = buildArguments(argToks, 1);
+            nap((long) convStrToDouble((String) args.elementAt(0)));
+        } // else if
+
+        else if (funcName.equals(PROCNAME_GETTURTLEX))
+        {
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null, Double.toString(turtle.getX()));
+        } // else if
+
+        else if (funcName.equals(PROCNAME_GETTURTLEY))
+        {
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null, Double.toString(turtle.getY()));
+        } // else if
+
+        else if (funcName.equals(PROCNAME_GETANGLE))
+        {
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null,
+                                         Double.toString(turtle.getAngle()));
+        } // else if
+
         else if (funcName.equals(PROCNAME_GETPENCOL))
         {
-            args = buildArguments(argToks, 0);
+            buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, turtle.getPenColorNumStr());
         } // else if
 
-        else if (funcName.equals(PROCNAME_SETPENCOL))
+
+        else if (funcName.equals(PROCNAME_ISPENUP))
         {
-            args = buildArguments(argToks, 1);
-            
-            if (!turtle.setPenColor(convStrToDouble((String)args.elementAt(0))))
-                TobyParseException.throwException(PROCERR_BAD_ARGUMENT, null);
+            buildArguments(argToks, 0);
+            retVal = new BooleanIntrinsic(null,
+                        (turtle.isPenUp()) ? KEYWORD_TRUE : KEYWORD_FALSE);
         } // else if
+
+        else if (funcName.equals(PROCNAME_ISPENDOWN))
+        {
+            buildArguments(argToks, 0);
+            retVal = new BooleanIntrinsic(null,
+                        (turtle.isPenUp()) ? KEYWORD_FALSE : KEYWORD_TRUE);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_HIDETURTLE))
+        {
+            buildArguments(argToks, 0);
+            turtle.setVisible(false, g[GRAPHICS_SCREEN], copyImage);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_SHOWTURTLE))
+        {
+            buildArguments(argToks, 0);
+            turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_TSPACEWIDE))
+        {
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null, Double.toString(getWidth()));
+        } // else if
+
+        else if (funcName.equals(PROCNAME_TSPACEHIGH))
+        {
+            buildArguments(argToks, 0);
+            retVal = new NumberIntrinsic(null, Double.toString(getHeight()));
+        } // else if
+
+        else if (funcName.equals(PROCNAME_HOMETURTLE))
+        {
+            buildArguments(argToks, 0);
+            turtle.homeTurtle(this, g[GRAPHICS_SCREEN], copyImage);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_CLEANUP))
+        {
+            int width = getWidth();
+            int height = getHeight();
+
+            buildArguments(argToks, 0);
+            for (int i = 0; i < g.length; i++)
+            {
+                g[i].setColor(getBackground());
+                g[i].fillRect(0, 0, width, height);
+            } // for
+
+            turtle.paint(g[GRAPHICS_SCREEN], copyImage);
+        } // else if
+
+        else if (funcName.equals(PROCNAME_STOP))
+        {
+            buildArguments(argToks, 0);
+            haltInterpreter();
+        } // else if
+
         else
             retVal = null;  // function not found.
 
@@ -1423,45 +1507,53 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     private Vector buildArguments(String[] argToks, int totalArgs)
                                    throws TobyParseException
-    /** !!! comment !!! */
     {
-        Vector retVal = new Vector();
+        Vector retVal = null;
         int i;
         int count = 0;
         String[] tmp;
 
-        for (i = 0; i < argToks.length; i++)
+        if (totalArgs == 0)     // speedup and use less mem if no args...
         {
-            if (argToks[i].equals(OPCODE_SEPARATOR))    // last tok in arg?
-            {
-                tmp = new String[count];
-                System.arraycopy(argToks, i - count, tmp, 0, count);
-                calculate(tmp);
-                retVal.addElement(tmp[findRightValue(tmp, 0)]);
-                count = 0;
-            } // if
-
-            else if (i == argToks.length - 1)
-            {
-                count++;
-                tmp = new String[count];
-                System.arraycopy(argToks, i - (count - 1), tmp, 0, count);
-                calculate(tmp);
-                retVal.addElement(tmp[findRightValue(tmp, 0)]);
-                count = 0;
-            } // else if
-
-            else
-                count++;
-        } // for
-
-        if (retVal.size() != totalArgs)
-        {
-            retVal.removeAllElements();
-            retVal.trimToSize();
-            TobyParseException.throwException(PROCERR_BADNUM_ARGS, null);
+            if ((argToks != null) && (argToks.length != 0))
+                TobyParseException.throwException(PROCERR_BADNUM_ARGS, null);
         } // if
 
+        else
+        {
+            retVal = new Vector();
+            for (i = 0; i < argToks.length; i++)
+            {
+                if (argToks[i].equals(OPER_SEPARATOR))    // last tok in arg?
+                {
+                    tmp = new String[count];
+                    System.arraycopy(argToks, i - count, tmp, 0, count);
+                    calculate(tmp);
+                    retVal.addElement(tmp[findRightValue(tmp, 0)]);
+                    count = 0;
+                } // if
+    
+                else if (i == argToks.length - 1)
+                {
+                    count++;
+                    tmp = new String[count];
+                    System.arraycopy(argToks, i - (count - 1), tmp, 0, count);
+                    calculate(tmp);
+                    retVal.addElement(tmp[findRightValue(tmp, 0)]);
+                    count = 0;
+                } // else if
+
+                else
+                    count++;
+            } // for
+
+            if (retVal.size() != totalArgs)
+            {
+                retVal.removeAllElements();
+                retVal.trimToSize();
+                TobyParseException.throwException(PROCERR_BADNUM_ARGS, null);
+            } // if
+        } // else
         return(retVal);
     } // buildArguments
 
@@ -1556,7 +1648,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                                      String[] src,
                                      int srcLine)
                                          throws TobyParseException
-    /** !!! comment !!! */
     {
         int retVal;
         Object obj;
@@ -1623,7 +1714,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         src[0] = null;   // lose KEYWORD_BEGINFOR...
 
-        if (src[2].equals(OPCODE_ASSIGNMENT) == false)
+        if (src[2].equals(OPER_ASSIGNMENT) == false)
             TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
 
         initValue = moveGroupingToArray(src, 0, KEYWORD_TO);
@@ -1659,7 +1750,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         System.arraycopy(src, position, forDetails.condition, 0,
                          forDetails.condition.length);
 
-        calculate(initValue);   // !!! separate into another function...
+           // !!! separate into another function...
+        calculate(initValue);
 
         startVal = convStrToDouble(var.getValue());
         endVal = convStrToDouble(initValue[findRightValue(initValue, 0)]);
@@ -1689,7 +1781,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                                    String[] src,
                                    int srcLine)
                                        throws TobyParseException
-    /** !!! comment !!! */
     {
         Object obj;
         ForLoopDetails forDetails;
@@ -1760,10 +1851,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         String retType = proc.getReturnType();
 
-        if (src.length == 1)                    // basic return? !!! ?!
+        if (src.length == 1)
         {
-            if (retType == null)
+            if (retType == INTRINSIC_NOTHING)
                 throw(NothingIntrinsic.nothing);
+            else
+                TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
         } // if
         else
         {
@@ -1943,10 +2036,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         else if (tok.equals(KEYWORD_RETURN))
             dealWithReturn(proc, src);
-
-
-        // !!! add more flow control keywords... !!!
-
 
         return(retVal);
     } // dealWithFlowControl
@@ -2171,40 +2260,40 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
             if (tokIndex >= 0)                       // any operators left?
             {
-                if (src[tokIndex].equals(OPCODE_LPAREN))
+                if (src[tokIndex].equals(OPER_LPAREN))
                     dealWithParens(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_MULTIPLY))
+                else if (src[tokIndex].equals(OPER_MULTIPLY))
                     dealWithMultiply(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_DIVIDE))
+                else if (src[tokIndex].equals(OPER_DIVIDE))
                     dealWithDivide(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_MODULO))
+                else if (src[tokIndex].equals(OPER_MODULO))
                     dealWithModulo(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_ADD))
+                else if (src[tokIndex].equals(OPER_ADD))
                     dealWithAdd(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_SUBTRACT))
+                else if (src[tokIndex].equals(OPER_SUBTRACT))
                     dealWithSubtract(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_EQUALS))
+                else if (src[tokIndex].equals(OPER_EQUALS))
                     dealWithEquals(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_ASSIGNMENT))
+                else if (src[tokIndex].equals(OPER_ASSIGNMENT))
                     dealWithAssignment(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_GREATER))
+                else if (src[tokIndex].equals(OPER_GREATER))
                     dealWithGreaterThan(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_LESS))
+                else if (src[tokIndex].equals(OPER_LESS))
                     dealWithLessThan(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_GREATEREQL))
+                else if (src[tokIndex].equals(OPER_GREATEREQL))
                     dealWithGreaterThanOrEqualTo(src, tokIndex);
 
-                else if (src[tokIndex].equals(OPCODE_LESSEQL))
+                else if (src[tokIndex].equals(OPER_LESSEQL))
                     dealWithLessThanOrEqualTo(src, tokIndex);
 
                     /*
@@ -2213,38 +2302,30 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                      *  being found by calculate()...
                      */
 
-                else if (src[tokIndex].equals(OPCODE_RPAREN))
+                else if (src[tokIndex].equals(OPER_RPAREN))
                 {
                     TobyParseException.throwException(PROCERR_NO_LPAREN,
                                                       null);
                 } // else if
             } // if
-
-            else if (tokIndex == -1)     // tokens, but no operators.
-            {
-                // !!! will this need to throw? Use stderr for debugging...
-                // !!! if no throw, change definition of findHighestPrecedence
-                // !!! and remove this else if...
-                System.err.println("Tokens, but no operators!");
-                System.err.print  ("     ");
-                for (int x = 0; x < src.length; x++)
-                    System.err.print("\"" + src[x] + "\" ");
-                System.err.println();
-            } // else if
         } while (tokIndex >= 0);
     } // calculate
 
 
     private void printSrc(String msg, String[] src)
-    // !!! debugging code:  lose this before shipping!
     {
         int i;
 
         System.err.println(msg);
         System.err.print("Tokens : ");
 
-        for (i = 0; i < src.length; i++)
-            System.err.print("[" + src[i] + "] ");
+        if (src == null)
+            System.err.println("(token array is null.)");
+        else
+        {
+            for (i = 0; i < src.length; i++)
+                System.err.print("[" + src[i] + "] ");
+        } // else
 
         System.err.println();
     } // printSrc
@@ -2303,6 +2384,38 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // moveArgsToStack
 
 
+    private boolean dealWithVariableDeclaration(String[] src, Stack addToStack)
+                                        throws TobyParseException
+    {
+        Intrinsic var;
+        String[] assign;
+        boolean retVal = false;
+
+        if (isIntrinsic(src[0]))
+        {
+            if (src.length < 2)
+                TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
+
+                // it's cool; create the variable...
+            var = createTobyVar(src[0], src[1], addToStack);
+
+            if (src.length > 2)     // an initial assignment?
+            {
+                if (src[2].equals(OPER_ASSIGNMENT) == false)
+                    TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
+
+                assign = new String[src.length - 3];
+                System.arraycopy(src, 3, assign, 0, assign.length);
+                calculate(assign);
+                setTobyVar(var, assign[findRightValue(assign, 0)]);
+            } // if
+
+            retVal = true;
+        } // if
+
+        return(retVal);
+    } // dealWithVariableDeclaration
+
 
     private int addLocalsToStack(TobyProcedure proc) throws TobyParseException
     /**
@@ -2313,35 +2426,21 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *     throws : TobyParseException on syntactic error.
      */
     {
-        String[] src;
         int i;
         int n;
         boolean getOut = false;
         int max = proc.sourceLineCount();
+        String[] src;
 
         for (i = 0; (i < max) && (!getOut); i++)
         {
             src = proc.getSourceLine(i);
 
-            if (isIntrinsic(src[0]))
-            {
-                if (src.length != 2)   // !!! lift this restriction?
-                {
-                    TobyParseException.throwException(PROCERR_SYNTAX_ERR,
-                                                      null, 0);
-                } // if
-
-                    // it's cool; create the var.
-                createTobyVar(src[0], src[1], stack); 
-            } // if
-            else
-            {
-                i--;
+            if (dealWithVariableDeclaration(src, stack) == false)
+            {           
+                i--;                // not a declaration? Get out.
                 getOut = true;
             } // else
-
-            for (n = 0; n < src.length; n++)   // remove references...
-                src[n] = null;                 // !!! need this?!
         } // for
 
         return(i);
