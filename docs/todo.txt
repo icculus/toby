@@ -7,7 +7,15 @@
  Java-specific.)
 
 ongoing bugfixes/enhancements :
+    Break this file into TODO and BUGS.
+
+    Clean out this file.
+
     Change the StringReader to MemoryReader.
+
+    The GTK renderer seems to be refreshing wrong; it appears to draw faster
+    at the top of the screen, so it's probably repainting the rectangle from
+    (0, 0) to (turtleY, turtleY) everytime. Fix it.
 
     We're doublebuffering the offscreen/screen rendering state between
      turtlespace and the individual renderers. Move it into the renderer
