@@ -13,6 +13,8 @@ ongoing bugfixes/enhancements :
 
     TobyCollection seems really inefficient.
 
+    Need a HashTable class.
+
     Write up a langdef DTD so external tools can validate the files for us.
 
     Change the StringReader to MemoryReader.

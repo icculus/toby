@@ -117,6 +117,32 @@ standalone program for initial testing.)
             platform-specific base classes (TobyLoader and TobyThread,
             specifically), did not have their getInstance() methods set to be
             static. Fixed.
+09072001 - ReqNumberRules[XML] added. ReqWordCharsRules[XML] added. Moved
+            caseSensitive string checking from ReqWordRules::testRules() to
+            Tokenizer::mustGetWord(). Put word index checking into Tokenizer
+            for ReqWordCharsRules.
+09082001 - More Lexer rules. Added getNextChar() and pushBackChar() to
+            Tokenizer.
+09092001 - Whoops; pushBackChar() is already used.  :)  New methods from
+            yesterday are now getNextWordChar() and pushBackWordChar(). More
+            Lexer rules. This is the never-ending job.
+09102001 - Finished off the lexer rules! Started writing the C++ outputted
+            standalone program. Reading the C++ FAQ taught me a few things I
+            didn't realize...in this case, that throwing an exception in a
+            constructor is always safe (or, rather, doesn't leak memory), new
+            doesn't ever return NULL (throws exception if it can't allocate)
+            and delete can always handle a NULL pointer. Made cleanups
+            accordingly. Now that I can start testing the Lexer at all,
+            there's a gazillion lines of code that have long since been
+            written but never run that are having the cobwebs brushed off of
+            them, such as UnixLoader. This is going to be ugly. Had to install
+            ElectricFence to find a heap corruption, and it did so, right
+            away. Must send case of beer to Bruce Perens. Fixed some sprintfs
+            in TobyString. Added src/standalone/tobylexgen.cpp. Fixed a debug
+            flag problem in Makefile (it's NDEBUG, not _NDEBUG). Added Bruce
+            Perens to docs/thanks.txt. Added TobyCollection::clear() and
+            converted ints to size_ts in TobyCollection. A million other
+            changes.
 
 // end of changelog.txt ...
 
