@@ -14,9 +14,10 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
-import java.io.Serializable;
 
-public abstract class TurtleSpace extends Canvas implements Serializable
+import javax.swing.*;
+
+public abstract class TurtleSpace extends JComponent
 {
     public final static int DEFAULT_TRACE_DELAY = 200;
     public final static int STEP_TRACE_DELAY = -1;
@@ -32,7 +33,10 @@ public abstract class TurtleSpace extends Canvas implements Serializable
 
     public TurtleSpace()
     {
-        double tSize = getToolkit().getScreenSize().width;
+        Graphics g;
+        double tSize;
+
+        setDoubleBuffered(true);
 
         sourceWatchers = new Vector();
         varWatchers = new Vector();
@@ -41,8 +45,7 @@ public abstract class TurtleSpace extends Canvas implements Serializable
         setBackground(Color.black);
 
         turtle = new TriangleTurtle();   // change for a new Turtle class.
-
-        tSize *= TURTLE_RATIO;
+        tSize = ((double) getToolkit().getScreenSize().width) * TURTLE_RATIO;
         turtle.setTurtleSize(tSize);
     } // Constructor
 
@@ -203,6 +206,8 @@ public abstract class TurtleSpace extends Canvas implements Serializable
             } // if
             else
             {
+                    // !!! change to yielding loop that can check for halt
+                    // !!!  requests...
                 try
                 {
                     Thread.sleep(traceDelay);

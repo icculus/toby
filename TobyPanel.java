@@ -6,13 +6,15 @@
  */
 
 import java.awt.*;
+import javax.swing.*;
 
-
-public final class TobyPanel extends Panel implements LayoutManager
+public final class TobyPanel extends JComponent implements LayoutManager
 {
     private TurtleSpace tspace = null;
     private TobyInputArea tia = null;
     private VarViewer varViewer = null;
+    private JFrame frame = null;
+
 
     private void buildComponents()
     /**
@@ -34,8 +36,8 @@ public final class TobyPanel extends Panel implements LayoutManager
         tia = new TobyInputArea();
         add(tia);
 
-        varViewer = new VarViewer();
-        add(varViewer);
+//        varViewer = new VarViewer();
+//        add(varViewer);
 
         tspace.addSourceWatcher(tia);
     } // buildComponents
@@ -77,14 +79,20 @@ public final class TobyPanel extends Panel implements LayoutManager
     } // getTurtleSpace
 
 
-    public TobyPanel()
+    public TobyPanel(JFrame frame)
     {
+        this.frame = frame;
         setLayout(this);
         buildComponents();
         setVisible(true);
         System.gc();        // clean up everything that setup left behind.
     } // Constructor
 
+
+    public JFrame getFrame()
+    {
+        return(frame);
+    } // getOwner
 
 
         // LayoutManager implementation...
@@ -101,8 +109,8 @@ public final class TobyPanel extends Panel implements LayoutManager
         tia.setSize(d.width, (int) (d.height * 0.75));
         tia.setLocation(d.width, 0);
 
-        varViewer.setSize(d.width, (int) (d.height * 0.25));
-        varViewer.setLocation(d.width, (int) (d.height * 0.75));
+//        varViewer.setSize(d.width, (int) (d.height * 0.25));
+//        varViewer.setLocation(d.width, (int) (d.height * 0.75));
     } // layoutContainer
 
 

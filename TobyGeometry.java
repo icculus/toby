@@ -1,6 +1,6 @@
 /**
  *
- * Extention to java.lang.math to allow calculations in turtlespace.
+ * Extension to java.lang.math to allow calculations in turtlespace.
  *
  *   Copyright (c) Lighting and Sound Technologies, 1997.
  *    Written by Ryan C. Gordon.

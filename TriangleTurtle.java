@@ -49,7 +49,7 @@ public final class TriangleTurtle extends Turtle
 
 
 
-    public void paintImpl(Graphics[] g)
+    public void paintImpl(Graphics g)
     /**
      *  We need to take into account the direction that the turtle is
      *   facing when we draw him. This complicates the drawing process
@@ -136,16 +136,13 @@ public final class TriangleTurtle extends Turtle
             intsY[i] = TobyGeometry.roundDoubleToInt(pointsY[i]);
         } // for
 
-        for (i = 0; i < g.length; i++)
-        {
-            g[i].setColor(turtleColor);              // Color and...
+        g.setColor(turtleColor);              // Color and...
 
                 //  ...draw the triangle.
-            g[i].fillPolygon(intsX, intsY, 3);
+        g.fillPolygon(intsX, intsY, 3);
 
-            g[i].setColor(centerColor);              // draw center line.
-            g[i].drawLine(intsX[0], intsY[0], (int) point.x, (int) point.y);
-        } // for
+        g.setColor(centerColor);              // draw center line.
+        g.drawLine(intsX[0], intsY[0], (int) point.x, (int) point.y);
 
                 // Wow, wasn't that fun? Of course it was.
     } // paintImpl

@@ -56,14 +56,14 @@ public abstract class Turtle
     } // getSize
 
 
-    public final void paint(Graphics[] g)
+    public final void paint(Graphics g)
     {
         if (isVisible)
             paintImpl(g);
     } // paint
 
 
-    protected abstract void paintImpl(Graphics[] g);
+    protected abstract void paintImpl(Graphics g);
     /**
      * This method must take into consideration the size and angle
      *  by calling getSize() and getAngle(), respectively. This is

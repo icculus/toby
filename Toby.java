@@ -6,23 +6,22 @@
  *      Written by Ryan C. Gordon.
  */
 
-import last.common.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import javax.swing.*;
 
-
-public final class Toby extends Frame
+public final class Toby extends JFrame
 {
         // Global Constants...
     public static final String TITLE   = "Toby";
-    public static final String VERSION = "v0.29alpha";
+    public static final String VERSION = "v0.50alpha";
 
     public static final String USAGE = "USAGE: Toby.class [sourceFile.toby]";
 
     public static final String WRITTENBY = "Written by Ryan C. Gordon.";
     public static final String COPYRIGHT =
-                     "Copyright (c) Lighting and Sound Technologies, 1997.";
+                     "Copyright (c) 1997 Lighting and Sound Technologies";
 
     public static final String MSG_ERROR = "Error";
 
@@ -36,26 +35,30 @@ public final class Toby extends Frame
         // Instance variables...
     private TobyPanel tobyPanel;
     private String tobyFileName = null;
+    private File currentDirectory = null;
 
     public Toby()
     {
         super();
 
+        Container rootPane = getContentPane();
         TobyMenuBar tmb = new TobyMenuBar(this);
+        TurtleSpace tspace;
 
+        currentDirectory = new File(".");   // !!! is this kosher?
         setTitle(null);
  
         addWindowListener(appMan);
-        setLayout(new BorderLayout());
+        rootPane.setLayout(new BorderLayout());
         setResizable(true);
         setSize(getToolkit().getScreenSize());
-        setMenuBar(tmb);
+        setJMenuBar(tmb);
 
-        tobyPanel = new TobyPanel();
-        add("Center", tobyPanel);
+        tobyPanel = new TobyPanel(this);
+        rootPane.add("Center", tobyPanel);
 
-        tobyPanel.getTurtleSpace().addSourceWatcher(tmb);
-
+        tspace = tobyPanel.getTurtleSpace();
+        tspace.addSourceWatcher(tmb);
         setVisible(true);
         show();
     } // Constructor
@@ -102,10 +105,11 @@ public final class Toby extends Frame
 
     public void displayHelp()
     {
-        MsgBox msgBox = new MsgBox(TITLE + " " + VERSION,
-                                   "Help not yet implemented.",
-                                   this);
-        msgBox.show();
+            // !!! JavaHelp, perhaps?
+        String msg = "Help not yet implemented.";
+
+        JOptionPane.showMessageDialog(null, msg, TITLE + " " + VERSION,
+                                      JOptionPane.INFORMATION_MESSAGE);
     } // displayHelp
 
 
@@ -114,30 +118,40 @@ public final class Toby extends Frame
         String title = "About " + TITLE + " " + VERSION + "...";
         Font font = new Font("SansSerif", Font.BOLD, 16);
         String[] msgText = new String[2];
-        MsgBox aboutBox;
 
         msgText[0] = COPYRIGHT;
         msgText[1] = WRITTENBY;
 
-        aboutBox = new MsgBox(title, msgText, this);
-        aboutBox.setFont(font);
-        aboutBox.setForeground(Color.yellow);
-        aboutBox.setBackground(Color.red);
-        aboutBox.show();
+        JOptionPane.showMessageDialog(null, msgText, title,
+                                      JOptionPane.INFORMATION_MESSAGE);
     } // createAboutBox
 
 
-    private String selectFileName(String frameTitle, int fileMode)
+    private String selectFileName(int fileMode)
     {
-        FileDialog fd = new FileDialog(this, frameTitle, fileMode);
-        String retVal;
+        JFileChooser chooser = new JFileChooser();
+        int rc;
+        String retVal = null;
 
-        fd.setFilenameFilter(new TobyFilenameFilter());
-        fd.show();
-        retVal = fd.getFile();
-        if (retVal != null)
-            retVal = fd.getDirectory() + retVal;
+        chooser.setFileFilter(new TobyFilenameFilter());
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileHidingEnabled(false);
+        chooser.setCurrentDirectory(currentDirectory);
 
+        if (fileMode == JFileChooser.SAVE_DIALOG)
+            rc = chooser.showSaveDialog(this);
+        else if (fileMode == JFileChooser.OPEN_DIALOG)
+            rc = chooser.showOpenDialog(this);
+        else
+            throw(new IllegalArgumentException("Open, save?!"));
+
+        if (rc == JFileChooser.APPROVE_OPTION)
+        {
+            currentDirectory = chooser.getSelectedFile();
+            retVal = currentDirectory.getName();
+        } // if
+        
         return(retVal);
     } // selectFileName
 
@@ -158,10 +172,7 @@ public final class Toby extends Frame
             // !!! ask to save modified buffer?
 
         if (fileName == null)
-        {
-            fileName = selectFileName(TobyMenuBar.MENUITEM_OPEN,
-                                      FileDialog.LOAD);
-        } // if
+            fileName = selectFileName(JFileChooser.OPEN_DIALOG);
 
         if (fileName != null)
         {
@@ -178,14 +189,16 @@ public final class Toby extends Frame
                 String errMsg;
 
                 errMsg = "File [" + fileName + "] not found.";
-                new MsgBox(MSG_ERROR, errMsg, this).show();
+                JOptionPane.showMessageDialog(null, errMsg, "Error",
+                                      JOptionPane.ERROR_MESSAGE);
             } // catch
 
             catch (IOException ioe)
             {
                 String errMsg;
                 errMsg = "Cannot load [" + fileName + "].";
-                new MsgBox(MSG_ERROR, errMsg, this).show();
+                JOptionPane.showMessageDialog(null, errMsg, "Error",
+                                      JOptionPane.ERROR_MESSAGE);
             } // catch
         } // if
     } // openFile
@@ -198,8 +211,7 @@ public final class Toby extends Frame
 
         if (fileName == null)
         {
-            fileName = selectFileName(TobyMenuBar.MENUITEM_OPEN,
-                                      FileDialog.LOAD);
+            fileName = selectFileName(JFileChooser.SAVE_DIALOG);
         } // if
 
         if (fileName != null)
@@ -218,7 +230,8 @@ public final class Toby extends Frame
             {
                 String errMsg;
                 errMsg = "Cannot write to [" + tobyFileName + "]";
-                new MsgBox(MSG_ERROR, errMsg, this).show();
+                JOptionPane.showMessageDialog(null, errMsg, "Error",
+                                      JOptionPane.ERROR_MESSAGE);
             } // catch
         } // if
     } // saveFile
@@ -234,6 +247,7 @@ public final class Toby extends Frame
             {
                 appMan = new AppManager();
                 toby = new Toby();
+                toby.tobyPanel.getTurtleSpace().cleanup();  // !!! hack
                 if (args.length == 1)
                     toby.openFile(args[0]);
             } // if
@@ -249,6 +263,7 @@ public final class Toby extends Frame
         {
             System.err.println("Cannot find a necessary .class file.");
             System.err.println(" Perhaps you need to set your CLASSPATH?");
+            System.err.println(" Also, make sure you have Swing 1.1 or later!");
         } // catch
 
         catch (InternalError e)

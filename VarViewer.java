@@ -11,7 +11,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 
-public final class VarViewer extends Panel implements VarWatcher,
+import javax.swing.*;
+
+public final class VarViewer extends JPanel implements VarWatcher,
                                                       AdjustmentListener
 {
     private Scrollbar scrollBar;
@@ -77,6 +79,7 @@ public final class VarViewer extends Panel implements VarWatcher,
 
     public void varUpdated(Intrinsic var)
     {
+        System.out.println("varUpdated(var == [" + var.toString() + "])...");
         repaint();
     } // varUpdate
 

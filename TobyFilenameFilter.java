@@ -1,21 +1,31 @@
 /*
  * This really simple class just verifies that only *.toby files are
- *  acceptable to a FileDialog.
+ *  acceptable to a JFileChooser.
  *
  *   Copyright (c) Lighting and Sound Technologies, 1999.
  *    Written by Ryan C. Gordon.
  */
 
-public class TobyFilenameFilter implements java.io.FilenameFilter
+public class TobyFilenameFilter extends javax.swing.filechooser.FileFilter
 {
 
         // FilenameFilter implementation ...
 
-    public boolean accept(java.io.File dir, String name)
+    public boolean accept(java.io.File file)
     {
-        System.out.println("asking for [" + name + "]...");
+        if (file.isDirectory())
+            return(true);
+
+        String name = file.getName();
+//        System.out.println("asking for [" + name + "]...");
         return( (name.toLowerCase().endsWith(".toby")) ? true : false );
     } // accept
+
+    public String getDescription()
+    {
+        return("TOBY source code");
+    } // getDescription
 } // TobyFilenameFilter
 
 // end of TobyFilenameFilter.java ...
+

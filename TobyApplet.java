@@ -7,18 +7,26 @@
 
 import java.awt.*;
 import java.awt.event.*;
-import java.applet.Applet;
+import java.net.*;
+import java.io.*;
+import javax.swing.*;
 
-
-public class TobyApplet extends Applet implements ActionListener
+public class TobyApplet extends JApplet implements ActionListener, Runnable,
+                                                   SourceWatcher
 {
+    public static final String PARAMNAME_URL = "URL";
     public static final String PARAMNAME_SOURCE = "SOURCE";
+    public static final String DOWNLOAD_FAILED = "Source code download FAILED.";
+    public static final String MSG_CLICKTOSTART = "Click here to run the program.";
+    public static final String MSG_CLICKTOSTOP = "Click here to stop the program.";
     public static final String MSG_BAD_JAVA =
            "You're Java support is outdated; goto http://java.sun.com/";
 
     protected TurtleSpace tspace;
-    protected Button againButton;
+    protected JButton runButton;
     protected String sourceCode;
+    protected boolean noSourceCode = true;
+    protected boolean interruptRead = false;
 
 
     public static boolean badJavaVersion()
@@ -41,18 +49,58 @@ public class TobyApplet extends Applet implements ActionListener
 
     private void buildAppletComponents()
     {
+        Container rootPane = getContentPane();
         tspace = new TobyInterpreter();
-        againButton = new Button("Run from start.");
+        runButton = new JButton(MSG_CLICKTOSTART);
 
-        againButton.addActionListener(this);
+        tspace.addSourceWatcher(this);
 
-        setLayout(new BorderLayout());
-        add("Center", tspace);
-        add("South", againButton);
+        runButton.setEnabled(false);
+        runButton.addActionListener(this);
+
+        rootPane.setLayout(new BorderLayout());
+        rootPane.add("Center", tspace);
+        rootPane.add("South", runButton);
     } // buildAppletComponents
 
 
+    private void setSourceCode(String src)
+    {
+        sourceCode = src;
+        noSourceCode = false;
+        runButton.setEnabled(true);
+    } // setSourceCode
+
+
     private void grabSourceCode()
+    {
+        showStatus("Downloading Toby's instructions...please wait...");
+
+        if (getParameter(PARAMNAME_URL) != null)
+            grabNetCode();
+        else
+            grabParamCode();
+    } // grabSourceCode
+
+
+    public void stop()
+    {
+        interruptRead = true;
+    } // stop
+
+
+    private void grabNetCode()
+    /*
+     *  Due to blocking issues, net reading is done is a separate thread.
+     *   When finished, the thread terminates itself, but can be commanded
+     *   to terminate prematurely by setting (interruptRead) to (true).
+     */
+    {
+        new Thread(this).start();
+    } // grabNetCode
+
+
+    private void grabParamCode()
     {
         StringBuffer srcBuffer = new StringBuffer();
         String endl = System.getProperty("line.separator");
@@ -73,8 +121,9 @@ public class TobyApplet extends Applet implements ActionListener
         } while (paramValue != null);
 
         srcBuffer.append(endl);
-        sourceCode = srcBuffer.toString();
-    } // grabSourceCode
+
+        setSourceCode(srcBuffer.toString());
+    } // grabParamCode
 
 
     private void kickOffCodeRun()
@@ -127,11 +176,22 @@ public class TobyApplet extends Applet implements ActionListener
             showStatus(MSG_BAD_JAVA);
         else
         {
-            grabSourceCode();
+            JRootPane rp = this.getRootPane();
+            rp.putClientProperty("defeatSystemEventQueueCheck", Boolean.TRUE);
+ 
             buildAppletComponents();
-            kickOffCodeRun();
         } // else
     } // init
+
+
+    public void start()
+    {
+        tspace.cleanup();   // !!! hack.
+        try { Thread.sleep(500); } catch (InterruptedException ie) {}
+
+        if (noSourceCode)
+            grabSourceCode();
+    } // start
 
 
     public String getAppletInfo()
@@ -160,10 +220,74 @@ public class TobyApplet extends Applet implements ActionListener
 
     public void actionPerformed(ActionEvent e)
     {
-        // Must be the "Again" button...
+        // Must be the "Run" button...
 
-        kickOffCodeRun();
+        if (tspace.isCodeRunning() == true)
+            tspace.haltInterpreter();
+        else
+            kickOffCodeRun();
     } // actionPerformed
+
+
+        // Runnable implementation...
+
+    public void run()
+    /**
+     * Net code is downloaded here.
+     *
+     */
+    {
+        BufferedReader br;
+        String endl = System.getProperty("line.separator");
+        String inLine;
+        StringBuffer sb = null;
+        URL url;
+
+        interruptRead = false;
+
+        try
+        {
+            url = new URL(getParameter(PARAMNAME_URL));
+            br = new BufferedReader(new InputStreamReader(url.openStream()));
+            sb = new StringBuffer();
+
+            while ((!interruptRead) && ((inLine = br.readLine()) != null))
+            {
+                sb.append(inLine);
+                sb.append(endl);
+            } // while
+
+            sb.append(endl);
+            br.close();
+        } // try
+
+        catch (Exception e)
+        {
+            interruptRead = true;
+        } // catch
+
+        if (interruptRead)
+            showStatus(DOWNLOAD_FAILED);
+        else
+            setSourceCode(sb.toString());
+    } // run
+
+
+        // SourceWatcher implementation ...
+
+    public void beginInterpretation()
+    {
+        runButton.setLabel(MSG_CLICKTOSTOP);
+    } // beginInterpretation
+
+
+    public void endInterpretation()
+    {
+        runButton.setLabel(MSG_CLICKTOSTART);
+    } // endInterpretation
+
+    public void sourceUpdated(int newSourceLine) {}
+    public void sourceError(int errLine) {}
 
 } // TobyApplet
 

@@ -9,11 +9,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
+import javax.swing.*;
 
-public class TobyInputArea extends Panel implements LayoutManager,
-                                                    SourceWatcher
+
+public class TobyInputArea extends JPanel implements LayoutManager,
+                                                     SourceWatcher
 {
-    private TextArea inputArea = null;
+    private JTextArea inputArea = null;
+    private JScrollPane scrollPane = null;
     private String endl;
     private Vector lineIndexes;
 
@@ -100,7 +103,6 @@ public class TobyInputArea extends Panel implements LayoutManager,
     {
         String src;
         TobyPanel panel = (TobyPanel) getParent();
-        Toby tobyFrame = (Toby) panel.getParent();
         TurtleSpace tspace = panel.getTurtleSpace();
 
         setLineIndex();
@@ -113,7 +115,7 @@ public class TobyInputArea extends Panel implements LayoutManager,
         catch (TobyParseException tpe)
         {
             highlightLine(tpe.errLine);
-            TobyInterpreter.displayParseException(tpe, tobyFrame);
+            TobyInterpreter.displayParseException(tpe);
         } // catch
     } // runCode
 
@@ -165,25 +167,14 @@ public class TobyInputArea extends Panel implements LayoutManager,
      *     returns : void. Components are built, though.
      */
     {
-        inputArea = new TextArea();
+        inputArea = new JTextArea();
         inputArea.setEditable(true);
-        add(inputArea);
+        inputArea.setLineWrap(false);
+        inputArea.setTabSize(4);
+        inputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        scrollPane = new JScrollPane(inputArea);
+        add("Center", scrollPane);
     } // buildComponents
-
-
-    public void paint(Graphics g)
-    {
-        Dimension d = getSize();
-        
-            // Draw border around this Component...
-        g.setColor(Color.darkGray);
-        g.drawLine(d.width, 0, d.width, d.height); 
-        g.drawLine(d.width, d.height, 0, d.height); 
-        
-        g.setColor(Color.lightGray);
-        g.drawLine(0, 0, 0, d.height);
-        g.drawLine(0, 0, d.width, 0);
-    } // paint
 
 
         // SourceWatcher implementation...
@@ -218,18 +209,33 @@ public class TobyInputArea extends Panel implements LayoutManager,
         // LayoutManager implementation...
 
     public void layoutContainer(Container target)
+    /**
+     * Actual layout is done here. Do not call this directly; use
+     *  validate() or something equivalent instead.
+     *
+     *    @param target always (this).
+     */
     {
-        Dimension d = target.getSize();
+        Insets insets = getInsets();
+        int origWidth = getWidth();
+        int origHeight = getHeight();
+        int width = origWidth - (insets.left + insets.right);
+        int height = origHeight - (insets.top + insets.bottom);
 
-        inputArea.setSize((int) (d.width * 0.90), (int) (d.height * 0.90));
-        inputArea.setLocation((int) (d.width * 0.05), (int) (d.height * 0.05));
+        width =  (int) (((double) width)  * 0.98);
+        height = (int) (((double) height) * 0.98);
+
+        scrollPane.setSize(width, height);
+        scrollPane.setLocation(insets.left + ((origWidth  - width)  / 2),
+                               insets.top  + ((origHeight - height) / 2));
     } // layoutContainer
 
 
     public Dimension preferredLayoutSize(Container target)
     {
-        Dimension d = target.getParent().getSize();
-        Insets insets = target.getParent().getInsets();
+        Container parent = target.getParent();
+        Dimension d = parent.getSize();
+        Insets insets = parent.getInsets();
 
         d.width  -= (insets.left + insets.right);
         d.height -= (insets.top + insets.bottom);

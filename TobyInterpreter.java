@@ -16,6 +16,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
+import javax.swing.*;
 
 public final class TobyInterpreter extends TurtleSpace implements Runnable
 {
@@ -178,28 +179,28 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
     public synchronized void cleanup()
     {
-        Graphics[] gr = new Graphics[1];
-        Dimension d = getSize();
+        Graphics gr;
+        int height = getHeight();
+        int width = getWidth();
 
-        if (copyImage != null)
-            copyImage.flush();
-
-        copyImage = createImage(d.width, d.height);
-        gr[0] = copyImage.getGraphics();
-        gr[0].setColor(getBackground());
-        gr[0].fillRect(0, 0, d.width, d.height);
-        turtle.setVisible(true);
-        turtle.homeTurtle(this);
-        turtle.paint(gr);
-        gr[0].dispose();
-        gr[0] = null;
-        gr = null;
-        repaint();
+//        if ((width > 0) && (height > 0))
+//        {
+            if (copyImage != null)
+                copyImage.flush();
+            copyImage = createImage(width, height);
+            gr = copyImage.getGraphics();
+            gr.setColor(getBackground());
+            gr.fillRect(0, 0, width, height);
+            turtle.setVisible(true);
+            turtle.homeTurtle(this);
+            turtle.paint(gr);
+            gr.dispose();
+            repaint();
+//        } // if
     } // cleanup
 
 
-    public static void displayParseException(TobyParseException tpe,
-                                             Frame parent)
+    public static void displayParseException(TobyParseException tpe)
     {
         StringBuffer sb = new StringBuffer();
 
@@ -221,7 +222,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
         sb.append(tpe.getMessage());
 
-        new MsgBox(Toby.TITLE, sb.toString(), parent).show();
+        JOptionPane.showMessageDialog(null, sb.toString(), "Error",
+                                      JOptionPane.ERROR_MESSAGE);
+
+                    
+        //new MsgBox(Toby.TITLE, sb.toString(), parent).show();
     } // displayParseException
 
 
@@ -584,10 +589,10 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             g.drawImage(copyImage, 0, 0, this);
         else
         {
+            g.setColor(getBackground());
             turtle.homeTurtle(this);
-            Graphics[] gr = new Graphics[1];
-            gr[0] = g;
-            turtle.paint(gr);
+            g.drawRect(0, 0, getWidth(), getHeight());
+            turtle.paint(g);
         } // else
     } // paint
 
@@ -2246,7 +2251,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     public void run()
     {
         TobyProcedure mainLine = findProcedure(PROCNAME_MAINLINE);
-        Toby tobyFrame = (Toby) ((TobyPanel) getParent()).getParent();
 
         if (mainLine != null)
         {
@@ -2272,7 +2276,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
                 if (tpe.terminated == false)
                 {
                     notifySourceError(tpe.errLine);
-                    displayParseException(tpe, tobyFrame);
+                    displayParseException(tpe);
                 } // if
             } // catch
 
@@ -2280,7 +2284,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             codeRunning = false;
             terminateCode = false;
             notifyEndInterpretation();
-            turtle.paint(g);
+            turtle.paint(g[0]);     // !!! Do something about this!
+            turtle.paint(g[1]);
             deInitGraphics();
         } // if
     } // run

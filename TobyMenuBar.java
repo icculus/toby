@@ -8,8 +8,9 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 
-public final class TobyMenuBar extends MenuBar implements ActionListener,
+public final class TobyMenuBar extends JMenuBar implements ActionListener,
                                                           ItemListener,
                                                           SourceWatcher
 {
@@ -35,62 +36,65 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
     public static final String MENUITEM_WATCHVARS = "Watch variables";
 
     private Toby parent;
+    private boolean codeRunning = false;
 
-    public Menu fileMenu;
-    public MenuItem newItem;
-    public MenuItem openItem;
-    public MenuItem saveItem;
-    public MenuItem saveAsItem;
-    public MenuItem quitItem;
+    public JMenu fileMenu;
+    public JMenuItem newItem;
+    public JMenuItem openItem;
+    public JMenuItem saveItem;
+    public JMenuItem saveAsItem;
+    public JMenuItem quitItem;
 
-    public Menu helpMenu;
-    public MenuItem aboutItem;
-    public MenuItem helpItem;
+    public JMenu helpMenu;
+    public JMenuItem aboutItem;
+    public JMenuItem helpItem;
 
-    public Menu runMenu;
-    public MenuItem startItem;
-    public MenuItem stopItem;
-    public MenuItem clearItem;
+    public JMenu runMenu;
+    public JMenuItem startStopItem;
+    public JMenuItem clearItem;
 
-    public Menu debugMenu;
-    public MenuItem stepItem;
-    public MenuItem traceItem;
-    public CheckboxMenuItem watchVarsItem;
+    public JMenu debugMenu;
+    public JMenuItem stepItem;
+    public JMenuItem traceItem;
+    public JCheckBoxMenuItem watchVarsItem;
 
 
-    private MenuItem setupMenuItem(Menu m, String itemStr,
+    private JMenuItem setupMenuItem(JMenu m, String itemStr,
                                    int keyCode, boolean isEnabled)
     {
-        MenuItem mi = new MenuItem(itemStr);
+        JMenuItem mi = new JMenuItem(itemStr);
 
         mi.setEnabled(isEnabled);
         mi.addActionListener(this);
-        mi.setShortcut(new MenuShortcut(keyCode));
+        // !!! need to covert to Swing's setAccelerator()...
+        //mi.setShortcut(new MenuShortcut(keyCode));
         m.add(mi);
         return(mi);
     } // setupMenuItem
 
 
-    private CheckboxMenuItem setupCheckboxMenuItem(Menu m,
+    private JCheckBoxMenuItem setupCheckBoxMenuItem(JMenu m,
                                                    String itemStr,
                                                    int keyCode,
                                                    boolean selected,
                                                    boolean isEnabled)
     {
-        CheckboxMenuItem cbmi = new CheckboxMenuItem(itemStr, selected);
+        JCheckBoxMenuItem cbmi = new JCheckBoxMenuItem(itemStr, selected);
 
         cbmi.setEnabled(isEnabled);
         cbmi.addItemListener(this);
-        cbmi.setShortcut(new MenuShortcut(keyCode));
+        // !!! need to covert to Swing's setAccelerator()...
+        //cbmi.setShortcut(new MenuShortcut(keyCode));
         m.add(cbmi);
         return(cbmi);
-    } // setupCheckboxMenuItem
+    } // setupCheckBoxMenuItem
 
 
-    private Menu setupMenu(String menuTitle, boolean isEnabled, int keyCode)
+    private JMenu setupMenu(String menuTitle, boolean isEnabled, int keyCode)
     {
-        Menu retVal = new Menu(menuTitle, isEnabled);
-        retVal.setShortcut(new MenuShortcut(keyCode));
+        JMenu retVal = new JMenu(menuTitle, isEnabled);
+        // !!! need to covert to Swing's setAccelerator()...
+        //retVal.setShortcut(new JMenuShortcut(keyCode));
         return(retVal);
     } // setupMenu
 
@@ -109,16 +113,16 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
         add(fileMenu);
 
         runMenu    = setupMenu(MENUNAME_RUN, true, KeyEvent.VK_R);
-        startItem  = setupMenuItem(runMenu, MENUITEM_STARTCODE, KeyEvent.VK_F5, true);
-        stopItem   = setupMenuItem(runMenu, MENUITEM_STOPCODE, KeyEvent.VK_P, false);
+        startStopItem = setupMenuItem(runMenu, MENUITEM_STARTCODE,
+                                      KeyEvent.VK_G, true);
         clearItem  = setupMenuItem(runMenu, MENUITEM_CLEAR, KeyEvent.VK_C, true);
         add(runMenu);
 
         debugMenu = setupMenu(MENUNAME_DEBUG, true, KeyEvent.VK_D);
-        stepItem  = setupMenuItem(debugMenu, MENUITEM_STEP, KeyEvent.VK_S, true);
-        traceItem = setupCheckboxMenuItem(debugMenu, MENUITEM_TRACE, KeyEvent.VK_T,
+        stepItem  = setupMenuItem(debugMenu, MENUITEM_STEP, KeyEvent.VK_W, true);
+        traceItem = setupCheckBoxMenuItem(debugMenu, MENUITEM_TRACE, KeyEvent.VK_T,
                                           false, true);
-        watchVarsItem = setupCheckboxMenuItem(debugMenu, MENUITEM_WATCHVARS,
+        watchVarsItem = setupCheckBoxMenuItem(debugMenu, MENUITEM_WATCHVARS,
                                               KeyEvent.VK_V, false, true);
         add(debugMenu);
 
@@ -143,7 +147,7 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
             } // try
             catch (TobyParseException tpe)
             {
-                TobyInterpreter.displayParseException(tpe, parent);
+                TobyInterpreter.displayParseException(tpe);
             } // catch
         } // if
         else
@@ -151,13 +155,13 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
     } // doStep
 
 
-    private void setupTrace(CheckboxMenuItem cbmi)
+    private void setupTrace(JCheckBoxMenuItem cbmi)
     {
         parent.getTobyPanel().getTurtleSpace().enableTracing(cbmi.getState());
     } // setupTrace
 
 
-    private void setupWatchVars(CheckboxMenuItem cbmi)
+    private void setupWatchVars(JCheckBoxMenuItem cbmi)
     {
         TurtleSpace tspace = parent.getTobyPanel().getTurtleSpace();
         VarWatcher vw = parent.getTobyPanel().getVarWatcher();
@@ -173,7 +177,7 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
 
     public void actionPerformed(ActionEvent e)
     {
-        MenuItem mi = (MenuItem) e.getSource();
+        JMenuItem mi = (JMenuItem) e.getSource();
 
         if (mi == newItem)
             parent.newFile();
@@ -196,11 +200,13 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
         else if (mi == aboutItem)
             parent.createAboutBox();
 
-        else if (mi == startItem)
-            parent.getTobyPanel().getInputArea().runCode();
-
-        else if (mi == stopItem)
-            parent.getTobyPanel().getTurtleSpace().haltInterpreter();
+        else if (mi == startStopItem)
+        {
+            if (codeRunning == false)
+                parent.getTobyPanel().getInputArea().runCode();
+            else
+                parent.getTobyPanel().getTurtleSpace().haltInterpreter();
+        } // else if
 
         else if (mi == stepItem)
             doStep();
@@ -214,7 +220,7 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
 
     public void itemStateChanged(ItemEvent e)
     {
-        CheckboxMenuItem cbmi = (CheckboxMenuItem) e.getSource();
+        JCheckBoxMenuItem cbmi = (JCheckBoxMenuItem) e.getSource();
 
         if (cbmi == watchVarsItem)
             setupWatchVars(cbmi);
@@ -228,19 +234,19 @@ public final class TobyMenuBar extends MenuBar implements ActionListener,
 
     public void beginInterpretation()
     {
+        codeRunning = true;
+        startStopItem.setLabel(MENUITEM_STOPCODE);
         newItem.setEnabled(false);
         openItem.setEnabled(false);
-        startItem.setEnabled(false);
         clearItem.setEnabled(false);
-        stopItem.setEnabled(true);
     } // beginInterpretation
 
     public void endInterpretation()
     {
+        codeRunning = false;
+        startStopItem.setLabel(MENUITEM_STARTCODE);
         newItem.setEnabled(true);
         openItem.setEnabled(true);
-        stopItem.setEnabled(false);
-        startItem.setEnabled(true);
         clearItem.setEnabled(true);
     } // endInterpretation
 
