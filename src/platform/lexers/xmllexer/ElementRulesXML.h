@@ -41,6 +41,7 @@ public:
     virtual const char *outputDeclarations(void);
     virtual const char *outputDefinitions(void);
     virtual const char *outputConstructor(void);
+    virtual const char *outputResolutions(void);
 
     static LexerRules *buildRules(XMLNode *node);
 

@@ -80,20 +80,11 @@ TokenizerRules::TokenizerRules(bool _caseSensitive,
 
 TokenizerRules::~TokenizerRules(void)
 {
-    if (whitespaceChars != NULL)
-        delete[] whitespaceChars;
-
-    if (singleLineComment != NULL)
-        delete[] singleLineComment;
-
-    if (multiLineCommentStart != NULL)
-        delete[] multiLineCommentStart;
-
-    if (multiLineCommentEnd != NULL)
-        delete[] multiLineCommentEnd;
-
-    if (quoteChars != NULL)
-        delete[] quoteChars;
+    delete[] whitespaceChars;
+    delete[] singleLineComment;
+    delete[] multiLineCommentStart;
+    delete[] multiLineCommentEnd;
+    delete[] quoteChars;
 } // Destructor
 
 

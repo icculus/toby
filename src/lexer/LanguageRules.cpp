@@ -40,15 +40,9 @@ LanguageRules::LanguageRules(const char *_name, const char *_ext,
 LanguageRules::~LanguageRules(void)
 {
     deleteRuleList(numChildren, children);
-
-    if (tokRule != NULL)
-        delete tokRule;
-
-    if (name != NULL)
-        delete[] name;
-
-    if (extension != NULL)
-        delete[] extension;
+    delete tokRule;
+    delete[] name;
+    delete[] extension;
 } // Destructor
 
 
@@ -78,6 +72,20 @@ bool LanguageRules::testRules(Tokenizer *toker) throw (IOException *)
 
     return(firstElement->testRules(toker));
 } // LanguageRules::testRules
+
+
+bool LanguageRules::resolve(LexerRules *langRules)
+{
+    assert(langRules == this);
+
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        if (children[i]->resolve(langRules) == false)
+            return(false);
+    } // for
+
+    return(true);
+} // LanguageRules::resolve
 
 // end of LanguageRules.cpp ...
 

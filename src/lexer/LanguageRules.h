@@ -48,6 +48,7 @@ public:
     const char *getFileExtension(void);
 
     virtual bool testRules(Tokenizer *toker) throw (IOException *);
+    virtual bool resolve(LexerRules *langRules);
 
 protected:
     size_t numChildren;

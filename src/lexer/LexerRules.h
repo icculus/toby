@@ -54,21 +54,22 @@ public:
         // This should return a null-terminated string that
         //  contains the C++ code needed to construct said object.
         // This is optional, and is used for any declarations that need to
-        //  be at the top of the source file. If not needed, return NULL.
-        // The caller will delete[] the return value (if not NULL).
+        //  be at the top of the source file. If not needed, return an
+        //  empty string (NOT NULL).
+        // The caller will delete[] the return value.
         //  An example return value is
         //   "static LexerRules *element_WHILESTATEMENT = NULL;\n"
         //   "static LexerRules *build_element_WHILESTATEMENT(void);\n"
         //  That's one string, btw.
-    virtual const char *outputDeclarations(void) { return(NULL); }
+    virtual const char *outputDeclarations(void);
 
         // This should return a null-terminated string that
         //  contains the C++ code needed to construct said object.
         // This is optional, and is used to define anything that was
         //  declared at the top of the source file with outputDeclarations().
-        // If not needed, return NULL.
-        // The caller will delete[] the return value (if not NULL).
-    virtual const char *outputDefinitions(void) { return(NULL); }
+        // If not needed, return an empty string (NOT NULL).
+        // The caller will delete[] the return value.
+    virtual const char *outputDefinitions(void);
 
         // This should return a null-terminated string that
         //  contains the C++ code needed to construct said object.
@@ -78,18 +79,22 @@ public:
         //  An example return value is "new MyClass(\"string\", 1)" or
         //  "build_element_WHILESTATEMENT()" ...
         //  Note the lack of assignment or semicolon.
-    virtual const char *outputConstructor(void) { assert(false); return(NULL); }
+    virtual const char *outputConstructor(void);
 
         // This should return a null-terminated string that
         //  contains the C++ code needed to construct said object.
         // This is optional, and is used for any resolutions that need to
         //  be accomplished after all the rules have been built.
-        // If not needed, return NULL.
-        // The caller will delete[] the return value (if not NULL).
+        // If not needed, return empty string (NOT NULL).
+        // The caller will delete[] the return value.
         //  An example return value is
-        //   "requireElement_12->element = element_WHILESTATEMENT;\n"
+        //   "requireElement_12.setelement(element_WHILESTATEMENT);\n"
         //  This one's got a semicolon. Confused, yet?
-    virtual const char *outputResolutions(void) { return(NULL); }
+    virtual const char *outputResolutions(void);
+
+        // Resolve any needed dependencies here. (langRules) is top of
+        //  the lexing rule tree. Return false on error.
+    virtual bool resolve(LexerRules *langRules) { return(true); }
 
 protected:
         // Delete (numRules) rules from the (rules) array, if the

@@ -19,6 +19,7 @@
 
 #include "platform/lexers/xmllexer/LanguageRulesXML.h"
 
+// !!! FIXME: Clean this function up.
 LexerRules *LanguageRulesXML::buildRules(XMLNode *node)
 {
     assert(strcmp(node->getTag(), "language") == 0);  // just in case.
@@ -35,22 +36,31 @@ LexerRules *LanguageRulesXML::buildRules(XMLNode *node)
     LexerRules *firstRule = NULL;
     LexerRules *_tokRule = NULL;
     TobyCollection *children = node->getChildren();
-    int max = children->getSize();
+    size_t max = children->getSize();
     LexerRules **rulesList = NULL;
-    int ruleCount = 0;
+    size_t ruleCount = 0;
     if (max > 0)
     {
         rulesList = new LexerRules *[max];
-        for (int i = 0; i < max; i++)
+        for (size_t i = 0; i < max; i++)
         {
             XMLNode *kid = (XMLNode *) children->elementAt(i);
             const char *tag = kid->getTag();
             if (strcmp(tag, "tokenizer") == 0)
                 _tokRule = XMLLexer::buildRules(kid);
+                // !!! FIXME: Abort if this fails to build?
             else
             {
                 rulesList[ruleCount] = XMLLexer::buildRules(kid);
-                if (rulesList[ruleCount] != NULL)
+                if (rulesList[ruleCount] == NULL)
+                {
+                    for (size_t j = 0; j < ruleCount; j++)
+                        delete rulesList[j];
+                    delete[] rulesList;
+                    delete(_tokRule);
+                    return(NULL);
+                } // if
+                else
                 {
                     ruleCount++;
                     if (strcmp(tag, "element") == 0)
@@ -59,7 +69,7 @@ LexerRules *LanguageRulesXML::buildRules(XMLNode *node)
                         if ( (elemName) && (strcmp(elemName, firstName) == 0) )
                             firstRule = rulesList[ruleCount];
                     } // if
-                } // if
+                } // else
             } // else
         } // for
         rulesList[ruleCount] = NULL;
@@ -100,6 +110,17 @@ const char *LanguageRulesXML::outputDeclarations(void)
     str.append(name);
     str.append("(void);\n\n");
 
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDeclarations = children[i]->outputDeclarations();
+        str.append(kidDeclarations);
+        delete[] kidDeclarations;
+    } // for
+
+    const char *tokDeclarations = tokRule->outputDeclarations();
+    str.append(tokDeclarations);
+    delete[] tokDeclarations;
+
     char *retval = new char[str.length() + 1];
     strcpy(retval, str.c_str());
     return(retval);
@@ -113,14 +134,24 @@ const char *LanguageRulesXML::outputDefinitions(void)
 {
     TobyString str;
 
-    str.append("static LanguageRules *buildElement_");
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDefinitions = children[i]->outputDefinitions();
+        str.append(kidDefinitions);
+        delete[] kidDefinitions;
+    } // for
+
+    const char *tokDefinitions = tokRule->outputDefinitions();
+    str.append(tokDefinitions);
+    delete[] tokDefinitions;
+
+    str.append("static LanguageRules *buildLanguage_");
     str.append(name);
     str.append("(void)\n{\n");
 
-    str.append("\n#ifdef DEBUG");
     str.append("    assert(language_");
     str.append(name);
-    str.append(" == NULL);\n#endif\n\n");
+    str.append(" == NULL);\n\n");
 
     str.append("    LexerRules **kids = new LexerRules *[");
     str.append(numChildren);
@@ -163,7 +194,7 @@ const char *LanguageRulesXML::outputDefinitions(void)
     str.append(numChildren);
     str.append(", kids);\n");
 
-    str.append("return(language_");
+    str.append("    return(language_");
     str.append(name);
     str.append(");\n} // buildLanguage_");
     str.append(name);
@@ -188,13 +219,24 @@ const char *LanguageRulesXML::outputConstructor(void)
 
 const char *LanguageRulesXML::outputResolutions(void)
 {
-    TobyString str("LanguageRegistry::registerLanguage(language_");
-    str.append(name);
-    str.append(");\n");
+    TobyString str;
+
+    const char *tokResolutions = tokRule->outputResolutions();
+    str.append(tokResolutions);
+    delete[] tokResolutions;
+
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidResolutions = children[i]->outputResolutions();
+        str.append(kidResolutions);
+        delete[] kidResolutions;
+    } // for
+
     char *retval = new char[str.length() + 1];
     strcpy(retval, str.c_str());
     return(retval);
 } // LanguageRulesXML::outputResolutions
+
 
 // end of LanguageRulesXML.cpp ...
 

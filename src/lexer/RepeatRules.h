@@ -42,6 +42,7 @@ public:
 
     virtual ~RepeatRules(void);
     virtual bool testRules(Tokenizer *toker) throw (IOException *);
+    virtual bool resolve(LexerRules *langRules);
 
 protected:
     int minRepeats;

@@ -31,6 +31,40 @@ void LexerRules::deleteRuleList(size_t numRules, LexerRules **rules)
     } // if
 } // LexerRules::deleteRuleList
 
+
+static const char *emptyString(void)
+{
+    char *retval = new char[1];
+    retval[0] = '\0';
+    return((const char *) retval);
+} // emptyString
+
+
+const char *LexerRules::outputDeclarations(void)
+{
+    return(emptyString());
+} // LexerRules::outputDeclarations
+
+
+const char *LexerRules::outputDefinitions(void)
+{
+    return(emptyString());
+} // LexerRules::outputDefinitions
+
+
+const char *LexerRules::outputConstructor(void)
+{
+    assert(false);
+    return(emptyString());
+} // LexerRules::outputConstructor
+
+
+const char *LexerRules::outputResolutions(void)
+{
+    return(emptyString());
+} // LexerRules::outputResolutions
+
+
 // end of LexerRules.cpp ...
 
 

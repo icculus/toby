@@ -63,8 +63,7 @@ ReqWordRulesXML::ReqWordRulesXML(const char *_word, const char *_dynSymbol)
 
 ReqWordRulesXML::~ReqWordRulesXML(void)
 {
-    if (dynSymbol != NULL)
-        delete[] dynSymbol;
+    delete[] dynSymbol;
 } // Destructor
 
 

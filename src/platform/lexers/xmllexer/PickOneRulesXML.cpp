@@ -28,6 +28,9 @@ LexerRules *PickOneRulesXML::buildRules(XMLNode *node)
 
     size_t max;
     LexerRules **rulesList = XMLLexer::buildBasicChildRules(node, &max);
+    if (rulesList == NULL)
+        return(NULL);
+
     return(new PickOneRulesXML(max, rulesList));
 } // PickOneRulesXML::buildRules
 
@@ -52,12 +55,16 @@ const char *PickOneRulesXML::outputDeclarations(void)
 {
     TobyString str;
 
-    str.append("static PickOneRules *pickOne_");
-    str.append(pickOneID);
-    str.append(" = NULL;\n");
     str.append("static PickOneRules *buildPickOne_");
     str.append(pickOneID);
     str.append("(void);\n\n");
+
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDeclarations = children[i]->outputDeclarations();
+        str.append(kidDeclarations);
+        delete[] kidDeclarations;
+    } // for
 
     char *retval = new char[str.length() + 1];
     strcpy(retval, str.c_str());
@@ -72,14 +79,16 @@ const char *PickOneRulesXML::outputDefinitions(void)
 {
     TobyString str;
 
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDefinitions = children[i]->outputDefinitions();
+        str.append(kidDefinitions);
+        delete[] kidDefinitions;
+    } // for
+
     str.append("static PickOneRules *buildPickOne_");
     str.append(pickOneID);
     str.append("(void)\n{\n");
-
-    str.append("\n#ifdef DEBUG");
-    str.append("    assert(pickOne_");
-    str.append(pickOneID);
-    str.append(" == NULL);\n#endif\n\n");
 
     str.append("    LexerRules **kids = new LexerRules *[");
     str.append(numChildren);
@@ -96,15 +105,9 @@ const char *PickOneRulesXML::outputDefinitions(void)
         str.append(";\n");
     } // for
 
-    str.append("\n    pickOne_");
-    str.append(pickOneID);
-    str.append(" = new PickOneRules(");
+    str.append("    return(new PickOneRules(");
     str.append(numChildren);
-    str.append(", kids);\n");
-
-    str.append("return(pickOne_");
-    str.append(pickOneID);
-    str.append(");\n} // buildPickOne_");
+    str.append(", kids));\n} // buildPickOne_");
     str.append(pickOneID);
     str.append("\n\n");
 
@@ -123,6 +126,22 @@ const char *PickOneRulesXML::outputConstructor(void)
     strcpy(retval, str.c_str());
     return(retval);
 } // PickOneRulesXML::outputConstructor
+
+
+const char *PickOneRulesXML::outputResolutions(void)
+{
+    TobyString str;
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidResolutions = children[i]->outputResolutions();
+        str.append(kidResolutions);
+        delete[] kidResolutions;
+    } // for
+
+    char *retval = new char[str.length() + 1];
+    strcpy(retval, str.c_str());
+    return(retval);
+} // PickOneRulesXML::outputResolutions
 
 // end of PickOneRulesXML.cpp ...
 

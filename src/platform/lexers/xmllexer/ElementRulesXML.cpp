@@ -32,15 +32,22 @@ LexerRules *ElementRulesXML::buildRules(XMLNode *node)
         iRollback = atoi(_rollback);
 
     TobyCollection *children = node->getChildren();
-    int max = children->getSize();
+    size_t max = children->getSize();
     LexerRules **rulesList = NULL;
     if (max > 0)
     {
         rulesList = new LexerRules *[max];
-        for (int i = 0; i < max; i++)
+        for (size_t i = 0; i < max; i++)
         {
             XMLNode *kid = (XMLNode *) children->elementAt(i);
             rulesList[i] = XMLLexer::buildRules(kid);
+            if (rulesList[i] == NULL)
+            {
+                for (size_t j = 0; j < i; j++)
+                    delete rulesList[j];
+                delete[] rulesList;
+                return(NULL);
+            } // if
         } // for
     } // if
 
@@ -56,13 +63,13 @@ ElementRulesXML::ElementRulesXML(const char *_name, int rollback,
     assert(_name != NULL);
     name = new char[strlen(_name) + 1];
     strcpy(name, _name);
+    XMLLexer::addElement(this);
 } // Constructor
 
 
 ElementRulesXML::~ElementRulesXML(void)
 {
-    if (name != NULL)
-        delete[] name;
+    delete[] name;
 } // Destructor
 
 
@@ -86,6 +93,13 @@ const char *ElementRulesXML::outputDeclarations(void)
     str.append(name);
     str.append("(void);\n\n");
 
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDeclarations = children[i]->outputDeclarations();
+        str.append(kidDeclarations);
+        delete[] kidDeclarations;
+    } // for
+
     char *retval = new char[str.length() + 1];
     strcpy(retval, str.c_str());
     return(retval);
@@ -99,14 +113,20 @@ const char *ElementRulesXML::outputDefinitions(void)
 {
     TobyString str;
 
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDefinitions = children[i]->outputDefinitions();
+        str.append(kidDefinitions);
+        delete[] kidDefinitions;
+    } // for
+
     str.append("static ElementRules *buildElement_");
     str.append(name);
     str.append("(void)\n{\n");
 
-    str.append("\n#ifdef DEBUG");
     str.append("    assert(element_");
     str.append(name);
-    str.append(" == NULL);\n#endif\n\n");
+    str.append(" == NULL);\n\n");
 
     str.append("    LexerRules **kids = new LexerRules *[");
     str.append(numChildren);
@@ -131,7 +151,7 @@ const char *ElementRulesXML::outputDefinitions(void)
     str.append(numChildren);
     str.append(", kids);\n");
 
-    str.append("return(element_");
+    str.append("    return(element_");
     str.append(name);
     str.append(");\n} // buildElement_");
     str.append(name);
@@ -152,6 +172,22 @@ const char *ElementRulesXML::outputConstructor(void)
     strcpy(retval, str.c_str());
     return(retval);
 } // ElementRulesXML::outputConstructor
+
+
+const char *ElementRulesXML::outputResolutions(void)
+{
+    TobyString str;
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidResolutions = children[i]->outputResolutions();
+        str.append(kidResolutions);
+        delete[] kidResolutions;
+    } // for
+
+    char *retval = new char[str.length() + 1];
+    strcpy(retval, str.c_str());
+    return(retval);
+} // ElementRulesXML::outputResolutions
 
 // end of ElementRulesXML.cpp ...
 

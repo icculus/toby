@@ -40,6 +40,7 @@ public:
     virtual const char *outputDeclarations(void);
     virtual const char *outputDefinitions(void);
     virtual const char *outputConstructor(void);
+    virtual const char *outputResolutions(void);
 
         // We have two buildRules() functions here, because
         //  <optional> is just <repeat min="0" max="1"> ...

@@ -52,6 +52,10 @@ static void unescapeAttrDefault(XMLNode *node, char **str, size_t *len,
                 *dest = '\r';
             else if (*src == '0')
                 *dest = '\0';
+            else if (*src == '\'')
+                *dest = '\'';
+            else if (*src == '\"')
+                *dest = '\"';
             else if (*src == '\\')
                 *dest = '\\';
             else
@@ -109,15 +113,9 @@ LexerRules *TokenizerRulesXML::buildRules(XMLNode *node)
                                    (_escChar == NULL) ? '\\' : _escChar[0],
                                    _cvtNums);
 
-    if (_escChar != NULL)
-        delete[] _escChar;
-
-    if (_quoteChars != NULL)
-        delete[] _wspace;
-
-    if (_wspace != NULL)
-        delete[] _wspace;
-
+    delete[] _escChar;
+    delete[] _quoteChars;
+    delete[] _wspace;
     return(retval);
 } // TokenizerRulesXML::buildRules
 
@@ -161,12 +159,18 @@ TokenizerRulesXML::~TokenizerRulesXML(void)
 } // Destructor
 
 
-static void appendEscapedString(TobyString *str, const char *text, int len)
+static void appendEscapedString(TobyString *str, const char *text, size_t len)
 {
-    for (int i = 0; i < len; i++)
+    for (size_t i = 0; i < len; i++)
     {
         if (text[i] == '\0')
             str->append("\\0");
+        else if (text[i] == '\\')
+            str->append("\\\\");
+        else if (text[i] == '\'')
+            str->append("\\\'");
+        else if (text[i] == '\"')
+            str->append("\\\"");
         else if (text[i] == '\n')
             str->append("\\n");
         else if (text[i] == '\r')
@@ -178,7 +182,7 @@ static void appendEscapedString(TobyString *str, const char *text, int len)
         else if (text[i] == '\b')
             str->append("\\b");
         else
-            str->append(text[i]);
+            str->append((signed char) text[i]);
     } // for
 } // appendEscapedStringWithLen
 
@@ -201,19 +205,57 @@ const char *TokenizerRulesXML::outputConstructor(void)
     str.append(ignoreWhitespace);
     str.append(", ");
     str.append(ignoreNewlines);
-    str.append(", \"");
-    appendEscapedString(&str, singleLineComment);
-    str.append("\", ");
+    str.append(", ");
+
+    if (singleLineComment == NULL)
+        str.append("NULL");
+    else
+    {
+        str.append("\"");
+        appendEscapedString(&str, singleLineComment);
+        str.append("\"");
+    } // else
+
+    str.append(", ");
     str.append(ignoreSingleLineComments);
-    str.append(", \"");
-    appendEscapedString(&str, multiLineCommentStart);
-    str.append("\", \"");
-    appendEscapedString(&str, multiLineCommentEnd);
-    str.append("\", ");
+    str.append(", ");
+
+    if (multiLineCommentStart == NULL)
+        str.append("NULL");
+    else
+    {
+        str.append("\"");
+        appendEscapedString(&str, multiLineCommentStart);
+        str.append("\"");
+    } // else
+
+    str.append(", ");
+
+    if (multiLineCommentEnd == NULL)
+        str.append("NULL");
+    else
+    {
+        str.append("\"");
+        appendEscapedString(&str, multiLineCommentEnd);
+        str.append("\"");
+    } // else
+
+    str.append(", ");
+
     str.append(ignoreMultiLineComments);
-    str.append(", \"");
-    appendEscapedString(&str, quoteChars, numQuoteChars);
-    str.append("\", ");
+    str.append(", ");
+
+    if (quoteChars == NULL)
+        str.append("NULL");
+    else
+    {
+        str.append("\"");
+        appendEscapedString(&str, quoteChars, numQuoteChars);
+        str.append("\"");
+    } // else
+
+    str.append(", ");
+
     str.append(numQuoteChars);
     str.append(", ");
     str.append(escaping);

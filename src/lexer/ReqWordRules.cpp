@@ -33,30 +33,20 @@ ReqWordRules::ReqWordRules(const char *_word)
 
 ReqWordRules::~ReqWordRules(void)
 {
-    if (word != NULL)
-        delete[] word;
+    delete[] word;
 } // Destructor
 
 
 bool ReqWordRules::testRules(Tokenizer *toker) throw (IOException *)
 {
-    if (word != NULL)
+    if (word == NULL)
         return(false);
 
-    if (toker->nextToken() == Tokenizer::TT_WORD)
-    {
-        bool match;
-        if (toker->getCaseSensitive())
-            match = (strcasecmp(toker->str, word) == 0);
-        else
-            match = (strcmp(toker->str, word) == 0);
+    bool retval = toker->mustGetWord(word);
+    if (!retval)
+        toker->pushBack();
 
-        if (match)
-            return(true);
-    } // if
-
-    toker->pushBack();
-    return(false);
+    return(retval);
 } // ReqWordRules::testRules
 
 // end of ReqWordRules.cpp ...

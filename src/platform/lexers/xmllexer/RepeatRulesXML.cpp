@@ -36,6 +36,9 @@ LexerRules *RepeatRulesXML::buildRules(XMLNode *node, int _minval, int _maxval)
 {
     size_t max;
     LexerRules **rulesList = XMLLexer::buildBasicChildRules(node, &max);
+    if (rulesList == NULL)
+        return(NULL);
+
     return(new RepeatRulesXML(_minval, _maxval, max, rulesList));
 } // buildRules
 
@@ -77,12 +80,16 @@ const char *RepeatRulesXML::outputDeclarations(void)
 {
     TobyString str;
 
-    str.append("static RepeatRules *repeat_");
-    str.append(repeatID);
-    str.append(" = NULL;\n");
     str.append("static RepeatRules *buildRepeat_");
     str.append(repeatID);
     str.append("(void);\n\n");
+
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDeclarations = children[i]->outputDeclarations();
+        str.append(kidDeclarations);
+        delete[] kidDeclarations;
+    } // for
 
     char *retval = new char[str.length() + 1];
     strcpy(retval, str.c_str());
@@ -97,14 +104,16 @@ const char *RepeatRulesXML::outputDefinitions(void)
 {
     TobyString str;
 
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidDefinitions = children[i]->outputDefinitions();
+        str.append(kidDefinitions);
+        delete[] kidDefinitions;
+    } // for
+
     str.append("static RepeatRules *buildRepeat_");
     str.append(repeatID);
     str.append("(void)\n{\n");
-
-    str.append("\n#ifdef DEBUG");
-    str.append("    assert(repeat_");
-    str.append(repeatID);
-    str.append(" == NULL);\n#endif\n\n");
 
     str.append("    LexerRules **kids = new LexerRules *[");
     str.append(numChildren);
@@ -121,19 +130,13 @@ const char *RepeatRulesXML::outputDefinitions(void)
         str.append(";\n");
     } // for
 
-    str.append("\n    repeat_");
-    str.append(repeatID);
-    str.append(" = new RepeatRules(");
+    str.append("    return(new RepeatRules(");
     str.append(minRepeats);
     str.append(", ");
     str.append(maxRepeats);
     str.append(", ");
     str.append(numChildren);
-    str.append(", kids);\n");
-
-    str.append("return(repeat_");
-    str.append(repeatID);
-    str.append(");\n} // buildRepeat_");
+    str.append(", kids));\n} // buildRepeat_");
     str.append(repeatID);
     str.append("\n\n");
 
@@ -152,6 +155,22 @@ const char *RepeatRulesXML::outputConstructor(void)
     strcpy(retval, str.c_str());
     return(retval);
 } // RepeatRulesXML::outputConstructor
+
+
+const char *RepeatRulesXML::outputResolutions(void)
+{
+    TobyString str;
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        const char *kidResolutions = children[i]->outputResolutions();
+        str.append(kidResolutions);
+        delete[] kidResolutions;
+    } // for
+
+    char *retval = new char[str.length() + 1];
+    strcpy(retval, str.c_str());
+    return(retval);
+} // RepeatRulesXML::outputResolutions
 
 // end of RepeatRulesXML.cpp ...
 

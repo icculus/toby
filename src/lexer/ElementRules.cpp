@@ -51,5 +51,17 @@ bool ElementRules::testRules(Tokenizer *toker) throw (IOException *)
     return(true);
 } // ElementRules::testRules
 
+
+bool ElementRules::resolve(LexerRules *langRules)
+{
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        if (children[i]->resolve(langRules) == false)
+            return(false);
+    } // for
+
+    return(true);
+} // ElementRules::resolve
+
 // end of ElementRules.cpp ...
 

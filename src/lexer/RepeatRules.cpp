@@ -61,5 +61,17 @@ bool RepeatRules::testRules(Tokenizer *toker) throw (IOException *)
     return(false);  // Shouldn't ever hit this point.
 } // RepeatRules::testRules
 
+
+bool RepeatRules::resolve(LexerRules *langRules)
+{
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        if (children[i]->resolve(langRules) == false)
+            return(false);
+    } // for
+
+    return(true);
+} // RepeatRules::resolve
+
 // end of RepeatRules.cpp ...
 

@@ -35,7 +35,12 @@
 #include "platform/lexers/xmllexer/ReqWhitespaceRulesXML.h"
 #include "platform/lexers/xmllexer/ReqSingleLineCommentRulesXML.h"
 #include "platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.h"
+#include "platform/lexers/xmllexer/ReqNumberRulesXML.h"
+#include "platform/lexers/xmllexer/ReqWordCharsRulesXML.h"
+#include "platform/lexers/xmllexer/ReqCharRulesXML.h"
+#include "platform/lexers/xmllexer/ReqElementRulesXML.h"
 
+class ElementRulesXML;  // need a forward reference.
 
 /*
  * An entry point for generating, from XML metadata, the LexerRules tree
@@ -50,9 +55,14 @@ public:
     static LexerRules **buildBasicChildRules(XMLNode *node, size_t *count);
     LexerRules **buildLanguages(XMLTree *tree);
 
-        // This gets filled in along with the platform-specific subclass...
+    static void addElement(ElementRulesXML *elem);
+    static ElementRulesXML *getElementByName(const char *name);
+
     Lexer *getInstance(void);
     virtual void loadLanguages(void);
+
+protected:
+    static TobyCollection *elements;
 }; // class XMLLexer
 
 #endif // !defined _INCLUDE_XMLLEXER_H_

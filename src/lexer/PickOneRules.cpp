@@ -43,5 +43,17 @@ bool PickOneRules::testRules(Tokenizer *toker) throw (IOException *)
     return(false);
 } // PickOneRules::testRules
 
+
+bool PickOneRules::resolve(LexerRules *langRules)
+{
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        if (children[i]->resolve(langRules) == false)
+            return(false);
+    } // for
+
+    return(true);
+} // PickOneRules::resolve
+
 // end of PickOneRules.cpp ...
 

@@ -51,5 +51,17 @@ bool ReqWordCharsRules::testRules(Tokenizer *toker) throw (IOException *)
     return(false);
 } // ReqWordCharsRules::testRules
 
+
+bool ReqWordCharsRules::resolve(LexerRules *langRules)
+{
+    for (size_t i = 0; i < numChildren; i++)
+    {
+        if (children[i]->resolve(langRules) == false)
+            return(false);
+    } // for
+
+    return(true);
+} // ReqWordCharsRules::resolve
+
 // end of ReqWordCharsRules.cpp ...
 

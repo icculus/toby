@@ -20,6 +20,11 @@
 #include "platform/lexers/xmllexer/XMLLexer.h"
 
 
+#include "io/FileReader.h"  // !!! TEMP.
+
+TobyCollection *XMLLexer::elements = NULL;
+
+
     // (tag) is the XML tag in question.
     // (func) should return a pointer to an appropriate LexerRules, built
     //  based on the details of (node). The passed node should be correct
@@ -39,9 +44,13 @@ typedef struct
 
 static RulesTagHandlers handlers[] =
 {
+    { "reqelement",           ReqElementRulesXML::buildRules },
     { "reqword",              ReqWordRulesXML::buildRules },
+    { "reqnumber",            ReqNumberRulesXML::buildRules },
     { "reqeof",               ReqEOFRulesXML::buildRules },
     { "reqnewline",           ReqNewlineRulesXML::buildRules },
+    { "reqwordchars",         ReqWordCharsRulesXML::buildRules },
+    { "reqchar",              ReqCharRulesXML::buildRules },
     { "reqliteralstring",     ReqLiteralStringRulesXML::buildRules },
     { "reqwhitespace",        ReqWhitespaceRulesXML::buildRules },
     { "reqmultilinecomment",  ReqMultiLineCommentRulesXML::buildRules },
@@ -87,6 +96,13 @@ LexerRules **XMLLexer::buildBasicChildRules(XMLNode *node, size_t *count)
     {
         XMLNode *kid = (XMLNode *) children->elementAt(i);
         rulesList[i] = XMLLexer::buildRules(kid);
+        if (rulesList[i] == NULL)
+        {
+            for (size_t j = 0; j < i; j++)
+                delete rulesList[j];
+            delete[] rulesList;
+            return(NULL);
+        } // if
     } // for
 
     *count = max;
@@ -98,23 +114,35 @@ LexerRules **XMLLexer::buildLanguages(XMLTree *tree)
 {
     XMLNode *root = tree->getRootNode();
     TobyCollection *children = root->getChildren();
-    int max = children->getSize();
-    int langCount = 0;
-    LexerRules **retval = NULL;
+    size_t max = children->getSize();
+    LexerRules **retval = new LexerRules *[max + 1];
+    size_t langCount = 0;
 
-    retval = new LexerRules *[max + 1];
-    for (int i = 0; i < max; i++)
+    XMLLexer::elements = new TobyCollection();
+
+    for (size_t i = 0; i < max; i++)
     {
         XMLNode *node = (XMLNode *) children->elementAt(i);
         if (strcmp(node->getTag(), "language") == 0)
         {
-            retval[langCount] = buildRules(node);
+            retval[langCount] = LanguageRulesXML::buildRules(node);
             if (retval[langCount] != NULL)
-                langCount++;
+            {
+                if (retval[langCount]->resolve(retval[langCount]) == false)
+                    delete retval[langCount];
+                else
+                    langCount++;
+            } // if
+
+            elements->clear();  // Elements are only valid in their language.
         } // if
     } // for
 
     retval[langCount] = NULL;
+
+    delete XMLLexer::elements;
+    XMLLexer::elements = NULL;
+
     return(retval);
 } // XMLLexer::buildLanguages
 
@@ -127,9 +155,42 @@ Lexer *Lexer::getInstance(void)
 
 void XMLLexer::loadLanguages(void)
 {
-    // !!! WRITE ME!
+    // !!! Write a REAL implementation of this.
+
+    XMLTree tree(new FileReader("grammars/toby.xml"));
+    if (tree.parseXML())
+    {
+        LexerRules **langs = buildLanguages(&tree);
+        for (size_t i = 0; langs[i] != NULL; i++)
+            registerLanguage((LanguageRules *) langs[i]);
+        delete[] langs;
+    } // if
 } // XMLLexer::loadLanguages
 
+
+void XMLLexer::addElement(ElementRulesXML *elem)
+{
+    if (XMLLexer::elements != NULL)
+        XMLLexer::elements->addElement(elem);
+} // XMLLexer::addElement
+
+
+ElementRulesXML *XMLLexer::getElementByName(const char *name)
+{
+    if (XMLLexer::elements != NULL)
+    {
+        size_t max = XMLLexer::elements->getSize();
+        for (size_t i = 0; i < max; i++)
+        {
+            ElementRulesXML *elem;
+            elem = (ElementRulesXML *) XMLLexer::elements->elementAt(i);
+            if (strcmp(elem->getName(), name) == 0)
+                return(elem);
+        } // for
+    } // if
+
+    return(NULL);
+} // XMLLexer::getElementByName
 
 // end of XMLLexer.cpp ...
 

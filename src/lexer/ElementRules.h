@@ -40,6 +40,7 @@ public:
     ElementRules(int _rollback, size_t numKids, LexerRules **kids);
     virtual ~ElementRules(void);
     virtual bool testRules(Tokenizer *toker) throw (IOException *);
+    virtual bool resolve(LexerRules *langRules);
 
 protected:
     int rollback;
