@@ -253,13 +253,19 @@ STANDALONEEXE := $(BINDIR)/standalone$(strip $(EXE_EXT))
 
 EXES := $(STANDALONEEXE) #$(MAINEXE)
 TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
+TESTXMLEXE := $(BINDIR)/test/xml$(strip $(EXE_EXT))
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp util/TobyClock.cpp
+
 PARSERSRCS := parsers/Parser.cpp
+
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
+
 IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
           io/Tokenizer.cpp
+
+XMLSRCS := xml/XMLTree.cpp xml/XMLNode.cpp
 
 #-----------------------------------------------------------------------------#
 # Language modules
@@ -379,7 +385,7 @@ endif
 # Source and object parsing...
 #-----------------------------------------------------------------------------#
 COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS) \
-              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS) $(LOADERSRCS)
+              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS) $(LOADERSRCS) $(XMLSRCS)
 
 # Rule for getting list of objects from source
 COMMONOBJS1 := $(COMMONSRCS:.c=.o)
@@ -419,10 +425,13 @@ $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone.o
 
-tests: $(BINDIR) $(TESTTOKENIZEREXE)
+tests: $(BINDIR) $(TESTTOKENIZEREXE) $(TESTXMLEXE)
 
 $(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
 	$(LINKER) -o $(TESTTOKENIZEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
+
+$(TESTXMLEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/xml.o
+	$(LINKER) -o $(TESTXMLEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/xml.o
 
 
 $(BINDIR):
@@ -431,6 +440,7 @@ $(BINDIR):
 	mkdir -p $(BINDIR)/turtlespace
 	mkdir -p $(BINDIR)/util
 	mkdir -p $(BINDIR)/io
+	mkdir -p $(BINDIR)/xml
 	mkdir -p $(BINDIR)/parsers/toby
 	mkdir -p $(BINDIR)/platform/renderers/fbrenderer
 	mkdir -p $(BINDIR)/platform/renderers/$(VIDEODIR)
