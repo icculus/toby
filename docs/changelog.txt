@@ -17,5 +17,15 @@ standalone program for initial testing.)
            intimidated. Added some debugging output to Reader subclasses.
            Changed some internal structure names.
 
+05252001 - Added programs/birthday.toby.
+
+07242001 - Added TobyLoader module and Unix/Null implementations.
+
+07262001 - Fixed some comments in the platform/clocks tree. Wrote up
+           documentation for my wacky new i18n scheme. Renamed src/localization
+           to src/i18n. Committed a buttload of stuff to CVS, which is now
+           publically hosted at icculus.org.
+
+
 // end of changelog.txt ...
 
