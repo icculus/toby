@@ -12,27 +12,42 @@ import java.awt.Color;
 
 public final class TriangleTurtle extends Turtle
 {
+    private static final Color DEFAULT_TURTLE_COLOR = Color.green;
+    private static final Color DEFAULT_CENTER_COLOR = Color.blue;
+
     private Color turtleColor;      // Color of turtle.
     private Color centerColor;      // Color of center line.
     private double centerHalf;      // ((Size of center line) / 2).
 
+        /*
+         * These are only used in paintImpl(), but are declared here,
+         *  so we don't make a new array every time we paint (which
+         *  can be several thousand times even in a simple TOBY program...)
+         */
+    private double[] pointsX = new double[3];
+    private double[] pointsY = new double[3];
+    private int[] intsX = new int[3];
+    private int[] intsY = new int[3];
 
+
+        /**
+         * Create a new TriangleTurtle, that's green with a blue line.
+         */
     public TriangleTurtle()
     {
         super();
-        turtleColor = Color.green;   // !!! make constants?
-        centerColor = Color.blue;
+        turtleColor = DEFAULT_TURTLE_COLOR;
+        centerColor = DEFAULT_CENTER_COLOR;
     } // Constructor
 
 
+        /**
+         *  Basically, we'll use this to readjust our size-related
+         *   member (centerHalfLine), which is used in paintInternal();
+         *
+         *    @param x size of turtle. This the size of one side of triangle.
+         */
     public void setTurtleSize(double x)
-    /**
-     *  Basically, we'll use this to readjust our size-related
-     *   member (centerHalfLine), which is used in paintInternal();
-     *
-     *     params : x == size of turtle. This the size of one side of triangle.
-     *    returns : void.
-     */
     {
             // We'll use the Pythagorian Theorem to figure out how long
             //  the center line of the triangle is. Then, divided by two,
@@ -49,17 +64,18 @@ public final class TriangleTurtle extends Turtle
 
 
 
+        /**
+         *  We need to take into account the direction that the turtle is
+         *   facing when we draw him. This complicates the drawing process
+         *   considerably, but makes me greatful that I occasionally picked
+         *   up on what my high school math teachers were trying to explain.
+         *   (Thanks Mrs. Strohm and Mrs. Tannery!)
+         */
     public void paintImpl(Graphics g)
-    /**
-     *  We need to take into account the direction that the turtle is
-     *   facing when we draw him. This complicates the drawing process
-     *   considerably, but makes me greatful that I occasionally picked
-     *   up on what my high school math teachers were trying to explain.
-     *   (Thanks Mrs. Strohm and Mrs. Tannery!)
-     *
+    /*
      *                                               |
      *                                            150|150 <-- Front of turtle.
-     *                                              /|\  
+     *                                              /|\
      *        Follow this diagram                  /3|3\
      *         if you get lost in                 / 0|0 \
      *         the code:                         /   |   \
@@ -77,10 +93,6 @@ public final class TriangleTurtle extends Turtle
         DoublePoint point;
         DoublePoint centerPoint = getXY();
         double halfSide = sideLength / 2;
-        double[] pointsX = new double[3];
-        double[] pointsY = new double[3];
-        int[] intsX = new int[3];
-        int[] intsY = new int[3];
 
             // Calculate front-facing point of triangle...
             //  We start from dead center of turtle, which we're storing in
