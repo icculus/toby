@@ -39,8 +39,11 @@ typedef struct
 
 static RulesTagHandlers handlers[] =
 {
-    { "language", LanguageRulesXML::buildRules },
     { "element", ElementRulesXML::buildRules },
+    { "repeat", RepeatRulesXML::buildRulesRepeatTag },
+    { "optional", RepeatRulesXML::buildRulesOptionalTag },
+    { "tokenizer", TokenizerRulesXML::buildRules },
+    { "language", LanguageRulesXML::buildRules },
     { NULL, NULL }
 };
 
@@ -58,6 +61,29 @@ LexerRules *XMLLexer::buildRules(XMLNode *node)
     assert(false);
     return(NULL);
 } // XMLLexer::buildRules
+
+
+LexerRules **XMLLexer::buildBasicChildRules(XMLNode *node, size_t *count)
+{
+    TobyCollection *children = node->getChildren();
+    size_t max = children->getSize();
+
+    if (max <= 0)
+    {
+        *count = 0;
+        return(NULL);
+    } // if
+
+    LexerRules **rulesList = new LexerRules *[max];
+    for (size_t i = 0; i < max; i++)
+    {
+        XMLNode *kid = (XMLNode *) children->elementAt(i);
+        rulesList[i] = XMLLexer::buildRules(kid);
+    } // for
+
+    *count = max;
+    return(rulesList);
+} // XMLLexer::buildBasicChildRules
 
 
 LexerRules **XMLLexer::buildLanguages(XMLTree *tree)

@@ -25,6 +25,9 @@
 #include "xml/XMLTree.h"
 #include "platform/lexers/xmllexer/LanguageRulesXML.h"
 #include "platform/lexers/xmllexer/ElementRulesXML.h"
+#include "platform/lexers/xmllexer/TokenizerRulesXML.h"
+#include "platform/lexers/xmllexer/RepeatRulesXML.h"
+
 /*
  * An entry point for generating, from XML metadata, the LexerRules tree
  *  needed to lex a language
@@ -35,6 +38,7 @@ class XMLLexer : public Lexer
 {
 public:
     static LexerRules *buildRules(XMLNode *node);
+    static LexerRules **buildBasicChildRules(XMLNode *node, size_t *count);
     LexerRules **buildLanguages(XMLTree *tree);
 
         // This gets filled in along with the platform-specific subclass...
