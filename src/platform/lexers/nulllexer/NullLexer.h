@@ -30,9 +30,6 @@
 class NullLexer : public Lexer
 {
 public:
-        // This gets filled in along with the platform-specific subclass...
-    Lexer *getInstance(void);
-
         // This builds exactly zero languages. :)
     virtual void loadLanguages(void);
 }; // class NullLexer

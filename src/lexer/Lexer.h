@@ -46,7 +46,7 @@ public:
     virtual LanguageRules *getLanguageRulesByExtension(const char *ext);
 
         // This gets filled in along with the platform-specific subclass...
-    Lexer *getInstance(void);
+    static Lexer *getInstance(void);
 
         // This should build LexerRules trees for every available language,
         //  and pass each of them through registerLanguage().

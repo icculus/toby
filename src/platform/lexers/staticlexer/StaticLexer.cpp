@@ -19,7 +19,7 @@
 
 #include "platform/lexers/staticlexer/StaticLexer.h"
 
-Lexer *StaticLexer::getInstance(void)
+Lexer *Lexer::getInstance(void)
 {
     return(new StaticLexer());
 } // StaticLexer::getInstance

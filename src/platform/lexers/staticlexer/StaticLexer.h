@@ -32,7 +32,6 @@
 class StaticLexer : public Lexer
 {
 public:
-    Lexer *getInstance(void);
     virtual void loadLanguages(void);
 
 private:

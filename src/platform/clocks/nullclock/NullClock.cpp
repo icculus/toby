@@ -19,8 +19,6 @@
 
 #include "platform/clocks/nullclock/NullClock.h"
 
-NullClock *NullClock::instance = NULL;
-
 NullClock::NullClock(void)
 {
 } // Constructor

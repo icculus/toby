@@ -58,7 +58,6 @@ public:
     static void addElement(ElementRulesXML *elem);
     static ElementRulesXML *getElementByName(const char *name);
 
-    Lexer *getInstance(void);
     virtual void loadLanguages(void);
 
 protected:
