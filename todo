@@ -1,46 +1,82 @@
 // Things still to be done for TOBY...
 
-ongoing bugfixes :
+ongoing bugfixes/enhancements :
+    The ultimate ongoing fix are the "!!!" comments. Any comments containing
+     '!!!' have been placed there to alert me that there is a bug/deficiency
+     in the code that is worth revisiting, but probably isn't crippling. As
+     such, they tend to build up. Feel free to fix any of these and submit
+     patches to rgordon@xnot.com ...
+
     Make global parsing just dump every non-blank line that doesn't start
      with KEYWORD_BEGINFUNC to an array. Until we hit a KEYWORD_BEGINFUNC
      line. Don't even check for syntax. Parse this array at runtime before
      the mainline, and use dealWithVariableDeclaration() on each line. If
-     this function ever returns (false) at that time, throw an error.
+     this function ever returns (false) at that time, throw an error. This
+     will give us more streamlined global variables.
 
     Since operators are replaced with static references, make all runtime
      checks for them use (a soon to be written) searchArrayForReferences(),
      since they currently search (unnecessarily) with String.equals()...
 
     Make all identifiers resolve before runtime, so we can replace them
-     with unified references.
+     with unified references. The more often we can safely replace
+     string1.equals(string2) calls with (string1 == string2) constructs,
+     the faster the interpretation will be. Most of the code already replaces
+     keywords, operators, etc. with references from a static table in
+     TobyInterpreter.
 
-    Make inputarea use sane keys...
+    Make inputarea use sane keys...I don't like the Swing defaults. Therefore
+     someday I'd like to either replace the Swing component with a homegrown
+     prettier/more functional textarea, or make some sort of customizer;
+     config file or whatnot. Mostly, I'd like SHIFT-DELETE and SHIFT-INSERT
+     to cut and paste.  :) Other enhancements welcome.
 
-    Unify error displaying interface between parsing and running...
+    Unify error displaying interface between parsing and running...They both
+     result from the catching of TobyParseExceptions, but are caught and
+     handled in completely separate places and ways.
 
-    Functions can specify a return type and then return nothing.
+    Functions can specify a return type and then return nothing. This should
+     be considered a bug. (Java and C consider it a feature, and it is, but
+     it confuses beginning programmers.)
 
-    FIX VARVIEWER. It BADLY BROKEN.
+    FIX VARVIEWER. It is BADLY broken. It's never worked right.
 
-    Even on a cancel save, JFrame closes, if Window manager terminating it.
+    When program is quitting, and you hit cancel on the "save" dialog, the
+     window still closes (although the VM doesn't terminate). This behavior
+     only seems to happen when the window manager tries to close the window
+     (clicking the little 'X' in win95, or whatnot under Linux)...selecting
+     "Quit" from the Toby menu seems to work correctly.
 
-    Fix equality operator
+    Fix equality operator...tokenizer doesn't like two '=' characters
+     together.
 
-    Maximize window instead of sizing...
+    Maximize window instead of sizing to screen width and height: is there a
+     way to do this in Swing?
 
     Move copyImage code from TobyInterpreter into TurtleSpace.
 
-    Turtle still looks wrong. Check math.
+    TriangleTurtle still looks wrong. Check math. Center line isn't drawing
+     correctly...could be symptom of bug in TobyGeometry.calculateLine(), or
+     TriangleTurtle.calcTriangle()...I'm voting for the latter.
 
-    Move time report code to more user-friendly output.
+    Move parse and execution time report code to more user-friendly output.
+     Right now it just dumps to stdout. I'd like it to go to
+     EditorInformationDisplay or something.
 
-    Allow "all files" opening.
+    Allow "all files" opening in file dialog...right now,
+     it's just *.toby files.
 
-    Make Applet work with JavaScript.
+    Make Applet work with JavaScript...so JScript can pass a string of TOBY
+     code (perhaps from a form's textarea...) to the applet to draw.
+
+    (Does the applet even work anymore?)
+
+
+Milestones:
 
 alpha2 : completed.
-    Convert to Swing.                       (COMPLETED)
-    remove dependency on last.* package.    (COMPLETED)
+    Convert from AWT 1.1 to Swing.          (COMPLETED)
+    remove dependency on last.* packages.   (COMPLETED)
     remove glaring bugs.                    (COMPLETED)
 
 alpha3 : completed.
