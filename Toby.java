@@ -10,8 +10,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.text.*;
 
-public final class Toby extends JFrame
+public final class Toby extends JFrame implements DocumentListener,
+                                                  WindowListener
 {
         // Global Constants...
     public static final String TITLE   = "Toby";
@@ -28,14 +31,11 @@ public final class Toby extends JFrame
     public static final String MSG_BAD_JAVA =
          "Your Java Virtual Machine is too old; goto http://java.sun.com/ ...";
 
-        // Global variables...
-    public final static boolean debugging = false;
-    public static AppManager appMan = null;
-
         // Instance variables...
     private TobyPanel tobyPanel;
     private String tobyFileName = null;
     private File currentDirectory = null;
+    private boolean textModified = false;
 
     public Toby()
     {
@@ -46,9 +46,9 @@ public final class Toby extends JFrame
         TurtleSpace tspace;
 
         currentDirectory = new File(".");   // !!! is this kosher?
-        setTitle(null);
+        setTitle();
  
-        addWindowListener(appMan);
+        addWindowListener(this);
         rootPane.setLayout(new BorderLayout());
         setResizable(true);
         setSize(getToolkit().getScreenSize());
@@ -57,6 +57,7 @@ public final class Toby extends JFrame
         tobyPanel = new TobyPanel(this);
         rootPane.add("Center", tobyPanel);
 
+            // !!! Awkward. Move this?
         tspace = tobyPanel.getTurtleSpace();
         tspace.addSourceWatcher(tmb);
         setVisible(true);
@@ -64,12 +65,25 @@ public final class Toby extends JFrame
     } // Constructor
 
 
-    public void setTitle(String subTitle)
+    public void setTitle()
     {
-        if (subTitle == null)
-            subTitle = "new program";
+        StringBuffer sb = new StringBuffer();
 
-        super.setTitle(TITLE + " " + VERSION + "   [" + subTitle + "]");
+        sb.append(TITLE);
+        sb.append(" ");
+        sb.append(VERSION);
+        sb.append(": ");
+
+        if (tobyFileName != null)
+            sb.append(tobyFileName);
+        else
+            sb.append("new program");
+
+        if (textModified)
+            sb.append("    [*]");
+
+        super.setTitle(sb.toString());
+        sb.setLength(0);
     } // setTitle
 
 
@@ -158,10 +172,13 @@ public final class Toby extends JFrame
 
     public void newFile()
     {
-        // !!! check if code is modified, and wants to be saved...
-
-        tobyPanel.getInputArea().clearCode();
-        setTitle(null);
+        if (saveAndContinue() == true)
+        {
+            tobyPanel.getInputArea().clearCode();
+            tobyFileName = null;
+            textModified = false;
+            setTitle();
+        } // if
     } // newFile
 
 
@@ -169,43 +186,68 @@ public final class Toby extends JFrame
     {
         LineNumberReader br;
 
-            // !!! ask to save modified buffer?
-
-        if (fileName == null)
-            fileName = selectFileName(JFileChooser.OPEN_DIALOG);
-
-        if (fileName != null)
+        if (saveAndContinue() == true)
         {
-            try
-            {
-                br = new LineNumberReader(new FileReader(fileName));
-                tobyPanel.getInputArea().setSource(br);
-                tobyFileName = fileName;
-                setTitle(tobyFileName);
-            } // try
+            if (fileName == null)
+                fileName = selectFileName(JFileChooser.OPEN_DIALOG);
 
-            catch (FileNotFoundException fnfe)
+            if (fileName != null)
             {
-                String errMsg;
+                try
+                {
+                    br = new LineNumberReader(new FileReader(fileName));
+                    tobyPanel.getInputArea().setSource(br);
+                    tobyFileName = fileName;
+                    textModified = false;
+                    setTitle();
+                } // try
 
-                errMsg = "File [" + fileName + "] not found.";
-                JOptionPane.showMessageDialog(null, errMsg, "Error",
-                                      JOptionPane.ERROR_MESSAGE);
-            } // catch
+                catch (FileNotFoundException fnfe)
+                {
+                    String errMsg;
 
-            catch (IOException ioe)
-            {
-                String errMsg;
-                errMsg = "Cannot load [" + fileName + "].";
-                JOptionPane.showMessageDialog(null, errMsg, "Error",
-                                      JOptionPane.ERROR_MESSAGE);
-            } // catch
+                    errMsg = "File [" + fileName + "] not found.";
+                    JOptionPane.showMessageDialog(null, errMsg, "Error",
+                                          JOptionPane.ERROR_MESSAGE);
+                } // catch
+
+                catch (IOException ioe)
+                {
+                    String errMsg;
+                    errMsg = "Cannot load [" + fileName + "].";
+                    JOptionPane.showMessageDialog(null, errMsg, "Error",
+                                          JOptionPane.ERROR_MESSAGE);
+                } // catch
+            } // if
         } // if
     } // openFile
 
 
-    public void saveFile(String fileName)
+    private boolean saveAndContinue()
     {
+        boolean retVal = true;
+        int rc;
+
+        if (textModified)
+        {
+            rc = JOptionPane.showConfirmDialog(null,
+                                            "Save modified program?", "Whoa!",
+                                            JOptionPane.YES_NO_CANCEL_OPTION,
+                                            JOptionPane.QUESTION_MESSAGE);
+
+            if (rc == JOptionPane.YES_OPTION)
+                retVal = saveFile(tobyFileName);
+            else if (rc == JOptionPane.CANCEL_OPTION)
+                retVal = false;
+        } // if
+
+        return(retVal);
+    } // saveAndContinue
+
+
+    public boolean saveFile(String fileName)
+    {
+        boolean retVal = false;
         BufferedWriter bw;
         String src;
 
@@ -224,7 +266,9 @@ public final class Toby extends JFrame
                 bw.write(src, 0, src.length());
                 bw.close();
                 tobyFileName = fileName;
-                setTitle(tobyFileName);
+                textModified = false;
+                setTitle();
+                retVal = true;
             } // try
             catch (IOException ioe)
             {
@@ -234,6 +278,8 @@ public final class Toby extends JFrame
                                       JOptionPane.ERROR_MESSAGE);
             } // catch
         } // if
+
+        return(retVal);
     } // saveFile
 
 
@@ -245,7 +291,6 @@ public final class Toby extends JFrame
         {
             if (args.length <= 1)
             {
-                appMan = new AppManager();
                 toby = new Toby();
                 toby.tobyPanel.getTurtleSpace().cleanup();  // !!! hack
                 if (args.length == 1)
@@ -298,6 +343,60 @@ public final class Toby extends JFrame
         else
             kickOffGUI(args);
     } // main
+
+
+
+        // DocumentListener implementation...
+
+    public void changedUpdate(DocumentEvent e)
+    {
+        textModificationAlert();
+    } // changeUpdate
+
+
+    public void insertUpdate(DocumentEvent e)
+    {
+        textModificationAlert();
+    } // insertUpdate
+
+
+    public void removeUpdate(DocumentEvent e)
+    {
+        textModificationAlert();
+    } // removeUpdate
+
+
+    private void textModificationAlert()
+    {
+        if (textModified == false)
+        {
+            textModified = true;
+            setTitle();
+        } // if
+    } // textModified
+
+
+        // WindowListener implementation...
+
+    public void windowClosing(WindowEvent e)
+    {
+        if (saveAndContinue() == true)
+            e.getWindow().dispose();
+        else
+            e.getWindow().show();
+    } // windowClosing
+
+
+    public void windowClosed(WindowEvent e)
+    {
+        System.exit(0);
+    } // windowClosed
+
+    public void windowOpened(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowActivated(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
 
 } // Toby
 

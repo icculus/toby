@@ -20,12 +20,12 @@ public class TobyInputArea extends JPanel implements LayoutManager,
     private String endl;
     private Vector lineIndexes;
 
-    public TobyInputArea()
+    public TobyInputArea(Toby frame)
     {
         endl = System.getProperty("line.separator");
         lineIndexes = new Vector();
 
-        buildComponents();
+        buildComponents(frame);
         setBackground(Color.gray);
         setForeground(Color.black);
         setLayout(this);
@@ -158,7 +158,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
     } // clearCode
 
 
-    private void buildComponents()
+    private void buildComponents(Toby frame)
     /**
      *   Build and add all the components that are part of this
      *    TobyInputArea panel...
@@ -172,8 +172,12 @@ public class TobyInputArea extends JPanel implements LayoutManager,
         inputArea.setLineWrap(false);
         inputArea.setTabSize(4);
         inputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        scrollPane = new JScrollPane(inputArea);
-        add("Center", scrollPane);
+        inputArea.getDocument().addDocumentListener(frame);
+
+        scrollPane = new JScrollPane(inputArea,
+                                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                                     JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        add(scrollPane);
     } // buildComponents
 
 

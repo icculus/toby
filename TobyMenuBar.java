@@ -60,14 +60,13 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
 
     private JMenuItem setupMenuItem(JMenu m, String itemStr,
-                                   int keyCode, boolean isEnabled)
+                                    boolean isEnabled, KeyStroke keys)
     {
         JMenuItem mi = new JMenuItem(itemStr);
 
         mi.setEnabled(isEnabled);
         mi.addActionListener(this);
-        // !!! need to covert to Swing's setAccelerator()...
-        //mi.setShortcut(new MenuShortcut(keyCode));
+        mi.setAccelerator(keys);
         m.add(mi);
         return(mi);
     } // setupMenuItem
@@ -75,60 +74,90 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
     private JCheckBoxMenuItem setupCheckBoxMenuItem(JMenu m,
                                                    String itemStr,
-                                                   int keyCode,
                                                    boolean selected,
-                                                   boolean isEnabled)
+                                                   boolean isEnabled,
+                                                   KeyStroke keys)
     {
         JCheckBoxMenuItem cbmi = new JCheckBoxMenuItem(itemStr, selected);
 
         cbmi.setEnabled(isEnabled);
         cbmi.addItemListener(this);
-        // !!! need to covert to Swing's setAccelerator()...
-        //cbmi.setShortcut(new MenuShortcut(keyCode));
+        cbmi.setAccelerator(keys);
         m.add(cbmi);
         return(cbmi);
     } // setupCheckBoxMenuItem
 
 
-    private JMenu setupMenu(String menuTitle, boolean isEnabled, int keyCode)
+    private JMenu setupMenu(String menuTitle, boolean isEnabled, KeyStroke keys)
     {
         JMenu retVal = new JMenu(menuTitle, isEnabled);
-        // !!! need to covert to Swing's setAccelerator()...
-        //retVal.setShortcut(new JMenuShortcut(keyCode));
+        //retVal.setAccelerator(keys);
         return(retVal);
     } // setupMenu
+
+
+    private KeyStroke key(int keyCode, int modifiers)
+    /*
+     *  A good argument for preprocessor macros: This function just wraps
+     *   KeyStroke.getKeyStroke(), so my code can be more readable...
+     */
+    {
+        return(KeyStroke.getKeyStroke(keyCode, modifiers, false));
+    } // key
 
 
     public TobyMenuBar(Toby parentFrame)
     {
         parent = parentFrame;
 
-        fileMenu   = setupMenu(MENUNAME_FILE, true, KeyEvent.VK_M);
-        newItem    = setupMenuItem(fileMenu, MENUITEM_NEW, KeyEvent.VK_N, true);
-        openItem   = setupMenuItem(fileMenu, MENUITEM_OPEN, KeyEvent.VK_O, true);
-        saveItem   = setupMenuItem(fileMenu, MENUITEM_SAVE, KeyEvent.VK_S, true);   // change when we can figure
-        saveAsItem = setupMenuItem(fileMenu, MENUITEM_SAVEAS, KeyEvent.VK_A, true); // out if text is modified. !!!
+        fileMenu   = setupMenu(MENUNAME_FILE, true,
+                                   key(KeyEvent.VK_F, Event.ALT_MASK));
+        newItem    = setupMenuItem(fileMenu, MENUITEM_NEW, true,
+                                   key(KeyEvent.VK_N, Event.CTRL_MASK));
+        openItem   = setupMenuItem(fileMenu, MENUITEM_OPEN, true,
+                                   key(KeyEvent.VK_O, Event.CTRL_MASK));
+        saveItem   = setupMenuItem(fileMenu, MENUITEM_SAVE, true,           // !!! change when we can figure
+                                   key(KeyEvent.VK_S, Event.CTRL_MASK));
+        saveAsItem = setupMenuItem(fileMenu, MENUITEM_SAVEAS, true,         // !!!  out if text is modified. !!!
+                                   key(KeyEvent.VK_A, Event.CTRL_MASK));
         fileMenu.addSeparator();
-        quitItem   = setupMenuItem(fileMenu, MENUITEM_QUIT, KeyEvent.VK_X, true);
+        quitItem   = setupMenuItem(fileMenu, MENUITEM_QUIT, true,
+                                   key(KeyEvent.VK_Q, Event.CTRL_MASK));
         add(fileMenu);
 
-        runMenu    = setupMenu(MENUNAME_RUN, true, KeyEvent.VK_R);
-        startStopItem = setupMenuItem(runMenu, MENUITEM_STARTCODE,
-                                      KeyEvent.VK_G, true);
-        clearItem  = setupMenuItem(runMenu, MENUITEM_CLEAR, KeyEvent.VK_C, true);
+
+        runMenu    = setupMenu(MENUNAME_RUN, true,
+                                   key(KeyEvent.VK_R, Event.ALT_MASK));
+        startStopItem = setupMenuItem(runMenu, MENUITEM_STARTCODE, true,
+                                   key(KeyEvent.VK_F5, 0));
+        clearItem  = setupMenuItem(runMenu, MENUITEM_CLEAR, true,
+                                   key(KeyEvent.VK_C, Event.CTRL_MASK));
         add(runMenu);
 
-        debugMenu = setupMenu(MENUNAME_DEBUG, true, KeyEvent.VK_D);
-        stepItem  = setupMenuItem(debugMenu, MENUITEM_STEP, KeyEvent.VK_W, true);
-        traceItem = setupCheckBoxMenuItem(debugMenu, MENUITEM_TRACE, KeyEvent.VK_T,
-                                          false, true);
+
+        debugMenu = setupMenu(MENUNAME_DEBUG, true,
+                                   key(KeyEvent.VK_D, Event.ALT_MASK));
+
+        stepItem  = setupMenuItem(debugMenu, MENUITEM_STEP, true,
+                                   key(KeyEvent.VK_F8, 0));
+
+        traceItem = setupCheckBoxMenuItem(debugMenu, MENUITEM_TRACE,
+                                          false, true,
+                                   key(KeyEvent.VK_T, Event.CTRL_MASK));
+
         watchVarsItem = setupCheckBoxMenuItem(debugMenu, MENUITEM_WATCHVARS,
-                                              KeyEvent.VK_V, false, true);
+                                              false, true,
+                                   key(KeyEvent.VK_W, Event.CTRL_MASK));
+
         add(debugMenu);
 
-        helpMenu   = setupMenu(MENUNAME_HELP, true, KeyEvent.VK_H);
-        aboutItem  = setupMenuItem(helpMenu, MENUITEM_ABOUT, KeyEvent.VK_B, true);
-        helpItem   = setupMenuItem(helpMenu, MENUITEM_HELP, KeyEvent.VK_H, true);
+
+        helpMenu   = setupMenu(MENUNAME_HELP, true,
+                                   key(KeyEvent.VK_H, Event.ALT_MASK));
+        aboutItem  = setupMenuItem(helpMenu, MENUITEM_ABOUT, true,
+                                   key(KeyEvent.VK_B, Event.CTRL_MASK));
+        helpItem   = setupMenuItem(helpMenu, MENUITEM_HELP, true,
+                                   key(KeyEvent.VK_H, Event.CTRL_MASK));
         add(helpMenu);
     } // Constructor
 
@@ -235,7 +264,8 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
     public void beginInterpretation()
     {
         codeRunning = true;
-        startStopItem.setLabel(MENUITEM_STOPCODE);
+        startStopItem.setText(MENUITEM_STOPCODE);
+        startStopItem.setAccelerator(key(KeyEvent.VK_ESCAPE, 0));
         newItem.setEnabled(false);
         openItem.setEnabled(false);
         clearItem.setEnabled(false);
@@ -244,7 +274,8 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
     public void endInterpretation()
     {
         codeRunning = false;
-        startStopItem.setLabel(MENUITEM_STARTCODE);
+        startStopItem.setText(MENUITEM_STARTCODE);
+        startStopItem.setAccelerator(key(KeyEvent.VK_F5, 0));
         newItem.setEnabled(true);
         openItem.setEnabled(true);
         clearItem.setEnabled(true);

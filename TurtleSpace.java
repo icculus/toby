@@ -36,8 +36,6 @@ public abstract class TurtleSpace extends JComponent
         Graphics g;
         double tSize;
 
-        setDoubleBuffered(true);
-
         sourceWatchers = new Vector();
         varWatchers = new Vector();
 
@@ -90,8 +88,9 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifyVarCreated(Intrinsic var)
     {
         int i;
+        int max = varWatchers.size();
 
-        for (i = 0; i < varWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((VarWatcher) varWatchers.elementAt(i)).varCreated(var);
     } // notifyVarCreate
 
@@ -99,8 +98,9 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifyVarDestroyed(Intrinsic var)
     {
         int i;
+        int max = varWatchers.size();
 
-        for (i = 0; i < varWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((VarWatcher) varWatchers.elementAt(i)).varDestroyed(var);
     } // notifyVarCreate
 
@@ -108,8 +108,9 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifyVarUpdated(Intrinsic var)
     {
         int i;
+        int max = varWatchers.size();
 
-        for (i = 0; i < varWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((VarWatcher) varWatchers.elementAt(i)).varUpdated(var);
     } // updateVarWatchers
 
@@ -117,8 +118,9 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifySourceLineUpdated(int line)
     {
         int i;
+        int max = sourceWatchers.size();
 
-        for (i = 0; i < sourceWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((SourceWatcher) sourceWatchers.elementAt(i)).sourceUpdated(line);
     } // updateSourceWatchers
 
@@ -126,17 +128,23 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifyBeginInterpretation()
     {
         int i;
+        int maxSource = sourceWatchers.size();
+        int maxVar = varWatchers.size();
 
-        for (i = 0; i < sourceWatchers.size(); i++)
+        for (i = 0; i < maxSource; i++)
             ((SourceWatcher)sourceWatchers.elementAt(i)).beginInterpretation();
+
+        for (i = 0; i < maxVar; i++)
+            ((VarWatcher) varWatchers.elementAt(i)).varBeginInterpretation();
     } // notifyBeginInterpretation
 
 
     protected final void notifyEndInterpretation()
     {
         int i;
+        int max = sourceWatchers.size();
 
-        for (i = 0; i < sourceWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((SourceWatcher) sourceWatchers.elementAt(i)).endInterpretation();
 
         enableTracing(false);
@@ -146,8 +154,9 @@ public abstract class TurtleSpace extends JComponent
     protected final void notifySourceError(int errLine)
     {
         int i;
+        int max = sourceWatchers.size();
 
-        for (i = 0; i < sourceWatchers.size(); i++)
+        for (i = 0; i < max; i++)
             ((SourceWatcher) sourceWatchers.elementAt(i)).sourceError(errLine);
     } // notifySourceError
 

@@ -126,17 +126,21 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     private Stack stack;
     private Graphics[] g;
     private Image copyImage = null;
-
+    private NothingIntrinsic nothing = null;
 
         // Methods...
 
     public TobyInterpreter()
     {
         super();
+
+        setDoubleBuffered(true);
+
         g = new Graphics[2];
         procList = new Vector();
         globals = new Stack();
         stack = new Stack();
+        nothing = new NothingIntrinsic();
 
         buildTables();
     } // Constructor
@@ -182,8 +186,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         int height = getHeight();
         int width = getWidth();
 
-//        if ((width > 0) && (height > 0))
-//        {
+        if ((width > 0) && (height > 0))
+        {
             if (copyImage != null)
                 copyImage.flush();
             copyImage = createImage(width, height);
@@ -195,7 +199,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             turtle.paint(gr);
             gr.dispose();
             repaint();
-//        } // if
+        } // if
     } // cleanup
 
 
@@ -585,7 +589,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             g.drawImage(copyImage, 0, 0, this);
         else
         {
-            g.setColor(getBackground());
+            g.setColor(Color.black);
             turtle.homeTurtle(this);
             g.drawRect(0, 0, getWidth(), getHeight());
             turtle.paint(g);
@@ -696,7 +700,22 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
 
     private Intrinsic scanIntrinsicStack(Stack scanStack, String ident)
-    /** !!! comment. */
+    /*
+     * Toby keeps a java.util.Stack that resembles a processor's stack.
+     *  It stores references to TobyProcedures and Intrinsics (which is
+     *  much like a real program's stack: return addresses and local
+     *  variables...). This function allows you to scan a stack from
+     *  top to bottom (newest to oldest) looking for an intrinsic named
+     *  (ident). If a TobyProcedure is encountered, we consider any
+     *  objects below it to be "out of scope". We allow a stack to be
+     *  specified, since Toby stores global variables in a different stack
+     *  than the locals. Locals, should always be scanned first to
+     *  correct;y resolve name clashes, naturally.
+     *
+     *     @param scanStack Stack to scan.
+     *     @param ident Name of intrinsic to find.
+     *    @return Intrinsic if it is found, (null) otherwise.
+     */
     {
         int i;
         boolean getOut = false;
@@ -711,7 +730,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
             else if (obj instanceof Intrinsic)
             {
-                    // below is the ugliest line of code in this program...
+                    // below is the ugliest line of code in this whole program.
                 if (((Intrinsic) obj).getIdentifier().equals(ident))
                     return((Intrinsic) obj);
             } // else if
@@ -1171,7 +1190,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
      *      throws : TobyParseException on code pukeage.
      */
     {
-        Intrinsic retVal = null;
+        Intrinsic retVal = nothing;    // NothingIntrinsic return is assumed.
         Vector args;
         String tmpStr;
         int tmpInt;
@@ -1181,7 +1200,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
             turtle.forwardTurtle(g, tmpInt);
-            retVal = new NothingIntrinsic();
         } // if
 
         else if (funcName.equals(PROCNAME_BACKWARD))
@@ -1189,7 +1207,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
             turtle.forwardTurtle(g, -tmpInt);
-            retVal = new NothingIntrinsic();
         } // if
 
         else if (funcName.equals(PROCNAME_RIGHT))
@@ -1197,7 +1214,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
             turtle.rotate(tmpInt);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_LEFT))
@@ -1205,50 +1221,46 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
             turtle.rotate(-tmpInt);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_PENUP))
         {
             args = buildArguments(argToks, 0);
             turtle.setPenUp(true);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_PENDOWN))
         {
             args = buildArguments(argToks, 0);
             turtle.setPenUp(false);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_HIDETURTLE))
         {
             args = buildArguments(argToks, 0);
             turtle.setVisible(false);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_SHOWTURTLE))
         {
             args = buildArguments(argToks, 0);
             turtle.setVisible(true);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_PAUSE))
         {
+            long currentTime = System.currentTimeMillis();
+            long stopTime;
+
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            try
+            stopTime = currentTime + tmpInt;
+
+            do
             {
-                Thread.sleep(tmpInt);
-            } // try
-            catch (InterruptedException ie)
-            {
-                // don't care.
-            } // catch
-            retVal = new NothingIntrinsic();
+                Thread.yield();
+                currentTime = System.currentTimeMillis();
+            } while (currentTime < stopTime);
         } // else if
 
         else if (funcName.equals(PROCNAME_GETTURTLEX))
@@ -1273,7 +1285,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             y = (int) convStrToDouble((String) args.elementAt(1));
 
             turtle.setXY(x, y);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_GETANGLE))
@@ -1289,7 +1300,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
             turtle.setAngle(tmpInt);
-            retVal = new NothingIntrinsic();
         } // else if
 
         else if (funcName.equals(PROCNAME_GETPENCOL))
@@ -1302,8 +1312,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         {
             args = buildArguments(argToks, 1);
             turtle.setPenColor(convStrToDouble((String) args.elementAt(0)));
-            retVal = new NothingIntrinsic();
         } // else if
+        else
+            retVal = null;  // function not found.
 
         return(retVal);
     } // dealWithStdFunction
@@ -1506,6 +1517,15 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
     private Intrinsic intrinsicByTypeStr(String typeStr, String initVal)
                                           throws TobyParseException
+    /*
+     * Create an Intrinsic object by a string of it type. For example,
+     *  if (typeStr) is "number" than a NumberIntrinsic is created.
+     *
+     *      @param typeStr String representation of intrinsic type.
+     *      @param initval String representation of initial value of new var.
+     *     @return subclass of Intrinsic that matches specified type.
+     *      @throw TobyParseException if specified type doesn't exist.
+     */
     {
         Intrinsic retVal = null;
 
@@ -1522,14 +1542,21 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
     private void dealWithReturn(TobyProcedure proc, String[] src)
                                  throws TobyParseException, Intrinsic
-    /** !!! comment. */
+    /*
+     * The main Toby procedure executing loop
+     *
+     *
+     *
+     *
+     *
+     */
     {
         String retType = proc.getReturnType();
 
         if (src.length == 1)                    // basic return? !!! ?!
         {
             if (retType == null)
-                throw(new NothingIntrinsic());
+                throw(nothing);
         } // if
         else
         {
@@ -2036,9 +2063,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
     private void moveArgsToStack(TobyProcedure proc, Vector args)
                                         throws TobyParseException
-    /**
-     * This checks and moves the values present in args to the stack
-     *  so they may be used in the procedure.
+    /*
+     * This checks and moves the values present in a procedure's args
+     *  to the stack so they may be used in the procedure.
      *
      *     params : proc == procedure that arguments apply to.
      *              args == args to be added to stack.
@@ -2235,7 +2262,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         } // catch
 
         if (retVal == null)
-            retVal = new NothingIntrinsic();
+            retVal = nothing;
 
         cleanupStack();
         return(retVal);

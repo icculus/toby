@@ -19,6 +19,3 @@ function circle() returns nothing
     endfor
 endfunction
 
-
-
-

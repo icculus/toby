@@ -13,7 +13,8 @@ public final class TobyPanel extends JComponent implements LayoutManager
     private TurtleSpace tspace = null;
     private TobyInputArea tia = null;
     private VarViewer varViewer = null;
-    private JFrame frame = null;
+    private JScrollPane varScrollPane = null;
+    private Toby frame = null;
 
 
     private void buildComponents()
@@ -33,11 +34,14 @@ public final class TobyPanel extends JComponent implements LayoutManager
         tspace = new TobyInterpreter();
         add(tspace);
 
-        tia = new TobyInputArea();
+        tia = new TobyInputArea(frame);
         add(tia);
 
-//        varViewer = new VarViewer();
-//        add(varViewer);
+        varViewer = new VarViewer();
+        varScrollPane = new JScrollPane(varViewer,
+                                        JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(varScrollPane);
 
         tspace.addSourceWatcher(tia);
     } // buildComponents
@@ -79,7 +83,7 @@ public final class TobyPanel extends JComponent implements LayoutManager
     } // getTurtleSpace
 
 
-    public TobyPanel(JFrame frame)
+    public TobyPanel(Toby frame)
     {
         this.frame = frame;
         setLayout(this);
@@ -89,10 +93,10 @@ public final class TobyPanel extends JComponent implements LayoutManager
     } // Constructor
 
 
-    public JFrame getFrame()
+    public Toby getFrame()
     {
         return(frame);
-    } // getOwner
+    } // getFrame
 
 
         // LayoutManager implementation...
@@ -109,8 +113,8 @@ public final class TobyPanel extends JComponent implements LayoutManager
         tia.setSize(d.width, (int) (d.height * 0.75));
         tia.setLocation(d.width, 0);
 
-//        varViewer.setSize(d.width, (int) (d.height * 0.25));
-//        varViewer.setLocation(d.width, (int) (d.height * 0.75));
+        varScrollPane.setSize(d.width, (int) (d.height * 0.25));
+        varScrollPane.setLocation(d.width, (int) (d.height * 0.75));
     } // layoutContainer
 
 

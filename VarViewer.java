@@ -1,7 +1,6 @@
 /**
  * This class is used to display defined TOBY variables, and their current
- *  values. A scroll bar is provided for when there are more variables to
- *  display than there is screen real estate.
+ *  values.
  *
  *   Copyright (c) Lighting and Sound Technologies, 1997.
  *    Written by Ryan C. Gordon.
@@ -13,34 +12,17 @@ import java.util.Vector;
 
 import javax.swing.*;
 
-public final class VarViewer extends JPanel implements VarWatcher,
-                                                      AdjustmentListener
+public final class VarViewer extends JComponent implements VarWatcher
 {
-    private Scrollbar scrollBar;
     private Vector vars;
 
     public VarViewer()
     {
         super();
-        setLayout(new BorderLayout());
         vars = new Vector();
         setBackground(Color.white);
-        scrollBar = new Scrollbar(Scrollbar.VERTICAL, 0, 0, 0, 0);
-        scrollBar.addAdjustmentListener(this);
-        scrollBar.setUnitIncrement(1);
-        scrollBar.setBlockIncrement(1);
-        add("East", scrollBar);
+        setDoubleBuffered(true);
     } // Constructor
-
-
-    private Dimension getDrawingAreaSize()
-    {
-        Dimension retVal = getSize();
-        Dimension scrollSize = scrollBar.getSize();
-
-        retVal.width -= scrollSize.width;
-        return(retVal);
-    } // getDrawingAreaSize
 
 
     public void paint(Graphics g)
@@ -49,7 +31,7 @@ public final class VarViewer extends JPanel implements VarWatcher,
         Intrinsic var;
         int y = 0;
         int lineCount;
-        Dimension d = getDrawingAreaSize();
+        Dimension d = getSize();
         FontMetrics fm = g.getFontMetrics(getFont());
         String str;
 
@@ -77,6 +59,11 @@ public final class VarViewer extends JPanel implements VarWatcher,
 
         // VarWatcher implementation...
 
+    public void varBeginInterpretation()
+    {
+        vars.removeAllElements();
+    } // varBeginInterpretation
+
     public void varUpdated(Intrinsic var)
     {
         System.out.println("varUpdated(var == [" + var.toString() + "])...");
@@ -84,28 +71,9 @@ public final class VarViewer extends JPanel implements VarWatcher,
     } // varUpdate
 
 
-    protected void updateScrollbar()
-    {
-        Dimension d = getSize();
-        FontMetrics fm = getFontMetrics(getFont());
-
-        if ((d.height / fm.getHeight()) > vars.size())
-            scrollBar.setEnabled(false);
-        else
-        {
-            d = scrollBar.getSize();
-            scrollBar.setMinimum(0);
-            scrollBar.setMaximum(vars.size());
-            scrollBar.setVisibleAmount(d.height / vars.size());
-            scrollBar.setEnabled(true);
-        } // else
-    } // updateScrollbar
-
-
     public void varCreated(Intrinsic var)
     {
         vars.addElement(var);
-        updateScrollbar();
         repaint();
     } // varCreated
 
@@ -113,7 +81,6 @@ public final class VarViewer extends JPanel implements VarWatcher,
     public void varDestroyed(Intrinsic var)
     {
         vars.removeElement(var);
-        updateScrollbar();
         repaint();
     } // varDestroyed
 
@@ -128,12 +95,6 @@ public final class VarViewer extends JPanel implements VarWatcher,
     {
         // !!! color update ...
     } // varOutOfScope
-
-
-        // AdjustmentListener implmentation ...
-    public void adjustmentValueChanged(AdjustmentEvent e)
-    {
-    } // adjustmentValueChanged
 
 } // VarViewer
 

@@ -7,6 +7,7 @@
 
 public interface VarWatcher
 {
+    public void varBeginInterpretation();
     public void varCreated(Intrinsic intrinsic);
     public void varDestroyed(Intrinsic intrinsic);
     public void varInScope(Intrinsic intrinsic);
