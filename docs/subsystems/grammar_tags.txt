@@ -163,6 +163,14 @@ attributes  :
         real string to compare. Default is undefined.
 
 -------------------------------------------------------------------------------
+tagname     : <reqwordchars>
+parent      : <element>, <repeat>, <optional>, <pickone>
+children    : <reqchar>
+description : The current token must be a word and match the characters
+              specified by its <reqchar> children.
+attributes  : [no attributes]
+
+-------------------------------------------------------------------------------
 tagname     : <reqnewline>
 parent      : <element>, <repeat>, <optional>, <pickone>
 children    : [no children allowed]
@@ -222,13 +230,13 @@ attributes  : [no attributes]
 
 -------------------------------------------------------------------------------
 tagname     : <reqchar>
-parent      : <element>, <repeat>, <optional>, <pickone>
+parent      : <reqwordchars>
 children    : [no children allowed]
 description : The current CHARACTER (which is part of a token) must match the
               specified attributes. If you have three <reqchar> rules in a
               row, then the first three chars of the current token are used.
 attributes  :
-    type="[alphanumeric|letter|number|specific|list|range]"
+    type="[alphanumeric|letter|number|specific|list|range|end]"
         If (alphanumeric), then the current char must match either an
         alphabetic letter or number in the current locale. If (letter), then
         the current char must be an alphabetic letter in the current locale.
@@ -237,7 +245,8 @@ attributes  :
         the "char" attribute. If (list), then the character must be one of the
         chars listed in the value of the "list" attribute. If (range), then
         the current char must match a character in the range defined by the
-        "min" and "max" attributes. Default is alphanumeric.
+        "min" and "max" attributes. If "end" then the token must have no more
+        chars to examine at that point. Default is alphanumeric.
     char="char"
         If type="specific", then the current char must match (char). Default
         is undefined.
