@@ -7,11 +7,16 @@ ongoing bugfixes :
      the mainline, and use dealWithVariableDeclaration() on each line. If
      this function ever returns (false) at that time, throw an error.
 
-    Graphics2D does antialiasing?
+    Since operators are replaced with static references, make all runtime
+     checks for them use (a soon to be written) searchArrayForReferences(),
+     since they currently search (unnecessarily) with String.equals()...
+
+    Make all identifiers resolve before runtime, so we can replace them
+     with unified references.
+
     Make inputarea use sane keys...
     Unify error displaying interface between parsing and running...
     Functions can specify a return type and then return nothing.
-    Toby's JFrame Icon locks when you try to set it. see Toby.setTobyIcon();
     FIX VARVIEWER. It BADLY BROKEN.
     Even on a cancel save, JFrame closes, if Window manager terminating it.
     Fix equality operator
@@ -35,6 +40,7 @@ alpha4 : in progress.
     add arrays?
     add String intrinsic?
     Fix "!!!" comments...
+    Make input area use sane keys.
 
 alpha5 : not yet begun.
     COMMENT EVERYTHING.
