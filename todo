@@ -15,13 +15,28 @@ ongoing bugfixes :
      with unified references.
 
     Make inputarea use sane keys...
+
     Unify error displaying interface between parsing and running...
+
     Functions can specify a return type and then return nothing.
+
     FIX VARVIEWER. It BADLY BROKEN.
+
     Even on a cancel save, JFrame closes, if Window manager terminating it.
+
     Fix equality operator
+
     Maximize window instead of sizing...
+
     Move copyImage code from TobyInterpreter into TurtleSpace.
+
+    Turtle still looks wrong. Check math.
+
+    Move time report code to more user-friendly output.
+
+    Allow "all files" opening.
+
+    Make Applet work with JavaScript.
 
 alpha2 : completed.
     Convert to Swing.                       (COMPLETED)
@@ -49,6 +64,7 @@ alpha5 : not yet begun.
     Undo/redo
     Make TurtleSpace into a bean.
     Build splash screen/remove System.out.println() stuff...
+    Add status bar to bottom of frame...
 
 alpha6 : not yet begun.
     Implement help system. Docs do not have to be complete at this point.
