@@ -43,8 +43,8 @@ cygwin := autodetect
 #-----------------------------------------------------------------------------#
 # Set this to true if you want to create a debug build.
 #-----------------------------------------------------------------------------#
-#debugging := false
-debugging := true
+#debug := false
+debug := true
 
 #-----------------------------------------------------------------------------#
 # Set this to what your platform has.
@@ -229,7 +229,7 @@ CFLAGS += -Wall -Werror -fexceptions -frtti -D_REENTRANT
 
 LDFLAGS += -lm
 
-ifeq ($(strip $(debugging)),true)
+ifeq ($(strip $(debug)),true)
   CFLAGS += -DDEBUG -g -fno-omit-frame-pointer
   LDFLAGS += -g -fno-omit-frame-pointer
 else
@@ -252,13 +252,14 @@ MAINEXE := $(BINDIR)/toby$(strip $(EXE_EXT))
 STANDALONEEXE := $(BINDIR)/standalone$(strip $(EXE_EXT))
 
 EXES := $(STANDALONEEXE) #$(MAINEXE)
+TESTTOKENIZEREXE := $(BINDIR)/test/tokenizer$(strip $(EXE_EXT))
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp util/TobyClock.cpp
 PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
-IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp
-
+IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
+          io/Tokenizer.cpp
 
 #-----------------------------------------------------------------------------#
 # Language modules
@@ -408,7 +409,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.c
 $(BINDIR)/%.o: $(SRCDIR)/%.asm
 	$(ASM) $(ASMFLAGS) -o $@ $<
 
-.PHONY: all clean distclean listobjs showcfg
+.PHONY: all clean distclean listobjs showcfg tests
 
 all: $(BINDIR) $(EXES)
 
@@ -418,8 +419,15 @@ $(MAINEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/toby.o
 $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone.o
 
+tests: $(BINDIR) $(TESTTOKENIZEREXE)
+
+$(TESTTOKENIZEREXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
+	$(LINKER) -o $(TESTTOKENIZEREXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/test/tokenizer.o
+
+
 $(BINDIR):
 	mkdir -p $(BINDIR)
+	mkdir -p $(BINDIR)/test
 	mkdir -p $(BINDIR)/turtlespace
 	mkdir -p $(BINDIR)/util
 	mkdir -p $(BINDIR)/io
@@ -448,7 +456,7 @@ listobjs:
 
 showcfg:
 	@echo "Using CygWin          : $(cygwin)"
-	@echo "Debugging             : $(debugging)"
+	@echo "Debugging             : $(debug)"
 	@echo "ASM flag              : $(USE_ASM)"
 	@echo "Video module          : $(platform_video)"
 	@echo "Thread module         : $(platform_threads)"
