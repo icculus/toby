@@ -37,7 +37,7 @@ public:
     virtual bool isTerminated(void) = 0;
 
     // This gets filled in along with the platform-specific subclass...
-    TobyThread *getInstance(void *(*runfunc)(void *), void *args);
+    static TobyThread *getInstance(void *(*runfunc)(void *), void *args);
 
     // This gets called to yield the currently executing thread, which may
     //  be the main thread, for which no corresponding TobyThread exists.

@@ -37,7 +37,7 @@ public:
         //  NULL, which means use the application's binary. Use this
         //  instead of the new operator, since we need to generate a
         //  platform-dependent object.
-    TobyLoader *getInstance(const char *name);
+    static TobyLoader *getInstance(const char *name);
 
     virtual ~TobyLoader(void) {}
 
