@@ -153,20 +153,25 @@ protected:
 
         // Append another character to (tokenBuffer). The buffer is resized
         //  (and thus, the pointer can change) if needed.
-    virtual void addToTokenBuffer(char ch);
+    inline void addToTokenBuffer(char ch);
 
         // Reset (bufferIndex) to 0, and null out the current contents of
         //  (tokenBuffer).
-    virtual void emptyTokenBuffer(void);
+    inline void emptyTokenBuffer(void);
+    inline bool isWhitespaceChar(int ch);
+    inline bool isNumberChar(int ch);
+    inline bool isQuoteChar(int ch);
+    inline bool isNewlineChar(int ch);
+    inline bool isWordChar(int ch);  // NumberChars are true here, too.
 
-    bool isWhitespaceChar(int ch);
-    bool isNumberChar(int ch);
-    bool isQuoteChar(int ch);
-    bool isNewlineChar(int ch);
     TobyReader *in;
     char *tokenBuffer;
     int bufferAllocSize;
     int bufferIndex;
+
+    inline int nextChar(void) throw (IOException *);
+    inline void pushBackChar(void);
+    inline void moveTokenBufferToBackBuffer(void);
 
 private:
     bool pushedBack;
@@ -191,12 +196,21 @@ private:
 
     int lineNum;
 
+    int lastChar;
+    unsigned int backBufferSize;
+    int backBuffer[256];
+
+    void extendTokenBuffer(void);
+
+    tokentype tokenizeSingleLineComment(void) throw (IOException *);
+    tokentype tokenizeMultiLineComment(void) throw (IOException *);
     tokentype tokenizeWhitespace(void) throw (IOException *);
     tokentype tokenizeNumber(void) throw (IOException *);
     tokentype tokenizeLiteralString(void) throw (IOException *);
     tokentype tokenizeComment(void) throw (IOException *);
     tokentype tokenizeNewline(void) throw (IOException *);
     tokentype tokenizeWord(void) throw (IOException *);
+    tokentype _nextToken(void) throw (IOException *);
 }; // class Tokenizer
 
 #endif  // !defined _INCLUDE_TOKENIZER_H_

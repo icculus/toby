@@ -30,7 +30,7 @@ static char *replaceString(char **origString, const char *newString)
     {
         int numChars = strlen(newString) + 1;
         *origString = new char[numChars];
-        memcpy(origString, newString, numChars);
+        memcpy(*origString, newString, numChars);
     } // else
 
     return(*origString);
@@ -75,16 +75,19 @@ Tokenizer::Tokenizer(TobyReader *reader) :
     escapeChar('\\'),
     isEscaping(true),
     whitespaceChars(NULL),
-    ignoreWhitespace(true),
+    ignoreWhitespace(false),
     singleLineCommentStart(NULL),
-    ignoreSingleLineComments(true),
+    ignoreSingleLineComments(false),
     multiLineCommentStart(NULL),
     multiLineCommentEnd(NULL),
-    ignoreMultiLineComments(true),
+    ignoreMultiLineComments(false),
     convertNumbers(true),
-    lineNum(0)
+    lineNum(0),
+    lastChar(0),
+    backBufferSize(0)
 {
     assert(in != NULL);
+    memset(backBuffer, '\0', sizeof (backBuffer));
     setQuoteChars("\"\'", 2);
     setWhitespaceChars("\t ", 2);
     setSingleLineComment("//");
@@ -95,9 +98,6 @@ Tokenizer::Tokenizer(TobyReader *reader) :
 Tokenizer::~Tokenizer(void)
 {
     delete in;
-
-    if (str != NULL)
-        delete[] str;
 
     if (tokenBuffer != NULL)
         delete[] tokenBuffer;
@@ -145,8 +145,8 @@ void Tokenizer::setIgnoreSingleLineComments(bool onOff)
 
 void Tokenizer::setMultiLineComment(const char *begin, const char *end)
 {
-    replaceString(&multiLineCommentStart, str);
-    replaceString(&multiLineCommentEnd, str);
+    replaceString(&multiLineCommentStart, begin);
+    replaceString(&multiLineCommentEnd, end);
 } // Tokenizer::setMultiLineComment
 
 
@@ -194,24 +194,33 @@ int Tokenizer::currentLine(void)
 
 #define BUFINCREASE 30
 
-void Tokenizer::addToTokenBuffer(char ch)
+void Tokenizer::extendTokenBuffer(void)
+{
+    int newAllocSize = bufferAllocSize + BUFINCREASE;
+    char *tempBuf = new char[newAllocSize];
+    if (bufferIndex > 0)
+        memcpy(tempBuf, tokenBuffer, bufferIndex);
+    
+    memset(tempBuf + bufferIndex, '\0', BUFINCREASE);
+
+    if (tokenBuffer != NULL)
+        delete[] tokenBuffer;
+
+    tokenBuffer = tempBuf;
+    bufferAllocSize = newAllocSize;
+} // Tokenizer::extendTokenBuffer
+
+
+inline void Tokenizer::addToTokenBuffer(char ch)
 {
     if (bufferIndex == bufferAllocSize)
-    {
-        int newAllocSize = bufferAllocSize + BUFINCREASE;
-        char *tempBuf = new char[newAllocSize];
-        memcpy(tempBuf, tokenBuffer, bufferIndex);
-        memset(tempBuf + bufferIndex, '\0', BUFINCREASE);
-        delete[] tokenBuffer;
-        tokenBuffer = tempBuf;
-        bufferAllocSize = newAllocSize;
-    } // if
+        extendTokenBuffer();
 
     tokenBuffer[bufferIndex++] = ch;
 } // Tokenizer::addToTokenBuffer
 
 
-void Tokenizer::emptyTokenBuffer(void)
+inline void Tokenizer::emptyTokenBuffer(void)
 {
     if (bufferIndex > 0)
     {
@@ -221,7 +230,31 @@ void Tokenizer::emptyTokenBuffer(void)
 } // Tokenizer::emptyTokenBuffer
 
 
-bool Tokenizer::isWhitespaceChar(int ch)
+inline int Tokenizer::nextChar(void) throw (IOException *)
+{
+    if (backBufferSize)
+    {
+        backBufferSize--;
+        lastChar = backBuffer[backBufferSize];
+    } // if
+    else
+    {
+        lastChar = in->readChar();
+    } // else
+
+    return(lastChar);
+} // Tokenzier::nextChar
+
+
+inline void Tokenizer::pushBackChar(void)
+{
+    assert(backBufferSize < sizeof (backBuffer));
+    backBuffer[backBufferSize] = lastChar;
+    backBufferSize++;
+} // Tokenzier::nextChar
+
+
+inline bool Tokenizer::isWhitespaceChar(int ch)
 {
     return(
             (whitespaceChars != NULL) &&
@@ -230,14 +263,33 @@ bool Tokenizer::isWhitespaceChar(int ch)
 } // Tokenizer::isWhitespaceChar
 
 
+// !!! FIXME: i18n!
+inline bool Tokenizer::isWordChar(int ch)
+{
+    if ((ch >= 'a') && (ch <= 'z'))
+        return(true);
+
+    if ((ch >= 'A') && (ch <= 'Z'))
+        return(true);
+
+    if ((ch >= '0') && (ch <= '9'))
+        return(true);
+
+    if (ch == '_')
+        return(true);
+
+    return(false);
+} // Tokenizer::isWordChar
+
+
 // !!! FIXME: i18n?
-bool Tokenizer::isNumberChar(int ch)
+inline bool Tokenizer::isNumberChar(int ch)
 {
     return( (ch >= '0') && (ch <= '9') );
 } // Tokenizer::isNumberChar
 
 
-bool Tokenizer::isQuoteChar(int ch)
+inline bool Tokenizer::isQuoteChar(int ch)
 {
     return(
             (quoteChars != NULL) &&
@@ -246,10 +298,22 @@ bool Tokenizer::isQuoteChar(int ch)
 } // Tokenizer::isQuoteChar
 
 
-bool Tokenizer::isNewlineChar(int ch)
+inline bool Tokenizer::isNewlineChar(int ch)
 {
     return((ch == '\r') || (ch == '\n'));
 } // Tokenizer::isNewlineChar
+
+
+inline void Tokenizer::moveTokenBufferToBackBuffer(void)
+{
+    assert(backBufferSize + bufferIndex < sizeof (backBuffer));
+
+    while (bufferIndex > 0)
+    {
+        backBuffer[backBufferSize++] = tokenBuffer[--bufferIndex];
+        tokenBuffer[bufferIndex] = '\0';
+    } // for
+} // Tokenizer::moveTokenBufferToBackBuffer
 
 
 Tokenizer::tokentype Tokenizer::tokenizeNumber(void) throw (IOException *)
@@ -259,7 +323,7 @@ Tokenizer::tokentype Tokenizer::tokenizeNumber(void) throw (IOException *)
 
     while (true)
     {
-        ch = in->readChar();
+        ch = nextChar();
         if (!isNumberChar(ch))
         {
             if (ch != '.')
@@ -276,7 +340,7 @@ Tokenizer::tokentype Tokenizer::tokenizeNumber(void) throw (IOException *)
         addToTokenBuffer((char) ch);
     } // while
 
-    in->pushBack();
+    pushBackChar();
 
     if (convertNumbers)
         num = atof(tokenBuffer);
@@ -287,12 +351,14 @@ Tokenizer::tokentype Tokenizer::tokenizeNumber(void) throw (IOException *)
 
 Tokenizer::tokentype Tokenizer::tokenizeNewline(void) throw (IOException *)
 {
-    int ch = in->readChar();
+    int ch = nextChar();
     if (ch == '\r')  // may be a DOS endline.
     {
-        if (in->readChar() != '\n')  // Hmm...must be a MacOS endline.
-            in->pushBack();
+        if (nextChar() != '\n')  // Hmm...must be a MacOS endline.
+            pushBackChar();
     } // if
+
+    lineNum++;
 
     return(TT_NEWLINE);
 } // Tokenizer::tokenizeNewline
@@ -302,17 +368,17 @@ Tokenizer::tokentype Tokenizer::tokenizeWhitespace(void) throw (IOException *)
 {
     if (ignoreWhitespace)
     {
-        while (isWhitespaceChar(in->readChar())) { /* do nothing... */ }
-        in->pushBack();
+        while (isWhitespaceChar(nextChar())) { /* do nothing... */ }
+        pushBackChar();
         return(nextToken());
     } // if
 
     else  // keep the whitespace...
     {
         int ch;
-        while (isWhitespaceChar(ch = in->readChar()))
+        while (isWhitespaceChar(ch = nextChar()))
             addToTokenBuffer((char) ch);
-        in->pushBack();
+        pushBackChar();
         return(TT_WHITESPACE);
     } // else
 } // Tokenizer::tokenizeWhitespace
@@ -321,17 +387,17 @@ Tokenizer::tokentype Tokenizer::tokenizeWhitespace(void) throw (IOException *)
 Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
                                     throw (IOException *)
 {
-    int quoteChar = in->readChar();
+    int quoteChar = nextChar();
 
     addToTokenBuffer(quoteChar);
 
     while (true)
     {
-        int ch = in->readChar();
+        int ch = nextChar();
         if (ch == TOBYEOF)  // uhoh.
         {
             addToTokenBuffer(quoteChar);
-            in->pushBack();
+            pushBackChar();
             break;
         } // if
 
@@ -344,16 +410,153 @@ Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
     } // while
 
     return(TT_LITERALSTRING);
-} // Tokenizer::tokenizeWord
+} // Tokenizer::tokenizeLiteralString
+
+
+Tokenizer::tokentype Tokenizer::tokenizeSingleLineComment(void)
+                                            throw (IOException *)
+{
+    int ch = singleLineCommentStart[0];  // already read this in.
+    char *p;
+    for (p = singleLineCommentStart; (*p) && (ch == *p); p++)
+    {
+        addToTokenBuffer(ch);
+        ch = nextChar();
+    } // for
+
+    if (*p == '\0')  // a single line comment?
+    {
+        do
+        {
+            addToTokenBuffer(ch);
+        } while (!isNewlineChar(ch = nextChar()));
+        pushBackChar();
+
+        return(TT_SINGLELINECOMMENT);
+    } // if
+
+    pushBackChar();
+    moveTokenBufferToBackBuffer();
+
+    return(TT_NONE);
+} // Tokenizer::tokenizeSingleLineComment
+
+
+Tokenizer::tokentype Tokenizer::tokenizeMultiLineComment(void)
+                                            throw (IOException *)
+{
+    int ch = nextChar();
+    char *p;
+    for (p = multiLineCommentStart; (*p) && (ch == *p); p++)
+    {
+        addToTokenBuffer(ch);
+        ch = nextChar();
+    } // for
+
+    if (*p == '\0')  // a multiline comment?
+    {
+        char endChar = multiLineCommentEnd[0];
+
+        while (true)
+        {
+            do
+            {
+                if (ch == EOF)  // uhoh.
+                {
+                    pushBackChar();
+                    return(TT_MULTILINECOMMENT);  // oh well.
+                } // if
+                addToTokenBuffer(ch);
+            } while ( (ch = nextChar()) != endChar );
+
+            for (p = multiLineCommentEnd; (*p) && (ch == *p); p++)
+            {
+                addToTokenBuffer(ch);
+                ch = nextChar();
+            } // for
+
+            pushBackChar();
+
+            if (*p == '\0')  // end of a multiline comment?
+                return(TT_MULTILINECOMMENT);
+        } // while
+    } // if
+
+    // not a multiline comment at all?
+    pushBackChar();
+    moveTokenBufferToBackBuffer();
+
+    return(TT_NONE);
+} // Tokenizer::tokenizeMultiLineComment
+
+
+Tokenizer::tokentype Tokenizer::tokenizeComment(void) throw (IOException *)
+{
+    bool checkSingle = true;  // Do the single line comment check?
+    int ch = nextChar();
+
+        // fast path.
+    if ( !((singleLineCommentStart) && (ch == *singleLineCommentStart)) )
+    {
+        checkSingle = false;
+        if ( !((multiLineCommentStart) && (ch == *multiLineCommentStart)) )
+        {
+            pushBackChar();
+            return(TT_NONE);
+        } // if
+    } // if
+
+    if (checkSingle)
+    {
+        Tokenizer::tokentype rc = tokenizeSingleLineComment();
+        if (rc == TT_SINGLELINECOMMENT)
+        {
+            if (ignoreSingleLineComments)
+                return(nextToken());
+            else
+                return(TT_SINGLELINECOMMENT);
+        } // if
+    } // if
+
+    if (multiLineCommentStart)
+    {
+        Tokenizer::tokentype rc = tokenizeMultiLineComment();
+        if (rc == TT_MULTILINECOMMENT)
+        {
+            if (ignoreMultiLineComments)
+                return(nextToken());
+            else
+                return(TT_MULTILINECOMMENT);
+        } // if
+    } // if
+
+    return(TT_NONE);
+} // Tokenizer::tokenizeComment
 
 
 Tokenizer::tokentype Tokenizer::tokenizeWord(void) throw (IOException *)
 {
-    return(TT_WORD);  // !!! FIXME: Write this!
+        // We need to handle comments here, since it might leave word
+        //  characters in the token buffer.
+    Tokenizer::tokentype rc = tokenizeComment();
+    if (rc != TT_NONE)
+        return(rc);
+
+    int ch = nextChar();
+    addToTokenBuffer(ch);
+    if (!isWordChar(ch))
+        return(TT_WORD);  // token in itself.
+
+    while (isWordChar(ch = nextChar()))
+        addToTokenBuffer(ch);
+
+    pushBackChar();
+
+    return(TT_WORD);
 } // Tokenizer::tokenizeWord
 
 
-Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
+Tokenizer::tokentype Tokenizer::_nextToken(void) throw (IOException *)
 {
     if (pushedBack)
     {
@@ -363,8 +566,8 @@ Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
 
     emptyTokenBuffer();
 
-    char ch = in->readChar();
-    in->pushBack();
+    char ch = nextChar();
+    pushBackChar();
 
     if (isWhitespaceChar(ch))
         return(tokenizeWhitespace());
@@ -378,8 +581,15 @@ Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
         return(TT_EOF);
     else
         return(tokenizeWord());
-} // Tokenizer::nextToken
+} // Tokenizer::_nextToken
 
+
+Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
+{
+    ttype = _nextToken();
+    str = tokenBuffer;
+    return(ttype);
+} // Tokenizer::nextToken
 
 // end of Tokenizer.cpp ...
 
