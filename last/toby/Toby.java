@@ -103,35 +103,43 @@ public final class Toby
                 {
                     // !!! this is a bad system.
                     String s = arg.substring(11);
-                    URL url = null;
                     try
                     {
-                        url = new URL(s);
-                    } // try
-                    catch (MalformedURLException murle)
-                    {
-                        s = "file:///" + s;
-                        try
+                        LineNumberReader lnr = null;
+                        if (s.indexOf("://") == -1)
                         {
-                            url = new URL(s);
-                        }
-                        catch (MalformedURLException murle2)
+                            lnr = new LineNumberReader(new FileReader(s));
+                        } // if
+                        else
                         {
+                            URL url = null;
+                            try
+                            {
+                                url = new URL(s);
+                            } // try
+                            catch (MalformedURLException murle)
+                            {
                                 // can't localize this.
-                            System.err.println("Bad URL in --langfile!");
-                            return(false);
-                        } // catch
-                    } // catch
+                                System.err.println("Bad URL in --langfile!");
+                                return(false);
+                            } // catch
 
-                    try
-                    {
-                         System.out.println("loading from URL [" + url.toString() + "].");
-                         TobyLanguage.loadLanguage(url);
+                            InputStream is = url.openStream();
+                            InputStreamReader isr = new InputStreamReader(is);
+
+                            lnr = new LineNumberReader(isr);
+                        } // else
+
+                        TobyLanguage.loadLangFile(lnr, s);
+                        lnr.close();
                     } // try
+
                     catch (IOException ioe)
                     {
-                            // can't localize this.
-                        System.err.println("IOException reading langfile.");
+                            // may or may not be localized at point of trouble.
+                        System.err.println(TobyLanguage.LANGIOEXCEPT);
+
+                            //  ...so this will have to do...
                         System.err.println(ioe.getMessage());
                         return(false);
                     } // catch
