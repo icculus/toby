@@ -57,9 +57,9 @@ public abstract class UnaryExpressionLogicContext extends ExpressionLogicContext
         return(null);
     } // simplify
 
-    public void freeResourcesImpl() {}
+    protected void freeResourcesImpl() {}   // !!! hhm. Dangerous.
 
-    public void linkImpl(GlobalLogicContext glob) throws ParseException
+    protected void linkImpl(GlobalLogicContext glob) throws ParseException
     {
         if (children.length != 1)
             ParseException._throw(TobyLanguage.INTERNAL_ERROR);
