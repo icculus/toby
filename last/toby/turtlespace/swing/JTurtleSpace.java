@@ -23,6 +23,7 @@ import last.toby.exceptions.ExecException;
 import last.toby.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import javax.swing.*;
 
     /**
@@ -43,8 +44,8 @@ public class JTurtleSpace extends JComponent implements TurtleSpace
     protected Turtle[] turtles = null;
     protected java.util.Stack turtlePool = new java.util.Stack();
     protected Image backBuffer = null;
-    protected Graphics imgGraphics = null;
-    protected Graphics screenGraphics = null;
+    protected Graphics2D imgGraphics = null;
+    protected Graphics2D screenGraphics = null;
     protected int backBufferWidth = -1;
     protected int backBufferHeight = -1;
     protected boolean hasFence = false;
@@ -173,11 +174,11 @@ public class JTurtleSpace extends JComponent implements TurtleSpace
 
         resizeBackBuffer(w, h);
 
-        imgGraphics = backBuffer.getGraphics();
+        imgGraphics = (Graphics2D) backBuffer.getGraphics();
         imgGraphics.setColor(Color.black);
         imgGraphics.fillRect(0, 0, w, h);
 
-        screenGraphics = getGraphics();
+        screenGraphics = (Graphics2D) getGraphics();
     } // grabTurtleSpace
 
 
@@ -579,6 +580,47 @@ public class JTurtleSpace extends JComponent implements TurtleSpace
         setPen(true);
     } // setPenDown
 
+    public void drawString(String str) throws ExecException
+    {
+        if (turtle == null)
+            ExecException._throw(TobyLanguage.NOCURTURTLE);
+
+            // this isn't very efficient, I bet.
+        AffineTransform origScreenTransform = screenGraphics.getTransform();
+        AffineTransform origImageTransform = imgGraphics.getTransform();
+
+        double radians = TobyGeometry.degreesToRadians(turtle.getAngle());
+        int x = (int) turtle.getX();
+        int y = (int) turtle.getY();
+
+        screenGraphics.rotate(radians, x, y);
+        imgGraphics.rotate(radians, x, y);
+
+        Color c = turtle.getPenColor();
+        screenGraphics.setColor(c);
+        imgGraphics.setColor(c);
+
+            // since rotating text is a performance hit anyhow, we might as
+            //  well swallow the cost of antialiasing it, too. Plus, the
+            //  improvement to the output quality is VERY noticible here,
+            //  while it isn't so much on the average lines drawn, since they
+            //  are being done pixel-by-pixel, or are vertical/horizontal.
+        screenGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                        RenderingHints.VALUE_ANTIALIAS_ON);
+        imgGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                     RenderingHints.VALUE_ANTIALIAS_ON);
+
+        screenGraphics.drawString(str, x, y);
+        imgGraphics.drawString(str, x, y);
+
+        screenGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                        RenderingHints.VALUE_ANTIALIAS_OFF);
+        imgGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                     RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        screenGraphics.setTransform(origScreenTransform);
+        imgGraphics.setTransform(origImageTransform);
+    } // drawString
 
     protected synchronized void homeTurtle(Turtle t)
     {
