@@ -39,6 +39,8 @@ public interface TurtleSpace
     public abstract float getDefaultPenBlue();
     public abstract float getDefaultPenGreen();
 
+// !!! Would like an alpha channel.
+
     public abstract int getTurtleCount();
     public abstract int addTurtle();
     public abstract boolean removeTurtle(int turtleIndex);
@@ -60,6 +62,10 @@ public interface TurtleSpace
     public abstract void setTurtleWidth(double newWidth) throws ExecException;
     public abstract void setTurtleHeight(double newHeight) throws ExecException;
 
+
+// !!! Would like a way to redefine the coordinate system of TurtleSpace.
+
+
         /**
          * Move turtle forward (distance) length in whatever direction he's
          *  facing. If the "pen" is "down", then draw the appropriate lines
@@ -76,6 +82,7 @@ public interface TurtleSpace
     public abstract void setPen(boolean drawing) throws ExecException;
     public abstract void setPenUp() throws ExecException;
     public abstract void setPenDown() throws ExecException;
+    public abstract void drawString(String str) throws ExecException;
     public abstract void homeTurtle() throws ExecException;
     public abstract void homeAllTurtles() throws ExecException;
     public abstract void setTurtleVisibility(boolean isVis) throws ExecException;
