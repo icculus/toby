@@ -243,7 +243,7 @@ void TurtleSpace::verifyPointInsideFence(double x, double y)
         if ( (x < 0.00) || (x > renderer->getTurtleSpaceWidth()) ||
              (y < 0.00) || (y > renderer->getTurtleSpaceHeight()) )
         {
-            ExecException::_throw(TobyLanguage::TURTLE_FENCED);
+            ExecException::_throw(TOBYI18N_TURTLE_FENCED);
         } // if
     } // if
 } // TurtleSpace::verifyPointInsideFence
@@ -302,7 +302,7 @@ void TurtleSpace::useTurtle(int turtleIndex) throw (ExecException *)
     else
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::BAD_ARGUMENT);
+        ExecException::_throw(TOBYI18N_BAD_ARGUMENT);
     } // else
 
     turtleSync->release();
@@ -316,7 +316,7 @@ double TurtleSpace::getTurtleX(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     double retval = turtle->getX();
@@ -332,7 +332,7 @@ double TurtleSpace::getTurtleY(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     double retval = turtle->getY();
@@ -347,7 +347,7 @@ double TurtleSpace::getTurtleWidth(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     double retval = turtle->getWidth();
@@ -362,7 +362,7 @@ double TurtleSpace::getTurtleHeight(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     double retval = turtle->getHeight();
@@ -378,7 +378,7 @@ void TurtleSpace::setTurtleX(double x) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if (x == turtle->getX())
@@ -408,7 +408,7 @@ void TurtleSpace::setTurtleY(double y) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if (y == turtle->getY())
@@ -438,7 +438,7 @@ void TurtleSpace::setTurtleXY(double x, double y) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if ((y == turtle->getY()) && (x == turtle->getX()))
@@ -467,7 +467,7 @@ void TurtleSpace::setTurtleWidth(double newWidth) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if (newWidth != turtle->getWidth())
@@ -493,7 +493,7 @@ void TurtleSpace::setTurtleHeight(double newHeight) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if (newHeight != turtle->getHeight())
@@ -534,7 +534,7 @@ void TurtleSpace::setTurtleVisibility(bool isVis) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     setTurtleVisibility(turtle, isVis);
@@ -592,7 +592,7 @@ void TurtleSpace::advanceTurtle(double distance) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     double angle = turtle->getAngle();
@@ -633,7 +633,7 @@ void TurtleSpace::setTurtleAngle(double angle) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     if (angle != turtle->getAngle())
@@ -662,7 +662,7 @@ void TurtleSpace::rotateTurtle(double degree) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     setTurtleAngle(turtle->getAngle() + degree);
@@ -703,7 +703,7 @@ void TurtleSpace::homeTurtle(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     homeTurtle(turtle);
@@ -779,7 +779,7 @@ void TurtleSpace::defaultTurtle(void) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     defaultTurtle(turtle);
@@ -812,7 +812,7 @@ void TurtleSpace::setPenColor(float r, float g, float b, float a)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     turtle->setPenColor(r, g, b, a);
@@ -828,7 +828,7 @@ void TurtleSpace::setPen(bool drawing) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     turtle->setPenDown(drawing);
@@ -856,7 +856,7 @@ void TurtleSpace::drawString(const char *str) throw (ExecException *)
     if (turtle == NULL)
     {
         turtleSync->release();
-        ExecException::_throw(TobyLanguage::NOCURTURTLE);
+        ExecException::_throw(TOBYI18N_NOCURTURTLE);
     } // if
 
     float r, g, b, a;

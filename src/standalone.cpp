@@ -37,8 +37,7 @@ int main(int argc, char **argv)
     toby_uint32 end_time = 0;
     TurtleSpaceRenderer *renderer;
 
-    renderer = __platformBuildStandaloneRenderer(TobyLanguage::NAME,
-                                                  &argc, &argv);
+    renderer = __platformBuildStandaloneRenderer(TOBYI18N_NAME, &argc, &argv);
 
     if ((renderer == NULL) || (renderer->resize(640, 480) == false))
     {

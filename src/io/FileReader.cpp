@@ -52,12 +52,12 @@ bool FileReader::isEOF(void)
 char FileReader::readChar(void) throw (IOException *)
 {
     if (fp == NULL)
-        throw(new IOException(TobyLanguage::FILE_NOT_OPEN));
+        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     int ch = fgetc(fp);
 
     if (ch == EOF)
-        throw(new IOException(TobyLanguage::END_OF_FILE));
+        throw(new IOException(TOBYI18N_END_OF_FILE));
 
     _D(("FileReader::readChar() ... returning '%c'...\n", (char) ch));
 
@@ -68,7 +68,7 @@ char FileReader::readChar(void) throw (IOException *)
 TobyString *FileReader::readLine(void) throw (IOException *)
 {
     if (fp == NULL)
-        throw(new IOException(TobyLanguage::FILE_NOT_OPEN));
+        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     TobyString *retval = new TobyString();
     int ch = 0;

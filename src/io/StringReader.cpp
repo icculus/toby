@@ -44,10 +44,10 @@ bool StringReader::isEOF(void)
 char StringReader::readChar(void) throw (IOException *)
 {
     if (nextChar == NULL)
-        throw(new IOException(TobyLanguage::FILE_NOT_OPEN));
+        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     if (*nextChar == '\0')
-        throw(new IOException(TobyLanguage::END_OF_FILE));
+        throw(new IOException(TOBYI18N_END_OF_FILE));
 
     char retval = *nextChar;
     nextChar++;
@@ -61,7 +61,7 @@ char StringReader::readChar(void) throw (IOException *)
 TobyString *StringReader::readLine(void) throw (IOException *)
 {
     if (nextChar == NULL)
-        throw(new IOException(TobyLanguage::FILE_NOT_OPEN));
+        throw(new IOException(TOBYI18N_FILE_NOT_OPEN));
 
     TobyString *retval = new TobyString();
     char ch = 0;
