@@ -370,7 +370,7 @@ Tokenizer::tokentype Tokenizer::tokenizeNewline(void) throw (IOException *)
     return(TT_NEWLINE);
 } // Tokenizer::tokenizeNewline
 
-// !!! FIXME: Need to check for newlines.  Argh.
+
 Tokenizer::tokentype Tokenizer::tokenizeWhitespace(void) throw (IOException *)
 {
     int ch;
@@ -404,6 +404,7 @@ Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
                                     throw (IOException *)
 {
     int quoteChar = nextChar();
+    bool escaped = false;
 
     addToTokenBuffer(quoteChar);
 
@@ -417,29 +418,26 @@ Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
             break;
         } // if
 
-        else if (ch == '\r')
-        {
-            if (nextChar() != '\n')
-                pushBackChar();
-            else
-            {
-                addToTokenBuffer('\r');
-                ch = '\n';
-            } // else
-            lineNum++;
-        } // else if
-
-        else if (ch == '\n')
-        {
-            lineNum++;
-        } // else if
-
         addToTokenBuffer(ch);
-        if (ch == quoteChar)
+        if (ch == escapeChar)
         {
-            if ((!isEscaping) || (tokenBuffer[bufferIndex - 2] != escapeChar))
-                break;
+            if (isEscaping)
+                escaped = !escaped;
+        } // else if
+
+        else if (ch == quoteChar)
+        {
+            if (escaped)
+                escaped = false;
+            else
+                break;  // end of literal string if not escaped.
         } // if
+
+        else
+        {
+            if (escaped)
+                escaped = false;
+        } // else
     } // while
 
     return(TT_LITERALSTRING);
