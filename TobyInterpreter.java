@@ -247,6 +247,54 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // displayParseException
 
 
+    public static String staticKeywordReference(String token)
+    /**
+     * To speed up interpretation, the parse phase replaces the individual
+     *  tokens with references to our static keywords. For example, if
+     *  a token of "endfunction" is found, we'll replace that token with
+     *  KEYWORD_ENDFUNC, so that during interpretation, we need not do
+     *  character-by-character compares on tokens, but just check if their
+     *  references are equal. This is much faster, although it requires
+     *  slightly more overhead at parse time (since we're effectively
+     *  moving all the string comparisons to here...)
+     *
+     *     params : token == token to evaluate.
+     *    returns : reference to a static String (from TobyInterpreter), or
+     *               (token) itself, if it isn't in our token tables.
+     */
+    {
+        // !!! unrecognized keywords should be flagged, for examination
+        // !!!  after parsing. This will mean that we can check all
+        // !!!  identifiers pre-runtime, but variable creation
+        // !!!  will have to be rewritten.
+
+        // !!! All tables (except operators) should be put in alphabetical
+        // !!!  order, so we can use a faster search algorithm.
+
+
+        int rc;
+
+        rc = searchArray(operatorTable, token);
+        if (rc != -1)
+            return(operatorTable[rc]);
+
+        rc = searchAlphabeticArray(keywordTable, token);
+        if (rc != -1)
+            return(keywordTable[rc]);
+
+        rc = searchAlphabeticArray(stdFuncTable, token);
+        if (rc != -1)
+            return(stdFuncTable[rc]);
+
+        rc = searchAlphabeticArray(intrinsicTable, token);
+        if (rc != -1)
+            return(intrinsicTable[rc]);
+
+        return(token);
+    } // staticKeywordReference
+
+
+
     private static void buildOperatorTable()
     /**
      *  Creates the operator table, an array of Strings, in order of
@@ -282,15 +330,19 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *   keywords representing various intrinsic data types, like
      *   numbers and strings, etc...
      *
+     *  THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+     *
      *     params : void.
      *    returns : void.
      */
     {
         intrinsicTable = new String[INTRINSIC_COUNT];
 
-        intrinsicTable[0] = INTRINSIC_NUMBER;
-        intrinsicTable[1] = INTRINSIC_BOOLEAN;
-        intrinsicTable[2] = INTRINSIC_NOTHING;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+        intrinsicTable[0] = INTRINSIC_BOOLEAN;
+        intrinsicTable[1] = INTRINSIC_NOTHING;
+        intrinsicTable[2] = INTRINSIC_NUMBER;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
     } // buildIntrinsicTable
 
 
@@ -300,28 +352,33 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *  Creates the keyword table, an array of Strings of
      *   keywords representing miscellaneous reserved words.
      *
+     *       THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+     *
      *     params : void.
      *    returns : void.
      */
     {
         keywordTable = new String[KEYWORD_COUNT];
 
-        keywordTable[0]  = KEYWORD_BEGINFUNC;
-        keywordTable[1]  = KEYWORD_ENDFUNC;
-        keywordTable[2]  = KEYWORD_IF;
-        keywordTable[3]  = KEYWORD_ELSEIF;
-        keywordTable[4]  = KEYWORD_ELSE;
-        keywordTable[5]  = KEYWORD_ENDIF;
-        keywordTable[6]  = KEYWORD_BEGINFOR;
-        keywordTable[7]  = KEYWORD_TO;
-        keywordTable[8]  = KEYWORD_ENDFOR;
-        keywordTable[9]  = KEYWORD_RETURN;
-        keywordTable[10] = KEYWORD_TRUE;
-        keywordTable[11] = KEYWORD_FALSE;
-        keywordTable[12] = KEYWORD_RETURNS;
-        keywordTable[13] = KEYWORD_BEGINWHILE;
-        keywordTable[14] = KEYWORD_ENDWHILE;
-        keywordTable[15] = KEYWORD_STEP;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+            //  (Remember that KEYWORD_BEGINFOR is actually "for")...
+        keywordTable[0]  = KEYWORD_FALSE;
+        keywordTable[1]  = KEYWORD_BEGINFOR;
+        keywordTable[2]  = KEYWORD_BEGINFUNC;
+        keywordTable[3]  = KEYWORD_ELSE;
+        keywordTable[4]  = KEYWORD_ELSEIF;
+        keywordTable[5]  = KEYWORD_ENDFUNC;
+        keywordTable[6]  = KEYWORD_ENDIF;
+        keywordTable[7]  = KEYWORD_ENDFOR;
+        keywordTable[8]  = KEYWORD_ENDWHILE;
+        keywordTable[9]  = KEYWORD_IF;
+        keywordTable[10] = KEYWORD_RETURN;
+        keywordTable[11] = KEYWORD_RETURNS;
+        keywordTable[12] = KEYWORD_STEP;
+        keywordTable[13] = KEYWORD_TO;
+        keywordTable[14] = KEYWORD_TRUE;
+        keywordTable[15] = KEYWORD_BEGINWHILE;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
     } // buildKeywordTable
 
 
@@ -330,39 +387,57 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *  Creates the standard functions table, an array of Strings
      *   representing built-in TOBY function names.
      *
+     *      THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+     *
      *     params : void.
      *    returns : void.
      */
     {
         stdFuncTable = new String[STDFUNC_COUNT];
 
-        stdFuncTable[0]  = PROCNAME_HIDETURTLE;
-        stdFuncTable[1]  = PROCNAME_SHOWTURTLE;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
+        stdFuncTable[0]  = PROCNAME_BACKWARD;
+        stdFuncTable[1]  = PROCNAME_CLEANUP;
         stdFuncTable[2]  = PROCNAME_FORWARD;
-        stdFuncTable[3]  = PROCNAME_BACKWARD;
-        stdFuncTable[4]  = PROCNAME_RIGHT;
-        stdFuncTable[5]  = PROCNAME_LEFT;
-        stdFuncTable[6]  = PROCNAME_SETPENCOL;
-        stdFuncTable[7]  = PROCNAME_GETPENCOL;
-        stdFuncTable[8]  = PROCNAME_PENUP;
-        stdFuncTable[9]  = PROCNAME_PENDOWN;
-        stdFuncTable[10] = PROCNAME_GETANGLE;
-        stdFuncTable[11] = PROCNAME_SETANGLE;
-        stdFuncTable[12] = PROCNAME_PAUSE;
-        stdFuncTable[13] = PROCNAME_GETTURTLEX;
-        stdFuncTable[14] = PROCNAME_GETTURTLEY;
-        stdFuncTable[15] = PROCNAME_SETTURTXY;
-        stdFuncTable[16] = PROCNAME_ISPENUP;
-        stdFuncTable[17] = PROCNAME_ISPENDOWN;
-        stdFuncTable[18] = PROCNAME_RANDOM;
-        stdFuncTable[19] = PROCNAME_MAINLINE;
-        stdFuncTable[20] = PROCNAME_ROUND;
-        stdFuncTable[21] = PROCNAME_STOP;
-        stdFuncTable[22] = PROCNAME_TSPACEHIGH;
-        stdFuncTable[23] = PROCNAME_TSPACEWIDE;
-        stdFuncTable[24] = PROCNAME_HOMETURTLE;
-        stdFuncTable[25] = PROCNAME_CLEANUP;
+        stdFuncTable[3]  = PROCNAME_GETANGLE;
+        stdFuncTable[4]  = PROCNAME_GETPENCOL;
+        stdFuncTable[5]  = PROCNAME_GETTURTLEX;
+        stdFuncTable[6]  = PROCNAME_GETTURTLEY;
+        stdFuncTable[7]  = PROCNAME_HIDETURTLE;
+        stdFuncTable[8]  = PROCNAME_HOMETURTLE;
+        stdFuncTable[9]  = PROCNAME_ISPENUP;
+        stdFuncTable[10] = PROCNAME_ISPENDOWN;
+        stdFuncTable[11] = PROCNAME_LEFT;
+        stdFuncTable[12] = PROCNAME_MAINLINE;
+        stdFuncTable[13] = PROCNAME_PAUSE;
+        stdFuncTable[14] = PROCNAME_PENDOWN;
+        stdFuncTable[15] = PROCNAME_PENUP;
+        stdFuncTable[16] = PROCNAME_RANDOM;
+        stdFuncTable[17] = PROCNAME_RIGHT;
+        stdFuncTable[18] = PROCNAME_ROUND;
+        stdFuncTable[19] = PROCNAME_SETANGLE;
+        stdFuncTable[20] = PROCNAME_SETPENCOL;
+        stdFuncTable[21] = PROCNAME_SETTURTXY;
+        stdFuncTable[22] = PROCNAME_SHOWTURTLE;
+        stdFuncTable[23] = PROCNAME_STOP;
+        stdFuncTable[24] = PROCNAME_TSPACEHIGH;
+        stdFuncTable[25] = PROCNAME_TSPACEWIDE;
+            // THIS ARRAY MUST BE IN ALPHABETIC ORDER!
     } // buildStdFuncTable
+
+
+    public static int searchAlphabeticArray(String[] table, String forThis)
+    /**
+     * Find out if (forThis) is in (table). The strings contained in table
+     *  must be indexed in alphabetic order. This makes the searches faster.
+     *
+     *     params : see above.
+     *    returns : index in table, if there. (-1) if (forThis) isn't there.
+     */
+    {
+        // !!! write me!
+        return(searchArray(table, forThis));
+    } // searchAlphabeticArray
 
 
     public static int searchArray(String[] table, String forThis)
@@ -387,16 +462,18 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
 
     public static boolean isReservedWord(String str)
+
+    // !!! need this with reference replacement?
     {
         boolean retVal = false;
 
         if (searchArray(operatorTable, str) != -1)
             retVal = true;
-        else if (searchArray(intrinsicTable, str) != -1)
+        else if (searchAlphabeticArray(intrinsicTable, str) != -1)
             retVal = true;
-        else if (searchArray(keywordTable, str) != -1)
+        else if (searchAlphabeticArray(keywordTable, str) != -1)
             retVal = true;
-        else if (searchArray(stdFuncTable, str) != -1)
+        else if (searchAlphabeticArray(stdFuncTable, str) != -1)
             retVal = true;
 
         return(retVal);
@@ -405,7 +482,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     public static boolean isIntrinsic(String str)
     {
-        return((searchArray(intrinsicTable, str) != -1) ? true : false);
+        return((searchAlphabeticArray(intrinsicTable, str) != -1) ?
+                                        true : false);
     } // isIntrinsic
 
 
@@ -413,8 +491,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         return((searchArray(operatorTable, str) != -1) ? true : false);
     } // isIntrinsic
-
-
 
 
     private void deleteProcedures()
@@ -1013,9 +1089,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         for (i = tokIndex + 1; (i < src.length) && (groupingCount > 0); i++)
         {
-            if (src[i].equals(endToken))
+            if (src[i] == endToken)
                 groupingCount--;
-            else if (src[i].equals(startToken))
+            else if (src[i] == startToken)
                 groupingCount++;
         } // for
 
@@ -1314,42 +1390,45 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         // These are in the order I think they'll most frequently be called...
 
-        if (funcName.equals(PROCNAME_FORWARD))
+        if (funcName == PROCNAME_FORWARD)
         {
             args = buildArguments(argToks, 1);
             turtle.forwardTurtle(convStrToDouble((String) args.elementAt(0)),
-                                 g, g[GRAPHICS_SCREEN], copyImage);
+                                  g, g[GRAPHICS_SCREEN], copyImage);
         } // if
 
-        else if (funcName.equals(PROCNAME_RIGHT))
+        else if (funcName == PROCNAME_RIGHT)
         {
             args = buildArguments(argToks, 1);
             turtle.rotate(convStrToDouble((String) args.elementAt(0)),
                           g[GRAPHICS_SCREEN], copyImage);
+
         } // else if
 
-        else if (funcName.equals(PROCNAME_LEFT))
+        else if (funcName == PROCNAME_LEFT)
         {
-            args = buildArguments(argToks, 1);
-            turtle.rotate(-convStrToDouble((String) args.elementAt(0)),
-                          g[GRAPHICS_SCREEN], copyImage);
+           args = buildArguments(argToks, 1);
+           turtle.rotate(-convStrToDouble((String) args.elementAt(0)),
+                         g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_SETPENCOL))
+        else if (funcName == PROCNAME_SETPENCOL)
         {
             args = buildArguments(argToks, 1);
-            
+
             if (!turtle.setPenColor(convStrToDouble((String)args.elementAt(0))))
+            {
                 TobyParseException.throwException(PROCERR_BAD_ARGUMENT, null);
+            } // if
         } // else if
 
-        else if (funcName.equals(PROCNAME_RANDOM))
+        else if (funcName == PROCNAME_RANDOM)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, Double.toString(Math.random()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_ROUND))
+        else if (funcName == PROCNAME_ROUND)
         {
             long tmpLng;
             args = buildArguments(argToks, 1);
@@ -1358,7 +1437,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             retVal = new NumberIntrinsic(null, Double.toString(tmpDbl));
         } // else if
 
-        else if (funcName.equals(PROCNAME_SETTURTXY))
+        else if (funcName == PROCNAME_SETTURTXY)
         {
             double x;
             double y;
@@ -1370,34 +1449,34 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             turtle.setXY(x, y, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_SETANGLE))
+        else if (funcName == PROCNAME_SETANGLE)
         {
             args = buildArguments(argToks, 1);
             turtle.setAngle(convStrToDouble((String) args.elementAt(0)),
                             g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_BACKWARD))
+        else if (funcName == PROCNAME_BACKWARD)
         {
             args = buildArguments(argToks, 1);
             tmpDbl = convStrToDouble((String) args.elementAt(0));
             turtle.forwardTurtle(-convStrToDouble((String) args.elementAt(0)),
-                                 g, g[GRAPHICS_SCREEN], copyImage);
-        } // if
+                                  g, g[GRAPHICS_SCREEN], copyImage);
+        } // else if
 
-        else if (funcName.equals(PROCNAME_PENUP))
+        else if (funcName == PROCNAME_PENUP)
         {
             buildArguments(argToks, 0);
             turtle.setPenDown(false);
         } // else if
 
-        else if (funcName.equals(PROCNAME_PENDOWN))
+        else if (funcName == PROCNAME_PENDOWN)
         {
-            buildArguments(argToks, 0);
-            turtle.setPenDown(true);
+                buildArguments(argToks, 0);
+                turtle.setPenDown(true);
         } // else if
 
-        else if (funcName.equals(PROCNAME_PAUSE))
+        else if (funcName == PROCNAME_PAUSE)
         {
             long currentTime = System.currentTimeMillis();
             long stopTime;
@@ -1406,77 +1485,76 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             nap((long) convStrToDouble((String) args.elementAt(0)));
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETTURTLEX))
+        else if (funcName == PROCNAME_GETTURTLEX)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, Double.toString(turtle.getX()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETTURTLEY))
+        else if (funcName == PROCNAME_GETTURTLEY)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, Double.toString(turtle.getY()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETANGLE))
+        else if (funcName == PROCNAME_GETANGLE)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null,
-                                         Double.toString(turtle.getAngle()));
+                             Double.toString(turtle.getAngle()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_GETPENCOL))
+        else if (funcName == PROCNAME_GETPENCOL)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, turtle.getPenColorNumStr());
         } // else if
 
-
-        else if (funcName.equals(PROCNAME_ISPENUP))
+        else if (funcName == PROCNAME_ISPENUP)
         {
             buildArguments(argToks, 0);
             retVal = new BooleanIntrinsic(null,
-                        (turtle.isPenDown()) ? KEYWORD_FALSE : KEYWORD_TRUE);
+                          (turtle.isPenDown()) ? KEYWORD_FALSE : KEYWORD_TRUE);
         } // else if
 
-        else if (funcName.equals(PROCNAME_ISPENDOWN))
+        else if (funcName == PROCNAME_ISPENDOWN)
         {
             buildArguments(argToks, 0);
             retVal = new BooleanIntrinsic(null,
-                        (turtle.isPenDown()) ? KEYWORD_TRUE : KEYWORD_FALSE);
+                          (turtle.isPenDown()) ? KEYWORD_TRUE : KEYWORD_FALSE);
         } // else if
 
-        else if (funcName.equals(PROCNAME_HIDETURTLE))
+        else if (funcName == PROCNAME_HIDETURTLE)
         {
             buildArguments(argToks, 0);
             turtle.setVisible(false, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_SHOWTURTLE))
+        else if (funcName == PROCNAME_SHOWTURTLE)
         {
             buildArguments(argToks, 0);
             turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_TSPACEWIDE))
+        else if (funcName == PROCNAME_TSPACEWIDE)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, Double.toString(getWidth()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_TSPACEHIGH))
+        else if (funcName == PROCNAME_TSPACEHIGH)
         {
             buildArguments(argToks, 0);
             retVal = new NumberIntrinsic(null, Double.toString(getHeight()));
         } // else if
 
-        else if (funcName.equals(PROCNAME_HOMETURTLE))
+        else if (funcName == PROCNAME_HOMETURTLE)
         {
             buildArguments(argToks, 0);
             turtle.homeTurtle(this, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_CLEANUP))
+        else if (funcName == PROCNAME_CLEANUP)
         {
             int width = getWidth();
             int height = getHeight();
@@ -1491,18 +1569,17 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             turtle.paint(g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
-        else if (funcName.equals(PROCNAME_STOP))
+        else if (funcName == PROCNAME_STOP)
         {
             buildArguments(argToks, 0);
             haltInterpreter();
         } // else if
 
-        else
-            retVal = null;  // function not found.
+        else      // function not found.
+            retVal = null;
 
         return(retVal);
     } // dealWithStdFunction
-
 
 
     private Vector buildArguments(String[] argToks, int totalArgs)
@@ -1524,7 +1601,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             retVal = new Vector();
             for (i = 0; i < argToks.length; i++)
             {
-                if (argToks[i].equals(OPER_SEPARATOR))    // last tok in arg?
+                if (argToks[i] == OPER_SEPARATOR)    // last tok in arg?
                 {
                     tmp = new String[count];
                     System.arraycopy(argToks, i - count, tmp, 0, count);
@@ -1586,9 +1663,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         for (i = srcLine + 1; (i < totals) && (tokenCount > 0); i++)
         {
             codeLine = proc.getSourceLine(i);
-            if (codeLine[0].equals(startToken))
+            if (codeLine[0] == startToken)
                 tokenCount++;
-            else if (codeLine[0].equals(endToken))
+            else if (codeLine[0] == endToken)
                 tokenCount--;
         } // for
 
@@ -1624,10 +1701,10 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         index = findRightValue(initCondition, 0);
         varType = intrinsicTable[determineType(initCondition[index])];
 
-        if (!varType.equals(INTRINSIC_BOOLEAN))
+        if (varType != INTRINSIC_BOOLEAN)
             TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
 
-        if (initCondition[index].equals(KEYWORD_TRUE))   // enter loop?
+        if (initCondition[index] == KEYWORD_TRUE)   // enter loop?
         {
             stack.push(whileDetails);
             retVal = srcLine + 1;
@@ -1671,10 +1748,10 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         varType = intrinsicTable[determineType(tmpStrs[index])];
 
-        if (!varType.equals(INTRINSIC_BOOLEAN))
+        if (varType != INTRINSIC_BOOLEAN)
             TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
 
-        if (tmpStrs[index].equals(KEYWORD_FALSE))
+        if (tmpStrs[index] == KEYWORD_FALSE)
         {
             stack.pop();    // remove WhileLoopDetails object...
             retVal = srcLine + 1;
@@ -1714,7 +1791,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         src[0] = null;   // lose KEYWORD_BEGINFOR...
 
-        if (src[2].equals(OPER_ASSIGNMENT) == false)
+        if (src[2] != OPER_ASSIGNMENT)
             TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
 
         initValue = moveGroupingToArray(src, 0, KEYWORD_TO);
@@ -1896,11 +1973,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         varType = intrinsicTable[determineType(src[boolIndex])];
 
-        if (!varType.equals(INTRINSIC_BOOLEAN))
+        if (varType != INTRINSIC_BOOLEAN)
             TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
 
         return(followConditionalBranch(proc, srcLine,
-                                       src[boolIndex].equals(KEYWORD_TRUE)));
+                                       src[boolIndex] == KEYWORD_TRUE));
     } // dealWithConditional
 
 
@@ -1924,19 +2001,19 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             {
                 src = proc.getSourceLine(srcLine);
 
-                if (src[0].equals(KEYWORD_ENDIF))
+                if (src[0] == KEYWORD_ENDIF)
                 {
                     getOut = true;
                     retVal = srcLine + 1;
                 } // if
 
-                else if (src[0].equals(KEYWORD_ELSEIF))
+                else if (src[0] == KEYWORD_ELSEIF)
                 {
                     getOut = true;
                     retVal = dealWithConditional(proc, src, srcLine);
                 } // else if
 
-                else if (src[0].equals(KEYWORD_ELSE))
+                else if (src[0] == KEYWORD_ELSE)
                 {
                     getOut = true;
                     stack.push(new IfLoopDetails(srcLine, true));
@@ -1971,12 +2048,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         if (obj instanceof IfLoopDetails)
         {
             IfLoopDetails ifd = (IfLoopDetails) obj;
-            if ((ifd.isElse) && (!src[0].equals(KEYWORD_ENDIF)))
+            if ((ifd.isElse) && (src[0] != KEYWORD_ENDIF))
                 TobyParseException.throwException(procErr, null);
 
             stack.pop();  // lose IfLoopDetails...
 
-            if (src[0].equals(KEYWORD_ENDIF))
+            if (src[0] == KEYWORD_ENDIF)
                 retVal = srcLine + 1;
             else
             {
@@ -2010,31 +2087,31 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         int retVal = srcLine;
         String tok = src[0];
 
-        if (tok.equals(KEYWORD_BEGINFOR))
+        if (tok == KEYWORD_BEGINFOR)
             retVal = dealWithForLoop(proc, src, srcLine);
 
-        else if (tok.equals(KEYWORD_ENDFOR))
+        else if (tok == KEYWORD_ENDFOR)
             retVal = dealWithEndForLoop(proc, src, srcLine);
 
-        if (tok.equals(KEYWORD_BEGINWHILE))
+        else if (tok == KEYWORD_BEGINWHILE)
             retVal = dealWithWhileLoop(proc, src, srcLine);
 
-        else if (tok.equals(KEYWORD_ENDWHILE))
+        else if (tok == KEYWORD_ENDWHILE)
             retVal = dealWithEndWhileLoop(proc, src, srcLine);
 
-        else if (tok.equals(KEYWORD_IF))
+        else if (tok == KEYWORD_IF)
             retVal = dealWithConditional(proc, src, srcLine);
 
-        else if (tok.equals(KEYWORD_ENDIF))
+        else if (tok == KEYWORD_ENDIF)
             retVal = dealWithEndIf(proc, src, srcLine, PROCERR_ORPHAN_ENDIF);
 
-        else if (tok.equals(KEYWORD_ELSE))
+        else if (tok == KEYWORD_ELSE)
             retVal = dealWithEndIf(proc, src, srcLine, PROCERR_ORPHAN_ELSE);
 
-        else if (tok.equals(KEYWORD_ELSEIF))
+        else if (tok == KEYWORD_ELSEIF)
             retVal = dealWithEndIf(proc, src, srcLine, PROCERR_ORPHAN_ELIF);
 
-        else if (tok.equals(KEYWORD_RETURN))
+        else if (tok == KEYWORD_RETURN)
             dealWithReturn(proc, src);
 
         return(retVal);
@@ -2051,7 +2128,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         int whatType = determineType(str1);
         boolean retVal = true;
 
-        if (intrinsicTable[whatType].equals(INTRINSIC_NUMBER) == false)
+        if (intrinsicTable[whatType] != INTRINSIC_NUMBER)
             retVal = false;
         else if (whatType != determineType(str2))
             retVal = false;
@@ -2224,7 +2301,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             } // catch
         } // catch
 
-        return(searchArray(intrinsicTable, typStr));
+        return(searchAlphabeticArray(intrinsicTable, typStr));
     } // determineType
 
 
@@ -2253,6 +2330,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      */
     {
         int tokIndex;
+        String token;
 
         do
         {
@@ -2260,40 +2338,31 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
             if (tokIndex >= 0)                       // any operators left?
             {
-                if (src[tokIndex].equals(OPER_LPAREN))
+                token = src[tokIndex];
+
+                if (token == OPER_LPAREN)
                     dealWithParens(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_MULTIPLY))
+                else if (token == OPER_MULTIPLY)
                     dealWithMultiply(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_DIVIDE))
+                else if (token == OPER_DIVIDE)
                     dealWithDivide(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_MODULO))
+                else if (token == OPER_MODULO)
                     dealWithModulo(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_ADD))
+                else if (token == OPER_ADD)
                     dealWithAdd(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_SUBTRACT))
+                else if (token == OPER_SUBTRACT)
                     dealWithSubtract(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_EQUALS))
+                else if (token == OPER_EQUALS)
                     dealWithEquals(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_ASSIGNMENT))
+                else if (token == OPER_ASSIGNMENT)
                     dealWithAssignment(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_GREATER))
+                else if (token == OPER_GREATER)
                     dealWithGreaterThan(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_LESS))
+                else if (token == OPER_LESS)
                     dealWithLessThan(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_GREATEREQL))
+                else if (token == OPER_GREATEREQL)
                     dealWithGreaterThanOrEqualTo(src, tokIndex);
-
-                else if (src[tokIndex].equals(OPER_LESSEQL))
+                else if (token == OPER_LESSEQL)
                     dealWithLessThanOrEqualTo(src, tokIndex);
 
                     /*
@@ -2302,11 +2371,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                      *  being found by calculate()...
                      */
 
-                else if (src[tokIndex].equals(OPER_RPAREN))
-                {
-                    TobyParseException.throwException(PROCERR_NO_LPAREN,
-                                                      null);
-                } // else if
+                else if (token == OPER_RPAREN)
+                    TobyParseException.throwException(PROCERR_NO_LPAREN, null);
             } // if
         } while (tokIndex >= 0);
     } // calculate
@@ -2587,6 +2653,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         TobyProcedure mainLine = findProcedure(PROCNAME_MAINLINE);
         boolean normalTermination = true;
 
+                // !!!
+        long startTime = System.currentTimeMillis();
+                // !!!
+
+
         if (mainLine != null)
         {
             initGraphics();
@@ -2624,6 +2695,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             codeThread = null;
             notifyEndInterpretation(normalTermination);
             deInitGraphics();
+                // !!!
+            System.out.println("Total execution time == (" +
+                                (System.currentTimeMillis() - startTime) +
+                                ") milliseconds.");
+                // !!!
         } // if
     } // run
 
