@@ -392,13 +392,17 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
         } // try
         catch (FlowException exc)
         {
-            String s = TobyLanguage.ERR_IN_FUNC;
+            String s = ((exc.procName == null) ? TobyLanguage.ERR_OUT_FUNC :
+                                                 TobyLanguage.ERR_IN_FUNC);
+
             s = TobyLanguage.replaceFmtTokenInStr(0, s, exc.getMessage());
             s = TobyLanguage.replaceFmtTokenInStr(1, s, exc.exceptionLine);
-            s = TobyLanguage.replaceFmtTokenInStr(2, s, exc.procName);
+
+            if (exc.procName != null)
+                s = TobyLanguage.replaceFmtTokenInStr(2, s, exc.procName);
+
             JOptionPane.showMessageDialog(null, s, TobyLanguage.ERROR,
                                           JOptionPane.ERROR_MESSAGE);
-
 
                 // !!! temp
             exc.printStackTrace();
