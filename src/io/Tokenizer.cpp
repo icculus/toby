@@ -370,7 +370,7 @@ Tokenizer::tokentype Tokenizer::tokenizeNewline(void) throw (IOException *)
     return(TT_NEWLINE);
 } // Tokenizer::tokenizeNewline
 
-
+// !!! FIXME: Need to check for newlines.  Argh.
 Tokenizer::tokentype Tokenizer::tokenizeWhitespace(void) throw (IOException *)
 {
     if (ignoreWhitespace)
@@ -407,6 +407,23 @@ Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
             pushBackChar();
             break;
         } // if
+
+        else if (ch == '\r')
+        {
+            if (nextChar() != '\n')
+                pushBackChar();
+            else
+            {
+                addToTokenBuffer('\r');
+                ch = '\n';
+            } // else
+            lineNum++;
+        } // else if
+
+        else if (ch == '\n')
+        {
+            lineNum++;
+        } // else if
 
         addToTokenBuffer(ch);
         if (ch == quoteChar)
@@ -468,11 +485,29 @@ Tokenizer::tokentype Tokenizer::tokenizeMultiLineComment(void)
         {
             do
             {
-                if (ch == EOF)  // uhoh.
+                if (ch == TOBYEOF)  // uhoh.
                 {
                     pushBackChar();
                     return(TT_MULTILINECOMMENT);  // oh well.
                 } // if
+
+                else if (ch == '\r')
+                {
+                    if (nextChar() != '\n')
+                        pushBackChar();
+                    else
+                    {
+                        addToTokenBuffer('\r');
+                        ch = '\n';
+                    } // else
+                    lineNum++;
+                } // else if
+
+                else if (ch == '\n')
+                {
+                    lineNum++;
+                } // else if
+
                 addToTokenBuffer(ch);
             } while ( (ch = nextChar()) != endChar );
 
@@ -506,11 +541,9 @@ Tokenizer::tokentype Tokenizer::tokenizeComment(void) throw (IOException *)
     if ( !((singleLineCommentStart) && (ch == *singleLineCommentStart)) )
     {
         checkSingle = false;
+        pushBackChar();
         if ( !((multiLineCommentStart) && (ch == *multiLineCommentStart)) )
-        {
-            pushBackChar();
             return(TT_NONE);
-        } // if
     } // if
 
     if (checkSingle)
@@ -597,6 +630,13 @@ Tokenizer::tokentype Tokenizer::nextToken(void) throw (IOException *)
     str = tokenBuffer;
     return(ttype);
 } // Tokenizer::nextToken
+
+
+bool Tokenizer::mustGetWord(const char *str)
+{
+    nextToken();
+    return((ttype == TT_WORD) && (strcmp(this->str, str) == 0));
+} // mustGetWord
 
 // end of Tokenizer.cpp ...
 
