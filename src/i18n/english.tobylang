@@ -1,0 +1,247 @@
+/*
+ * TOBY -- An abstract interpreter engine and system for learning.
+ * Copyright (C) 1999  Ryan C. Gordon.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+/*
+ * This text written by Ryan C. Gordon.
+ *
+ * If you are translating to a new language, do this:
+ *
+ *  1. Ask yourself, "Do I have a good enough grasp of Toby to understand this
+ *     file, and what its purpose is? Do I have sufficient translating skills?
+ *     Do I have the ethics to NOT put naughty words that the Toby maintainers
+ *     will not understand in here?" If you answered "no" to any of these
+ *     questions, stop now.
+ *  2. Change the "This text written by" line above to contain your
+ *     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
+ *     work, but by submitting your work, the maintainers of Toby gain
+ *     sole ownership of it. If you don't like that, stop now.
+ *  3. E-mail your completed work to Ryan at icculus@linuxgames.com. He'll
+ *     incorporate it into the next release of Toby.
+ *  4. C++ comments are acceptable, both in the "/* */" and "//" form. They
+ *     are ignored when this file is parsed. Lines with nothing but whitespace
+ *     are also ignored.
+ *  5. Only translate the text after the comma in a TOBYSTR section. That is,
+ *     in a line that reads: 'TOBYSTR(TOBYI18N_MENUNAME_FILE, "File")'
+ *     You would translate "File", and not TOBYSTR nor TOBYI18N_MENUNAME_FILE.
+ *  6. Things in quotes follow C++ literal string standards. If you wanted
+ *     to have a string with a quotation mark in it, you'd have to write it
+ *     like this:  TOBYSTR(MYSTR, "He said, \"hello.\"")
+ *  7. Please refer to docs/subsystems/i18n.txt in the source distribution
+ *     if you're curious about how this works under the hood or why we did
+ *     this like we did.
+ *  8. Sometimes strings need dynamic content. For example, there might be
+ *     a string that needs to convey, "error in "MyFunction" on line 15.",
+ *     to accomodate this, such strings would have "%0" and "%1", with
+ *     a description of what each represents. You may move the tokens to
+ *     whatever order they need to be in; %1 can come before %0 if your
+ *     language requires this, so long as all of those replacing tokens
+ *     continue to exist somewhere in the translated string.
+ *  9. Please try out your translation in the program to make sure that the
+ *     program parses the langfile correctly, and that everything looks good.
+ * 10. Expect to be notified if we have more translating work for you
+ *     in the future.  :)
+ * 11. Questions about context of strings and other concerns can be addressed
+ *     to icculus@linuxgames.com. Please understand that I only speak English,
+ *     and even that poorly.  :)
+ *
+ *                                   Have fun,
+ *                                      --ryan.
+ */
+
+#ifndef CALLED_FROM_TOBYLANGUAGE
+#error Do not include this directly; use util/TobyLanguage.h instead.
+#endif
+
+
+
+
+/* --- BEGIN TOBY I18N LANGUAGE DATA --- */
+
+
+// These are printed if there are problems in loading this langfile.
+//  Therefore, it's best to parse these at the top of the file, so they have
+//  a better chance of being translated when a real problem arises.
+//  What the % values are suppose to represent are pretty obvious.
+TOBYSTR(TOBYI18N_LANGIOEXCEPT, "LANGUAGE: IOException reading language data.")
+TOBYSTR(TOBYI18N_LANGBOGUSLINE, "LANGUAGE: Line %0 is bogus in %1.")
+TOBYSTR(TOBYI18N_LANGNOSUCHCLASS, "LANGUAGE: No such class [%0] on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGNOSUCHFIELD, "LANGUAGE: No such field [%0] on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGNOTPUBLIC, "LANGUAGE: Field [%0] is not on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGNOTSTATIC, "LANGUAGE: Field [%0] is not on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGNOTSTRING, "LANGUAGE: Field [%0] is not a string on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGISFINAL, "LANGUAGE: Field [%0] is final on line %1 in %2.")
+TOBYSTR(TOBYI18N_LANGSETFAILED, "LANGUAGE: Setting field [%0] failed with message [%1] on line %2 in %3.")
+
+// Don't touch this without good reason.
+TOBYSTR(TOBYI18N_NAME, "Toby")
+
+// %0 will be my proper name (Ryan C. Gordon), but it's inserted at runtime,
+//  so some jerk won't just change my name in the langfile. Of course, they
+//  could always just alter the source and recompile, but oh well.  :)
+TOBYSTR(TOBYI18N_WRITTENBY, "Written by %0.")
+
+// %0 is a year (format: "1999") and %1 is "Ryan C. Gordon" at runtime.
+TOBYSTR(TOBYI18N_COPYRIGHT, "Copyright (C) %0 %1")
+
+// The usage/commandline information. Printed to stderr. %0 is the
+//  name of the executable file that was run.
+TOBYSTR(TOBYI18N_USAGE, "USAGE: %0 [--langfile=xxx] [sourceFile.toby]")
+
+// Please change this to be your name, and the language you translated to.
+TOBYSTR(TOBYI18N_TRANSLATION_BY, "English language text by Ryan C. Gordon.")
+
+// This is a string in a message box's title bar.
+TOBYSTR(TOBYI18N_ERROR, "Error")
+
+// This is shown in the main window's title bar before a program is saved.
+//  Once saved, this is replaced with the filename where the program is stored.
+TOBYSTR(TOBYI18N_NEW_PROGRAM, "new program")
+
+// This is the string in the title bar of a Yes/No message box.
+TOBYSTR(TOBYI18N_PLEASE_CONFIRM, "Please confirm")
+
+// %0 is replaced with a filename at runtime in these strings...
+TOBYSTR(TOBYI18N_FILE_NOT_FOUND, "File \"%0\" not found.")
+TOBYSTR(TOBYI18N_CANNOT_LOAD_FILE, "Cannot load file \"%0\".")
+TOBYSTR(TOBYI18N_OVERWRITE_FILENAME, "Overwrite \"%0\"?")
+TOBYSTR(TOBYI18N_CANNOT_WRITE_TO, "Cannot write to \"%0\".")
+
+// Question in a yes/no message box.
+TOBYSTR(TOBYI18N_SAVE_MODIFIED_PROG, "Save modified program?")
+
+// This is a title bar string of a Yes/No "overwrite this file?" message box.
+TOBYSTR(TOBYI18N_FILE_EXISTS, "File exists")
+
+
+// Other warnings and errors...
+TOBYSTR(TOBYI18N_TOOMANYFILES, "More than one file specified on commandline! Just using the first one.")
+TOBYSTR(TOBYI18N_REPLACE_FORMAT_ERR, "Format string contains no \"%\" sequence!")
+TOBYSTR(TOBYI18N_REPLACE_RANGE_ERR, "Replace index must be between (0) and (9).")
+
+
+// These are three separate strings that make up one sentence:
+//  one string per line; try not to use more than 80 characters per string,
+//  as this is printed to stderr.
+TOBYSTR(TOBYI18N_NO_GUI1, "There was an error while starting the graphics engine...")
+TOBYSTR(TOBYI18N_NO_GUI2, " Chances are, you don't have the GUI support you need. Please start")
+TOBYSTR(TOBYI18N_NO_GUI3, " your Window system before running this program.")
+
+// This is printed to stderr after the NO_GUI strings, and is followed by
+//  whatever information is attached to the thrown error.
+TOBYSTR(TOBYI18N_HERES_THE_ERR, "For record, here's the error:")
+
+// Hopefully, the end user will never see these messages.
+TOBYSTR(TOBYI18N_NOT_YET_IMPLEMENTED, "Feature not yet implemented.")
+TOBYSTR(TOBYI18N_NODETREE_LOCKED, "NodeTree already locked.")
+TOBYSTR(TOBYI18N_NODETREE_ULOCKED, "NodeTree already unlocked.")
+TOBYSTR(TOBYI18N_BAD_CHILD_NODE, "Adding bad child type to NodeTree")
+TOBYSTR(TOBYI18N_USING_FREE_NODE, "Attempt to use NodeTree that has already called freeResources()!")
+TOBYSTR(TOBYI18N_SHOULDNOTBE, "This should not happen. Email icculus@linuxgames.com! (English only!)")
+
+// This is a file description for the file open dialog, and shows up in
+//  the dropdown for "show files of type" ...
+TOBYSTR(TOBYI18N_TOBY_FILE_DESCRIPTION, "TOBY source code")
+
+// Menu items...
+TOBYSTR(TOBYI18N_MENUNAME_FILE, "File")
+TOBYSTR(TOBYI18N_MENUITEM_NEW, "New")
+TOBYSTR(TOBYI18N_MENUITEM_OPEN, "Open...")
+TOBYSTR(TOBYI18N_MENUITEM_SAVE, "Save")
+TOBYSTR(TOBYI18N_MENUITEM_SAVEAS, "Save as...")
+TOBYSTR(TOBYI18N_MENUITEM_PRINT, "Print...")
+TOBYSTR(TOBYI18N_MENUITEM_QUIT, "Quit")
+TOBYSTR(TOBYI18N_MENUNAME_HELP, "Help")
+TOBYSTR(TOBYI18N_MENUITEM_HELP, "Help...")
+TOBYSTR(TOBYI18N_MENUITEM_ABOUT, "About...")
+TOBYSTR(TOBYI18N_MENUNAME_RUN, "Run")
+TOBYSTR(TOBYI18N_MENUITEM_STARTCODE, "Start program")
+TOBYSTR(TOBYI18N_MENUITEM_STOPCODE, "Stop program")
+TOBYSTR(TOBYI18N_MENUITEM_CLEAR, "Cleanup TurtleSpace")
+TOBYSTR(TOBYI18N_MENUNAME_DEBUG, "Debug")
+TOBYSTR(TOBYI18N_MENUITEM_TRACE, "Trace")
+TOBYSTR(TOBYI18N_MENUITEM_STEP, "Step")
+TOBYSTR(TOBYI18N_MENUITEM_WATCHVARS, "Watch variables")
+
+// This is the current position of the text cursor in the editing window.
+//  %0 and %1 are replaced with numbers at runtime.
+TOBYSTR(TOBYI18N_CARET_POSITION, "line %0, column %1")
+
+// %0 is another string (probably one of the ones below), that tells what
+//  sort of error occurred, such as "Syntax error."
+// %1 is a numeric. %2 is the name of a function in the user's Toby program.
+TOBYSTR(TOBYI18N_ERR_IN_FUNC, "%0 on line %1 in function %2")
+
+// Same as above, but the error didn't occur inside a function.
+TOBYSTR(TOBYI18N_ERR_OUT_FUNC, "%0 on line %1")
+
+// Error messages...
+//  Please note that the capitalized words are keywords
+//  in the Toby language, and should not be translated.
+//  (unless you are also translating the keywords in
+//   in toby.tobylang, too, but those changes will not
+//   be accepted in an official Toby distribution.)
+TOBYSTR(TOBYI18N_INTERNAL_ERROR, "Internal error")
+TOBYSTR(TOBYI18N_EXPECTED_TOKEN, "Expected token")
+TOBYSTR(TOBYI18N_SYNTAX_ERROR, "Syntax error")
+TOBYSTR(TOBYI18N_BAD_ASSIGNMENT, "Assignment not allowed")
+TOBYSTR(TOBYI18N_DOUBLE_DEF, "Duplicate definition")
+TOBYSTR(TOBYI18N_ORPHAN_CODE, "Code outside function")
+TOBYSTR(TOBYI18N_BAD_TYPE, "Bad variable type")
+TOBYSTR(TOBYI18N_NOT_VAR, "Expected variable")
+TOBYSTR(TOBYI18N_NO_MAINLINE, "Expected mainline")
+TOBYSTR(TOBYI18N_NO_RPAREN, "Expected \")\"")
+TOBYSTR(TOBYI18N_NO_LPAREN, "Expected \"(\"")
+TOBYSTR(TOBYI18N_NO_ASSIGN, "Expected \"=\"")
+TOBYSTR(TOBYI18N_NOT_A_FUNC, "Undefined function")
+TOBYSTR(TOBYI18N_BADNUM_ARGS, "Wrong arguments")
+TOBYSTR(TOBYI18N_BAD_IDENT, "Invalid identifier")
+TOBYSTR(TOBYI18N_NO_ENDFOR, "FOR without ENDFOR")
+TOBYSTR(TOBYI18N_NO_FOR, "ENDFOR without FOR")
+TOBYSTR(TOBYI18N_NO_ENDWHILE, "WHILE without ENDWHILE")
+TOBYSTR(TOBYI18N_NO_WHILE, "ENDWHILE without WHILE")
+TOBYSTR(TOBYI18N_ORPHAN_ELIF, "ELSEIF without IF")
+TOBYSTR(TOBYI18N_ORPHAN_ELSE, "ELSE without IF")
+TOBYSTR(TOBYI18N_ORPHAN_ENDIF, "ENDIF without IF")
+TOBYSTR(TOBYI18N_TYPE_MMATCH, "Type mismatch")
+TOBYSTR(TOBYI18N_BAD_ARGUMENT, "Invalid argument")
+TOBYSTR(TOBYI18N_MAIN_RETVAL, "MAIN returns a value")
+TOBYSTR(TOBYI18N_BAD_GLOBAL, "Expected variable or FUNCTION")
+TOBYSTR(TOBYI18N_EXPECTED_END, "Expected ENDFUNCTION")
+TOBYSTR(TOBYI18N_NO_RETTYPE, "Expected RETURNS")
+TOBYSTR(TOBYI18N_ELIF_AFTER_ELSE, "ELSEIF after ELSE")
+TOBYSTR(TOBYI18N_ELSE_AFTER_ELSE, "Multiple ELSE statements")
+TOBYSTR(TOBYI18N_NO_VAR_DECL, "Can't declare variables here")
+TOBYSTR(TOBYI18N_FUNC_IN_FUNC, "FUNCTION within function")
+TOBYSTR(TOBYI18N_DIV_BY_ZERO, "Division by zero")
+TOBYSTR(TOBYI18N_NOCURTURTLE, "No current turtle")
+TOBYSTR(TOBYI18N_TURTLE_FENCED, "Turtle past fence")
+TOBYSTR(TOBYI18N_OUT_OF_RANGE, "Out of range")
+TOBYSTR(TOBYI18N_OVERFLOW, "Overflow")
+TOBYSTR(TOBYI18N_NOT_AN_ARRAY, "Expected array")
+TOBYSTR(TOBYI18N_NO_RARRAY, "Expected \"]\"")
+TOBYSTR(TOBYI18N_NO_LARRAY, "Expected \"[\"")
+TOBYSTR(TOBYI18N_NOT_WHOLE_NUM, "Expected whole number")
+TOBYSTR(TOBYI18N_FILE_NOT_OPEN, "File not open")
+TOBYSTR(TOBYI18N_END_OF_FILE, "End of file")
+
+
+/* --- END TOBY I18N LANGUAGE DATA --- */
+
+// end of english.tobylang ...
+
