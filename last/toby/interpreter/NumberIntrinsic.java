@@ -50,12 +50,12 @@ public class NumberIntrinsic extends Intrinsic
         return(java.lang.Double.toString(value));
     } // toString
 
-    public Intrinsic getCopy()
+    protected Intrinsic getCopyImpl()
     {
         NumberIntrinsic retVal = new NumberIntrinsic();
         retVal.value = this.value;
         return(retVal);
-    } // getCopy
+    } // getCopyImpl
 
     public void setValue(Intrinsic newVal) throws FlowException
     {

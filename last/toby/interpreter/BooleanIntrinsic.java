@@ -48,12 +48,12 @@ public class BooleanIntrinsic extends Intrinsic
         return(value ? "true" : "false");
     } // toString
 
-    public Intrinsic getCopy()
+    protected Intrinsic getCopyImpl()
     {
         BooleanIntrinsic retVal = new BooleanIntrinsic();
         retVal.value = this.value;
         return(retVal);
-    } // getCopy
+    } // getCopyImpl
 
     public boolean isConstantValue()
     {

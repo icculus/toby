@@ -29,6 +29,8 @@ import last.toby.util.TobyLanguage;
      */
 public abstract class Intrinsic implements Linkable
 {
+    protected String name = null;
+
         /**
          * If (debugging) is (true), then println debug info to stdout.
          *
@@ -39,6 +41,16 @@ public abstract class Intrinsic implements Linkable
 //    {
 //        last.toby.util.BugSquasher.println(funcName, msg);
 //    } // _D
+
+    public void setIdentifier(String name)
+    {
+        this.name = name;
+    } // setName
+
+    public String getIdentifier()
+    {
+        return(this.name);
+    } // getIdentifier
 
     public void setValue(Intrinsic newVal) throws FlowException
     {
@@ -184,8 +196,15 @@ public abstract class Intrinsic implements Linkable
         linkImpl(glob);
     } // link
 
-    public abstract Intrinsic getCopy();
+    public final Intrinsic getCopy()
+    {
+        Intrinsic retVal = getCopyImpl();
+        retVal.setIdentifier(this.name);
+        return(retVal);
+    } // getCopy
+
     public abstract boolean isConstantValue();
+    protected abstract Intrinsic getCopyImpl();
     protected abstract void linkImpl(GlobalLogicContext glob)
                                      throws ParseException;
 } // Intrinsic

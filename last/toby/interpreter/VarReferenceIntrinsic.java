@@ -28,7 +28,6 @@ import last.toby.exceptions.*;
      */
 public class VarReferenceIntrinsic extends Intrinsic
 {
-    protected String name = null;
     protected GlobalLogicContext globalContext = null;
     protected LogicContext parentContext = null;
     protected int varIndex = 0xFFFF;
@@ -39,7 +38,7 @@ public class VarReferenceIntrinsic extends Intrinsic
                                  LogicContext parentContext,
                                  int lineNum)
     {
-        this.name = identifier;
+        setIdentifier(identifier);
         this.parentContext = parentContext;
         this.lineno = lineNum;
     } // Constructor
@@ -54,7 +53,7 @@ public class VarReferenceIntrinsic extends Intrinsic
         return(name + " [" + getRealVar().toString() + "]");
     } // toString
 
-    public Intrinsic getCopy()
+    protected Intrinsic getCopyImpl()
     {
 /* !!!
         VarReferenceIntrinsic retVal;
@@ -67,7 +66,7 @@ public class VarReferenceIntrinsic extends Intrinsic
 */
 
         return(getRealVar().getCopy());
-    } // getCopy
+    } // getCopyImpl
 
     public int getStackIndex()
     {
@@ -83,16 +82,6 @@ public class VarReferenceIntrinsic extends Intrinsic
     {
         return(this.global == false);
     } // isLocal
-
-    public void setIdentifier(String name)
-    {
-        this.name = name;
-    } // setName
-
-    public String getIdentifier()
-    {
-        return(this.name);
-    } // getIdentifier
 
     protected Intrinsic getRealVar()
     {
@@ -112,6 +101,7 @@ public class VarReferenceIntrinsic extends Intrinsic
     public void setValue(Intrinsic newVal) throws FlowException
     {
         getRealVar().setValue(newVal);
+// !!!        parentContext.notifyVar
     } // setValue overload
 
     public void setValue(int newVal) throws FlowException

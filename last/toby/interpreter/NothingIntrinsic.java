@@ -29,10 +29,10 @@ public final class NothingIntrinsic extends Intrinsic
     public static final NothingIntrinsic nothing = new NothingIntrinsic();
     public static final String NOTHING_STRING = "nothing";
 
-    public Intrinsic getCopy()
+    protected Intrinsic getCopyImpl()
     {
         return(nothing);
-    } // getCopy
+    } // getCopyImpl
 
     public boolean isConstantValue()
     {
