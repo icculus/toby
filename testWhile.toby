@@ -1,0 +1,52 @@
+//----------------------------------------------------
+// This is an over-glorified test of the
+//  WHILE/ENDWHILE construct, buried in the
+//  doTriangle() function. If it works, you should
+//  end up with three filled-in triangles.
+//
+// Copyright (c) 1999 Lighting and Sound Technologies.
+//  Written by Ryan C. Gordon.
+//----------------------------------------------------
+
+function main() returns nothing
+	nuclearSymbol(150)
+	hideTurtle()
+endfunction
+
+
+function nuclearSymbol(number size) returns nothing
+	number i
+
+	setPenColor(6)
+
+	for i = size to 1 step -1
+		setAngle(30)
+		doTriangle(i)
+	
+		setAngle(270)
+		doTriangle(i)
+	
+		setAngle(150)
+		doTriangle(i)
+	endfor
+endfunction
+
+
+function doTriangle(number size) returns number
+	number i
+
+	i = 1
+
+	while (i <= 3)
+		i = i + 1
+		goForward(size)
+		turnRight(360 / 3)
+	endwhile
+endfunction
+
+
+
+
+
+
+
