@@ -109,6 +109,8 @@ public class FunctionCallExprLogicContext extends ExpressionLogicContext
         try
         {
             pushed = 0;
+
+            this.globalLogicContext.pushStackFrame();
             for (i = 0; i < max; i++)
             {
                 var = this.pushQueue[i];
@@ -122,6 +124,7 @@ public class FunctionCallExprLogicContext extends ExpressionLogicContext
         finally
         {
             this.globalLogicContext.popMultipleLocals(pushed);
+            this.globalLogicContext.popStackFrame();
         } // finally
 
         return(retVal);
