@@ -3,19 +3,19 @@ there, ported initial TurtleSpace and util stuff, hacked Makefile and a
 standalone program for initial testing.)
 
 05052001 - Plugged in turtle coordinate calculating code in Turtle.cpp.
-           Got turtle rendering in GTKTurtleSpaceRenderer. Added gdk_flush()
-           calls to GTKTurtleSpaceRenderer, so it syncs up with the X server
-           and doesn't hog the processor. Added -lm to the linker line.
+            Got turtle rendering in GTKTurtleSpaceRenderer. Added gdk_flush()
+            calls to GTKTurtleSpaceRenderer, so it syncs up with the X server
+            and doesn't hog the processor. Added -lm to the linker line.
 
 05072001 - Filled in offscreen rendering API, for page flipping/bitblt'ing
-           of entire screen at once. This should facilitate using Toby for
-           animation. FrameBufferTurtleSpaceRenderer hasn't filled in this
-           API, which means that for now, only GTKTurtleSpaceRenderer works.
-           The FrameBuffer renderer needs a rewrite anyhow. Little tweaks to
-           the GTK renderer. Modified standalone.cpp to test offscreen
-           rendering. Started initial Tokenizer implementation. Feeling
-           intimidated. Added some debugging output to Reader subclasses.
-           Changed some internal structure names.
+            of entire screen at once. This should facilitate using Toby for
+            animation. FrameBufferTurtleSpaceRenderer hasn't filled in this
+            API, which means that for now, only GTKTurtleSpaceRenderer works.
+            The FrameBuffer renderer needs a rewrite anyhow. Little tweaks to
+            the GTK renderer. Modified standalone.cpp to test offscreen
+            rendering. Started initial Tokenizer implementation. Feeling
+            intimidated. Added some debugging output to Reader subclasses.
+            Changed some internal structure names.
 
 05252001 - Added programs/birthday.toby.
 
@@ -25,6 +25,10 @@ standalone program for initial testing.)
            documentation for my wacky new i18n scheme. Renamed src/localization
            to src/i18n. Committed a buttload of stuff to CVS, which is now
            publically hosted at icculus.org.
+
+07272001 - Rewrote the tobylang files for the new format, and put together
+            util/TobyLanguage.h and util/TobyLanguage.cpp for the new format.
+            Naturally, this breaks everything.  :)
 
 
 // end of changelog.txt ...
