@@ -1,0 +1,387 @@
+
+function main() returns nothing
+	hideTurtle()
+	enableFence()
+	drawPresent()
+	drawCake()
+	drawText(true)
+
+		// !!! FIXME: doesn't scale.
+	setTurtleXY(200, getTurtleSpaceHeight() - 20)
+	setAngle(0)
+	setPenColor(11)
+	drawString("Enjoy your present!")
+	setPenDown()
+endfunction
+
+
+function drawPresent() returns nothing
+	number height = getTurtleSpaceHeight()
+	number width = getTurtleSpaceWidth()
+	number boxSize = height * 0.30
+	number ribbonSize = boxSize * 0.10
+	number lowerLeftX = (width - boxSize) / 2
+	number lowerLeftY = height - (boxsize * 1.5) / 2
+	number ribbonOffset = (boxSize - ribbonSize) / 2
+
+	setPenDown()
+	setPenColor(15)  // white.
+
+		// draw box.
+	setTurtleXY(lowerLeftX, lowerLeftY)
+	setAngle(-90)  // point north
+	box(boxSize)
+
+	setPenColor(4)  // red.
+
+		// draw internal horizontal ribbon.
+	setTurtleXY(lowerLeftX, lowerLeftY - ribbonOffset)
+	setAngle(0)    // to the east.
+	goForward(ribbonOffset)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	goForward(ribbonOffset)
+	turnLeft(90)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	turnLeft(90)
+	goForward(ribbonOffset)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	goForward(ribbonOffset)
+
+		// draw internal vertical ribbon.
+	setTurtleXY(lowerLeftX + ribbonOffset, lowerLeftY)
+	setAngle(-90)    // to the north.
+	goForward(ribbonOffset)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	goForward(ribbonOffset)
+	turnRight(90)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	turnRight(90)
+	goForward(ribbonOffset)
+	setPenUp()
+	goForward(ribbonSize)
+	setPenDown()
+	goForward(ribbonOffset)
+
+
+		// !!! whoops, this part won't scale. FIXME.
+
+	setTurtleXY(lowerLeftX + ribbonOffset, lowerLeftY - boxSize)
+	setAngle(-135)
+	goForward(boxSize / 3)
+	turnRight(90)
+	goForward(boxSize / 4)
+ 	turnRight(120)
+	goForward(86)
+
+	setTurtleXY(lowerLeftX + ribbonOffset + ribbonSize, lowerLeftY - boxSize)
+	setAngle(-135 + 90)
+	goForward(boxSize / 3)
+	turnLeft(90)
+	goForward(boxSize / 4)
+ 	turnLeft(120)
+	goForward(86)
+endfunction
+
+function box(number size) returns nothing
+	number i
+	for i = 1 to 4
+		goForward(size)
+		turnRight(90)
+	endfor
+endfunction
+
+function drawCake() returns nothing
+	number height = getTurtleSpaceHeight()
+
+endfunction
+
+
+function drawText(boolean late) returns nothing
+	number height = getTurtleSpaceHeight()
+	number width = getTurtleSpaceWidth()
+	number fontHeight = height * 0.05
+	number fontWidth = width * 0.04
+	number charCount = stringlength("Happy Birthday")
+	number spaceX
+	number spaceY
+
+	setTurtleXY((width - ((fontWidth * 1.5) * (charCount - 1))) / 2, height * 0.15)
+	setPenColor(10)
+	setPenDown()
+
+	drawH(fontHeight, fontWidth)
+	drawA(fontHeight, fontWidth)
+	drawP(fontHeight, fontWidth)
+	drawP(fontHeight, fontWidth)
+	drawY(fontHeight, fontWidth)
+
+	spaceX = getTurtleX()
+	spaceY = getTurtleY()
+
+	if (late)
+		setTurtleXY(spaceX + (fontWidth * 0.25), spaceY - (fontHeight - (fontHeight * 0.25)))
+		setAngle(-60)
+		setPenColor(9)
+		goForward(fontWidth * 0.85)
+		turnRight(45)
+		drawString("(belated!)")
+		turnRight(105)
+		goForward(fontWidth * 0.85)
+		setPenColor(10)
+	endif
+
+		// space between words.
+	setTurtleXY(spaceX + (fontWidth * 1.5), spaceY)
+
+	drawB(fontHeight, fontWidth)
+	drawI(fontHeight, fontWidth)
+	drawR(fontHeight, fontWidth)
+	drawT(fontHeight, fontWidth)
+	drawH(fontHeight, fontWidth)
+	drawD(fontHeight, fontWidth)
+	drawA(fontHeight, fontWidth)
+	drawY(fontHeight, fontWidth)
+
+	charCount = stringlength("Carrie")
+	setTurtleXY((width - ((fontWidth * 1.5) * charCount)) / 2, getTurtleY() + fontHeight * 1.5)
+
+	drawC(fontHeight, fontWidth)
+	drawA(fontHeight, fontWidth)
+	drawR(fontHeight, fontWidth)
+	drawR(fontHeight, fontWidth)
+	drawI(fontHeight, fontWidth)
+	drawE(fontHeight, fontWidth)
+
+		// exclamation point.
+	setAngle(-90) // face north
+	goForward(fontHeight * 0.15)
+	setPenUp()
+	goForward(fontHeight * 0.15)
+	setPenDown()
+	goForward(fontHeight * 0.70)
+endfunction
+
+function drawH(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	goBackward(fontHeight / 2)
+	turnRight(90)
+	goForward(fontWidth)
+	turnLeft(90)
+	goForward(fontHeight / 2)
+	goBackward(fontHeight)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawA(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth)
+	turnRight(90)
+	goForward(fontHeight)
+	goBackward(fontHeight / 2)
+	turnRight(90)
+	goForward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawP(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth)
+	turnRight(90)
+	goForward(fontHeight / 2)
+	turnRight(90)
+	goForward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawY(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	setPenUp()
+	goForward(fontHeight)
+	setPenDown()
+	goBackward(fontHeight * 0.40)
+	turnRight(90)
+	goForward(fontWidth / 2)
+	turnRight(90)
+	goForward(fontHeight * 0.60)
+	goBackward(fontHeight * 0.60)
+	turnLeft(90)
+	goForward(fontWidth / 2)
+	turnLeft(90)
+	goForward(fontHeight * 0.40)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawB(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth * 0.80)
+	turnRight(90)
+	goForward((fontHeight / 2) * 0.20)
+	turnLeft(90)
+	goForward(fontWidth * 0.20)
+	turnRight(90)
+	goForward((fontHeight / 2) * 0.80)
+	turnRight(90)
+	goForward(fontWidth)
+	goBackward(fontWidth)
+	turnLeft(90)
+	goForward(fontHeight / 2)
+	turnRight(90)
+	goForward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawI(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(0)  // east
+	goForward(fontWidth)
+	goBackward(fontWidth / 2)
+	turnLeft(90)
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth / 2)
+	goBackward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawR(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth * 0.80)
+	turnRight(90)
+	goForward((fontHeight / 2) * 0.20)
+	turnLeft(90)
+	goForward(fontWidth * 0.20)
+	turnRight(90)
+	goForward((fontHeight / 2) * 0.80)
+	turnRight(90)
+	goForward(fontWidth)
+	goBackward(fontWidth * 0.75)
+	turnLeft(90)
+	goForward(fontHeight / 2)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawT(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(0)  // east
+	setPenUp()
+	goForward(fontWidth / 2)
+	setPenDown()
+	turnLeft(90)
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth / 2)
+	goBackward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawD(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(-90)  // north
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth * 0.80)
+	turnRight(90)
+	goForward((fontHeight / 2) * 0.20)
+	turnLeft(90)
+	goForward(fontWidth * 0.20)
+	turnRight(90)
+	goForward((fontHeight / 2) * 1.60)
+	turnRight(90)
+	goForward(fontWidth * 0.20)
+	turnLeft(90)
+	goForward((fontHeight / 2) * 0.20)
+	turnRight(90)
+	goForward(fontWidth * 0.80)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawC(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(0)  // east
+	goForward(fontWidth)
+	goBackward(fontWidth)
+	turnLeft(90)
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth)
+
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+function drawE(number fontHeight, number fontWidth) returns nothing
+	number x = getTurtleX()
+	number y = getTurtleY()
+
+	setAngle(0)  // east
+	goForward(fontWidth)
+	goBackward(fontWidth)
+	turnLeft(90)
+	goForward(fontHeight / 2)
+	turnRight(90)
+	goForward(fontWidth * 0.75)
+	goBackward(fontWidth * 0.75)
+	turnLeft(90)
+	goBackward(fontHeight / 2)
+	goForward(fontHeight)
+	turnRight(90)
+	goForward(fontWidth)
+	setTurtleXY(x + fontWidth * 1.5, y)
+endfunction
+
+// end of birthday.toby ...
+
+
