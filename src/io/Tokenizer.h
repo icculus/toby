@@ -137,6 +137,12 @@ public:
         //  just determines if the (num) field is calculated.
     virtual void setConvertNumbers(bool onOff);
 
+        // When a token that would be reported as TT_NUMBER is encountered,
+        //  report it as TT_WORD instead. setConvertNumbers can still be
+        //  configured to update the num field independent of this setting.
+        //  Default is false.
+    virtual void setNumbersAreWords(bool onOff);
+
         // !!! write me!
     virtual tokentype nextToken(void) throw (IOException *);
 
@@ -193,6 +199,7 @@ private:
     bool ignoreMultiLineComments;
 
     bool convertNumbers;
+    bool numsAreWords;
 
     int lineNum;
 

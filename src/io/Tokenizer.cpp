@@ -82,6 +82,7 @@ Tokenizer::Tokenizer(TobyReader *reader) :
     multiLineCommentEnd(NULL),
     ignoreMultiLineComments(false),
     convertNumbers(true),
+    numsAreWords(false),
     lineNum(0),
     lastChar(0),
     backBufferSize(0)
@@ -177,6 +178,12 @@ void Tokenizer::setEscaping(bool onOff)
 void Tokenizer::setConvertNumbers(bool onOff)
 {
     convertNumbers = onOff;
+} // Tokenizer::setConvertNumbers
+
+
+void Tokenizer::setNumbersAreWords(bool onOff)
+{
+    numsAreWords = onOff;
 } // Tokenizer::setConvertNumbers
 
 
@@ -345,7 +352,7 @@ Tokenizer::tokentype Tokenizer::tokenizeNumber(void) throw (IOException *)
     if (convertNumbers)
         num = atof(tokenBuffer);
 
-    return(TT_NUMBER);
+    return((numsAreWords) ? TT_WORD : TT_NUMBER);
 } // Tokenizer::tokenizeNumber
 
 
