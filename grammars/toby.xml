@@ -150,6 +150,7 @@
     <element name="TOPLEVEL">
         <repeat min="0" max="n"><reqelement name="GLOBALVARS"/></repeat>
         <repeat min="0" max="n"><reqelement name="FUNCTION"/></repeat>
+        <reqeof/>
 
         <element name="GLOBALVARS">
             <optional>
