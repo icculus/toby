@@ -245,6 +245,8 @@ UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp
 PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
+IOSRCS := io/FileReader.cpp io/StringReader.cpp
+
 
 valid_threads_target := false
 ifeq ($(strip $(platform_threads)),pthreads)
@@ -323,7 +325,7 @@ ifneq ($(strip $(valid_video_target)),true)
 endif
 
 COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS) \
-              $(PARSERSRCS) $(CLOCKSRCS)
+              $(PARSERSRCS) $(CLOCKSRCS) $(IOSRCS)
 
 # Rule for getting list of objects from source
 COMMONOBJS1 := $(COMMONSRCS:.c=.o)
@@ -368,6 +370,7 @@ $(BINDIR):
 	mkdir -p $(BINDIR)
 	mkdir -p $(BINDIR)/turtlespace
 	mkdir -p $(BINDIR)/util
+	mkdir -p $(BINDIR)/io
 	mkdir -p $(BINDIR)/parsers/toby
 	mkdir -p $(BINDIR)/platform/renderers/$(VIDEODIR)
 	mkdir -p $(BINDIR)/platform/clocks/$(CLOCKDIR)
