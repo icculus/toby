@@ -27,6 +27,10 @@ What's new in Toby alpha6:
   package. TriangleTurtle mostly made it's way into SwingRenderer for now, and
   will eventually move into TurtleSpace. Turtles, I guess, will always be
   triangles. Abstractness has limits.  :)
+- Added (for my amusement as much as a test of the new TurtleSpace) an
+  SDL-based native code implementation of TurtleSpaceRenderer. It crashes
+  sooner than later, and everything but line-drawing is a no-op, but it runs!
+  This is not to be tried by the weak, but the C and java code is in there.
 - This will be the last Java release by me. The next revision will be a C++
   rewrite. The Java code will be kept around, and enhancements and fixes will
   still be accepted, but I will be focusing on the C++ version after alpha6.
