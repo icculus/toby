@@ -1,0 +1,189 @@
+#
+#   This text written by Ryan C. Gordon.
+#
+# If you are translating to a new language, do this:
+#
+#  1. Ask yourself, "Do I have a good enough grasp of Java and Toby to
+#     understand this file, and what its purpose is? Do I have sufficient
+#     translating skills? Do I have the ethics to NOT put naughty words that
+#     the Toby maintainers will not understand in here?" If you answered
+#     "no" to any of these questions, stop now.
+#  2. Change the "This text written by" line above to contain your
+#     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
+#     work, but by submitting your work, the maintainers of Toby gain
+#     sole ownership of it. If you don't like that, stop now.
+#  3. E-mail your completed work to icculus@lokigames.com. He'll
+#     incorporate it into the next release of Toby.
+#  4. Lines beginning with '#' are ignored when this file is parsed.
+#     Completely blank lines are also ignored. All the text must
+#     be kept in the current order; line 1 (first line that isn't ignored,
+#     that is) will always be the "USAGE:" line, for example.
+#     Don't reorganize this file's contents.
+#  5. Sometimes strings need dynamic content. For example, there might be
+#     a string that needs to convey, "error in "MyFunction" on line 15.",
+#     to accomodate this, such strings would have "%0" and "%1", with
+#     a description of what each represents. You may move the tokens to
+#     whatever order they need to be in; %1 can come before %0 if your
+#     language requires this, so long as all of those replacing tokens
+#     continue to exist somewhere in the translated string.
+#  6. Expect to be notified if we have more translating work for you
+#     in the future.  :)
+#  7. Questions about context of strings and other concerns can be addressed
+#     to icculus@lokigames.com.
+#
+#                                   Have fun,
+#                                      --ryan.
+#
+
+# the usage information. Printed to stderr.
+USAGE: Toby.class [--langfile=xxx] [sourceFile.toby]
+
+# Please change this to be your name, and the language you translated to.
+English language text by Ryan C. Gordon.
+
+Written by Ryan C. Gordon.
+Copyright (C) 1999 Ryan C. Gordon
+
+# This is the string in an error dialog's title bar.
+Error
+
+# These are mostly debug messages.
+Not yet implemented.
+NodeTree already locked.
+NodeTree already unlocked.
+Adding bad child type to NodeTree
+Attempt to use NodeTree that has already called freeResources()!
+
+# This is shown in the main window's title bar before a program is saved.
+#  Once saved, this is replaced with the filename where the program is stored.
+new program
+
+# This is the string in the title bar of a Yes/No popup dialog.
+Please confirm
+
+Save modified program?
+
+# %0 is replaced with a filename at runtime.
+File "%0" not found.
+
+# %0 is replaced with a filename at runtime.
+Cannot load file "%0".
+
+File exists
+
+# %0 is replaced with a filename at runtime.
+Overwrite "%0"?
+
+# %0 is replaced with a filename at runtime.
+Cannot write to "%0".
+
+# These three are printed to stderr on three separate lines if there's
+#  a class loading problem. Try not to use more than 80 characters per string.
+Cannot find a necessary .class file.
+Perhaps you need to set your CLASSPATH?
+Also, make sure you have JDK 1.2 or later!
+
+More than one file specified on commandline! Just using the first one.
+
+Format string contains no "%" sequence!
+Replace index must be between (0) and (9).
+
+# These are three separate strings that make up one sentence:
+#  one string per line; try not to use more than 80 characters per string,
+#  as this is printed to stderr.
+Your Java Virtual Machine has thrown an error...chances are,
+you don't have the GUI support you need. Please start your windowing system
+before running this program.
+
+For record, here's the error:
+
+Your Java Virtual Machine is too old; goto http://java.sun.com/ ...
+
+WARNING: setIconImage() is broken on this Java Virtual Machine!
+
+# This is printed to stderr when a warning can be worked around (currently,
+#  the only warning is the setIconImage(), above).
+(We will work around it, though.)
+
+# This is a file description for the file open dialog, and shows up in
+#  the dropdown for "show files of type" ...
+TOBY source code
+
+# This is the current position of the text cursor in the editing window.
+#  %0 and %1 are replaced with numbers at runtime.
+line %0, column %1
+
+# %0 is another string (probably one of the ones below.)
+# %1 is a numeric. %2 is the name of a function in the user's Toby program.
+Error %0 on line %1 in function %2
+
+# This is an internal error alert message.
+This should not happen. Email icculus@lokigames.com!
+
+
+# Menu items.
+File
+New
+Open...
+Save
+Save as...
+Print...
+Quit
+
+Help
+Help...
+About...
+
+Run
+Start program
+Stop program
+Cleanup TurtleSpace
+
+Debug
+Trace
+Step
+Watch variables
+
+
+# Error messages.
+#  Please note that the capitalized words are keywords
+#  in the Toby language, and should not be translated.
+Internal Error
+Expected token
+Syntax error
+Assignment not allowed
+Duplicate Definition
+Code outside function
+Internal error
+Bad variable type
+Expected variable
+Expected mainline
+Expected ")"
+Expected "("
+Expected "="
+Undefined function
+Wrong arguments
+Invalid identifier
+FOR without ENDFOR
+ENDFOR without FOR
+WHILE without ENDWHILE
+ENDWHILE without WHILE
+ELSEIF without IF
+ELSE without IF
+ENDIF without IF
+Type mismatch
+Invalid argument
+MAIN returns a value
+Expected variable or FUNCTION
+Expected ENDFUNCTION
+Expected RETURNS
+ELSEIF after ELSE
+Multiple ELSE statements
+Can't declare variables here
+FUNCTION within function
+Division by zero
+No current turtle
+Turtle past fence
+
+# end of langfile.
+
