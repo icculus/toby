@@ -13,8 +13,10 @@
  */
 
 import java.awt.*;
+import java.awt.image.*;
+import javax.swing.*;
 
-public abstract class Turtle
+public abstract class Turtle implements ImageObserver
 {
 
         /*
@@ -56,10 +58,28 @@ public abstract class Turtle
     } // getSize
 
 
-    public final void paint(Graphics g)
+    private void blankTurtle(Graphics g, Image copyImage)
+    {
+        g.drawImage(copyImage,
+                    (int) turtleX,
+                    (int) turtleY,
+                    (int) (turtleX + sideLength),
+                    (int) (turtleY + sideLength),
+                    (int) turtleX,
+                    (int) turtleY,
+                    (int) (turtleX + sideLength),
+                    (int) (turtleY + sideLength),
+                    this);
+    } // blankTurtle
+
+
+    public final void paint(Graphics g, Image copyImage)
     {
         if (isVisible)
+        {
+            blankTurtle(g, copyImage);
             paintImpl(g);
+        } // if
     } // paint
 
 
@@ -78,13 +98,20 @@ public abstract class Turtle
      */
 
 
-    public final void setVisible(boolean visibility)
+    public final void setVisible(boolean visibility, Graphics g, Image copyImg)
     {
-        isVisible = visibility;
+        if (isVisible != visibility)
+        {
+            if (visibility)
+                paint(g, copyImg);
+            else
+                blankTurtle(g, copyImg);
+            isVisible = visibility;
+        } // if
     } // setVisible
 
 
-    public final void rotate(double degrees)
+    public final void rotate(double degrees, Graphics g, Image copyImage)
     /**
      *  Rotate our little virtual friend. Specifying a negative number spins
      *   him left, positive numbers spin him right. Just like in geometry.
@@ -95,10 +122,11 @@ public abstract class Turtle
     {
         angle += degrees;
         angle %= 360.0;       // check this !!!
+        paint(g, copyImage);
     } // rotate
 
 
-    public final void homeTurtle(Component comp)
+    public final void homeTurtle(JComponent comp, Graphics g, Image copyImage)
     /**
      *  Moves the Turtle back to the center of turtlespace, and face it north.
      *
@@ -106,22 +134,28 @@ public abstract class Turtle
      *    returns : void.
      */
     {
-        Dimension d = comp.getSize();
+        blankTurtle(g, copyImage);
 
-        turtleX = (double) ((d.width  - sideLength) / 2);
-        turtleY = (double) ((d.height - sideLength) / 2);
+        turtleX = (double) ((comp.getWidth()  - sideLength) / 2);
+        turtleY = (double) ((comp.getHeight() - sideLength) / 2);
 
         angle = 0.0;
+        if (isVisible)
+            paintImpl(g);
     } // homeTurtle
 
 
-    public final void setXY(double x, double y)
+    public final void setXY(double x, double y, Graphics g, Image copyImage)
     /** !!! comment !!!
      *
      */
     {
+        blankTurtle(g, copyImage);
         turtleX = x;
         turtleY = y;
+
+        if (isVisible)
+            paintImpl(g);
     } // moveTurtle
 
 
@@ -148,11 +182,12 @@ public abstract class Turtle
     } // getXY
 
 
-    public final void forwardTurtle(Graphics[] g, double distance)
+    public final void forwardTurtle(double distance,
+                                    Graphics gr[], Graphics g, Image copyImage)
     /**
      * Move turtle forward (distance) length in whatever direction he's
      *  facing.
-     *
+     *  !!! comment this! It's out of date.
      *    params : distance == how far to move the turtle.
      *   returns : void.
      */
@@ -164,18 +199,21 @@ public abstract class Turtle
 
         if (!isPenUp)   // draw the line covering path turtle took?
         {
-            for (i = 0; i < g.length; i++)
+            for (i = 0; i < gr.length; i++)
             {
-                g[i].setColor(penColor);
-                g[i].drawLine(TobyGeometry.roundDoubleToInt(turtleX),
-                              TobyGeometry.roundDoubleToInt(turtleY),
-                              TobyGeometry.roundDoubleToInt(point.x),
-                              TobyGeometry.roundDoubleToInt(point.y));
+                gr[i].setColor(penColor);
+                gr[i].drawLine(TobyGeometry.roundDoubleToInt(turtleX),
+                               TobyGeometry.roundDoubleToInt(turtleY),
+                               TobyGeometry.roundDoubleToInt(point.x),
+                               TobyGeometry.roundDoubleToInt(point.y));
             } // for
         } // if
 
+        blankTurtle(g, copyImage);
         turtleX = point.x;    // update internals...
         turtleY = point.y;
+        if (isVisible)
+            paintImpl(g);
     } // forwardTurtle
 
 
@@ -185,10 +223,11 @@ public abstract class Turtle
     } // getAngle
 
 
-    public final void setAngle(double newAngle)
+    public final void setAngle(double newAngle, Graphics g, Image copyImage)
     {
         angle = newAngle;
         angle %= 360.0;       // check this !!!
+        paint(g, copyImage);
     } // setAngle
 
 
@@ -309,6 +348,14 @@ public abstract class Turtle
             retVal = 11.0;
         return(retVal);
     } // numberByColor
+
+
+        // ImageObserver implementation ...
+    public boolean imageUpdate(Image img, int infoflags,
+                               int x, int y, int width, int height)
+    {
+        return(false);
+    } // imageUpdate
 
 } // Turtle
 

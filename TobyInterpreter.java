@@ -14,10 +14,12 @@
 import java.awt.*;
 import java.io.*;
 import java.util.*;
+import java.awt.event.*;
 
 import javax.swing.*;
 
-public final class TobyInterpreter extends TurtleSpace implements Runnable
+public final class TobyInterpreter extends TurtleSpace implements Runnable,
+                                                          ComponentListener
 {
         // Constants...
     private final static int GRAPHICS_SCREEN = 0;
@@ -134,7 +136,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     {
         super();
 
-        setDoubleBuffered(true);
+        setDoubleBuffered(false);
+
+        addComponentListener(this);
 
         g = new Graphics[2];
         procList = new Vector();
@@ -183,21 +187,24 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     public synchronized void cleanup()
     {
         Graphics gr;
+        Graphics g;
         int height = getHeight();
         int width = getWidth();
 
+
         if ((width > 0) && (height > 0))
         {
-            if (copyImage != null)
-                copyImage.flush();
-            copyImage = createImage(width, height);
+            g = getGraphics();
+            if (copyImage == null)
+                copyImage = createImage(width, height);
+
             gr = copyImage.getGraphics();
             gr.setColor(getBackground());
             gr.fillRect(0, 0, width, height);
-            turtle.setVisible(true);
-            turtle.homeTurtle(this);
-            turtle.paint(gr);
+            turtle.homeTurtle(this, g, copyImage);
+            turtle.setVisible(true, g, copyImage);
             gr.dispose();
+            g.dispose();
             repaint();
         } // if
     } // cleanup
@@ -440,13 +447,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         
         cleanup();
 
-        if (copyImage != null)
-        {
-            copyImage.flush();
-            copyImage = null;
-            repaint();
-        } // if
-
         if (newCode != null)
         {
             strReader = new StringReader(newCode);
@@ -553,7 +553,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         int i;
         Dimension d = getSize();
 
-        copyImage = createImage(d.width, d.height);
         g[GRAPHICS_COPY] = copyImage.getGraphics();
         g[GRAPHICS_SCREEN] = getGraphics();
 
@@ -574,25 +573,32 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     } // deInitGraphics
 
 
-    public synchronized void paint(Graphics g)
+    public void paint(Graphics g)
     /**
      *  Note that while Turtle isn't actually derived from Component, it
      *   needs paint()'s Graphics parameter, so it may modify TurtleSpace's
      *   canvas. This method works as such: we'll bitblt copyImage to the
-     *    screen, if it exists, or just draw the turtle if all else fails.
+     *    screen, if it exists, or just draw a blank if all else fails.
      *
      *      params : g == the "device context;" see Component::paint().
      *     returns : void.
      */
     {
+        int width;
+        int height;
+
+        if (copyImage == null)      // creates copyImage ...
+            cleanup();
+
         if (copyImage != null)
-            g.drawImage(copyImage, 0, 0, this);
-        else
         {
-            g.setColor(Color.black);
-            turtle.homeTurtle(this);
+            g.drawImage(copyImage, 0, 0, this);
+            turtle.paint(g, copyImage);
+        } // if
+        else        // give up and draw default...
+        {
+            g.setColor(getBackground());
             g.drawRect(0, 0, getWidth(), getHeight());
-            turtle.paint(g);
         } // else
     } // paint
 
@@ -1198,29 +1204,30 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         if (funcName.equals(PROCNAME_FORWARD))
         {
             args = buildArguments(argToks, 1);
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.forwardTurtle(g, tmpInt);
+            turtle.forwardTurtle(convStrToDouble((String) args.elementAt(0)),
+                                 g, g[GRAPHICS_SCREEN], copyImage);
         } // if
 
         else if (funcName.equals(PROCNAME_BACKWARD))
         {
             args = buildArguments(argToks, 1);
             tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.forwardTurtle(g, -tmpInt);
+            turtle.forwardTurtle(-convStrToDouble((String) args.elementAt(0)),
+                                 g, g[GRAPHICS_SCREEN], copyImage);
         } // if
 
         else if (funcName.equals(PROCNAME_RIGHT))
         {
             args = buildArguments(argToks, 1);
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.rotate(tmpInt);
+            turtle.rotate(convStrToDouble((String) args.elementAt(0)),
+                          g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_LEFT))
         {
             args = buildArguments(argToks, 1);
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.rotate(-tmpInt);
+            turtle.rotate(-convStrToDouble((String) args.elementAt(0)),
+                          g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_PENUP))
@@ -1238,13 +1245,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         else if (funcName.equals(PROCNAME_HIDETURTLE))
         {
             args = buildArguments(argToks, 0);
-            turtle.setVisible(false);
+            turtle.setVisible(false, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_SHOWTURTLE))
         {
             args = buildArguments(argToks, 0);
-            turtle.setVisible(true);
+            turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_PAUSE))
@@ -1277,14 +1284,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
         else if (funcName.equals(PROCNAME_SETTURTXY))
         {
-            int x;
-            int y;
+            double x;
+            double y;
 
             args = buildArguments(argToks, 2);
-            x = (int) convStrToDouble((String) args.elementAt(0));
-            y = (int) convStrToDouble((String) args.elementAt(1));
+            x = convStrToDouble((String) args.elementAt(0));
+            y = convStrToDouble((String) args.elementAt(1));
 
-            turtle.setXY(x, y);
+            turtle.setXY(x, y, g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_GETANGLE))
@@ -1297,9 +1304,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
         else if (funcName.equals(PROCNAME_SETANGLE))
         {
             args = buildArguments(argToks, 1);
-
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            turtle.setAngle(tmpInt);
+            turtle.setAngle(convStrToDouble((String) args.elementAt(0)),
+                            g[GRAPHICS_SCREEN], copyImage);
         } // else if
 
         else if (funcName.equals(PROCNAME_GETPENCOL))
@@ -2174,8 +2180,34 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
     } // updateSourceTrace
 
 
+/*    private void resizeCopyImageOnTheFly()
+     *
+     * Make a new copyImage, and copy the current one to the dead center of
+     *  it for on-the-fly continuing...relocate turtle, too.
+     *
+    {
+        int width = getWidth();
+        int height = getHeight();
+        Image tmp = createImage(width, height);
+        Graphics tmpG = tmp.getGraphics();
+        int offsetX = (width - copyImage.getWidth(this)) / 2;
+        int offsetY = (height - copyImage.getHeight(this)) / 2;
+
+        tmpG.setColor(getBackground());
+        tmpG.drawRect(0, 0, width, height);
+        tmpG.drawImage(copyImage, offsetX, offsetY, this);
+        g[GRAPHICS_COPY].dispose();
+        g[GRAPHICS_COPY] = tmpG;
+
+        turtle.setXY(turtle.getX() + offsetX, turtle.getY() + offsetY);
+
+        copyImage.flush();
+        copyImage = tmp;
+    } // resizeCopyImageOnTheFly
+*/
+
     private Intrinsic runCode(TobyProcedure proc)
-                                    throws TobyParseException
+                                            throws TobyParseException
     /**
      *  Entry point for parsing TOBY functions. run() calls this to
      *   parse the mainline, and may be called recursively during that
@@ -2283,8 +2315,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
             turtle.setPenUp(false);
             turtle.setPenColor(turtle.defaultPenColor());
-            turtle.setVisible(true);
-            turtle.homeTurtle(this);
+            turtle.homeTurtle(this, g[GRAPHICS_SCREEN], copyImage);
+            turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
             notifyBeginInterpretation();
 
             stack.removeAllElements();   // clear the stack.
@@ -2307,11 +2339,26 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
             codeRunning = false;
             terminateCode = false;
             notifyEndInterpretation();
-            turtle.paint(g[0]);     // !!! Do something about this!
-            turtle.paint(g[1]);
             deInitGraphics();
         } // if
     } // run
+
+
+        // ComponentListener implementation...
+
+    public void componentResized(ComponentEvent e)
+    {
+        if (codeRunning == false)
+        {
+            if (copyImage != null)
+                copyImage.flush();
+            cleanup();
+        } // if
+    } // componentResized
+
+    public void componentMoved(ComponentEvent e) {}
+    public void componentShown(ComponentEvent e) {}
+    public void componentHidden(ComponentEvent e) {}
 
 } // TobyInterpreter
 
