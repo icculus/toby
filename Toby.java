@@ -42,7 +42,7 @@ public final class Toby extends JFrame implements DocumentListener,
     private File currentDirectory = null;
     private boolean textModified = false;
     private TobyMenuBar tmb = null;
-    private boolean isSetIconBroken = true;
+    private static boolean isSetIconBroken = false;
 
     public Toby()
     {
@@ -134,24 +134,6 @@ public final class Toby extends JFrame implements DocumentListener,
     {
         return(tobyFileName);
     } // getCurrentFileName
-
-
-    public static boolean badJavaVersion()
-    /**
-     *  Check if we are running a Java VM that is at least version 1.1,
-     *   since much of this code is Java 1.1-specific.
-     *
-     *      params : void.
-     *     returns : true if VM is 1.1 compatible, false otherwise.
-     */
-    {
-        String verStr = System.getProperty("java.version");
-
-        if (verStr.compareTo("1.1") < 0)        // Earlier than Java 1.1?
-            return(true);
-        else
-            return(false);
-    } // badJavaVersion
 
 
     public void displayHelp()
@@ -386,7 +368,63 @@ public final class Toby extends JFrame implements DocumentListener,
     } // kickOffGUI
 
 
-    public static void printBanner()
+    private static void checkIfSetIconBroken()
+    {
+        String verStr = System.getProperty("java.version");
+        String osName = System.getProperty("os.name").toLowerCase();
+        String vendor = System.getProperty("java.vendor").toLowerCase();
+
+        if ( (osName.equals("linux")) &&
+             (vendor.indexOf("blackdown") != -1) &&
+             (verStr.compareTo("1.1.7") <= 0) )
+        {
+            isSetIconBroken = true;
+            System.err.println("WARNING: setIconImage() is broken on this" +
+                               " Java Virtual Machine!");
+            System.err.println(" (We will work around it, though.)");
+            System.err.println();
+        } // if
+    } // checkIfSetIconBroken
+
+
+    private static boolean badJavaVersion()
+    /**
+     *  Check if we are running a Java VM that is at least version 1.1,
+     *   since much of this code is Java 1.1-specific. Also checks for
+     *   other implementation-specific problems.
+     *
+     *      params : void.
+     *     returns : true if VM is 1.1 compatible, false otherwise.
+     */
+    {
+        String verStr = System.getProperty("java.version");
+        boolean retVal = false;
+
+        if (verStr.compareTo("1.1") < 0)        // Earlier than Java 1.2?
+        {
+            System.err.println(MSG_BAD_JAVA);
+            retVal = true;
+        } // if
+
+        return(retVal);
+    } // badJavaVersion
+
+
+    private static boolean checkForValidJVM()
+    {
+        boolean retVal = false;
+
+        if (badJavaVersion() == false)
+        {
+            checkIfSetIconBroken();
+            retVal = true;
+        } // if
+
+        return(retVal);
+    } // checkForValidJVM
+
+
+    private static void printBanner()
     {
         System.out.println();
         System.out.println(TITLE + " " + VERSION);
@@ -399,9 +437,8 @@ public final class Toby extends JFrame implements DocumentListener,
     public static void main(String[] args)
     {
         printBanner();
-
-        if (badJavaVersion())
-            System.err.println(MSG_BAD_JAVA);
+        if (checkForValidJVM() == false)
+            System.exit(0);
         else
             kickOffGUI(args);
     } // main
