@@ -1,5 +1,7 @@
 Grammar XML tags.
 
+!!! Revise me!
+
 -------------------------------------------------------------------------------
 tagname     : <language>
 parent      : [must be top level]
@@ -239,29 +241,21 @@ description : The current CHARACTER (which is part of a token) must match the
               specified attributes. If you have three <reqchar> rules in a
               row, then the first three chars of the current token are used.
 attributes  :
-    type="[alphanumeric|letter|number|specific|list|range|end]"
-        If (alphanumeric), then the current char must match either an
-        alphabetic letter or number in the current locale. If (letter), then
-        the current char must be an alphabetic letter in the current locale.
-        If (number), then the current char must be a number in the current
-        locale. If (specific), then the current char must match the value of
-        the "char" attribute. If (list), then the character must be one of the
-        chars listed in the value of the "list" attribute. If (range), then
-        the current char must match a character in the range defined by the
-        "min" and "max" attributes. If "end" then the token must have no more
-        chars to examine at that point. Default is alphanumeric.
-    char="char"
-        If type="specific", then the current char must match (char). Default
-        is undefined.
-    list="listofchars"
-        If type="list", then the current char must match one of the characters
-        specified (listofchars). Default is undefined.
-    min="char"
-        If type="range", the the current char must be >= (char). Default is
-        undefined.
-    max="char"
-        If type="range", the the current char must be <= (char). Default is
-        undefined.
+    type="[alphanumeric|letter|number|specific|end]"
+        If (alphanumeric), then the current token's current character must be
+        a alphabetic letter or numerical digit in the current locale.
+        If (letter), then the current token's current character must be a
+        alphabetic letter in the current locale.
+        If (number), then the current token's current character must be a
+        numeric digit in the current locale.
+        If (specific), then attribute "char" will specify a specific character.
+        If (end), all characters in the token must have been evaluated at
+        this point. Default is "alphanumeric".
+    char="character"
+        If type="specific", then this attribute is used to determine the
+        character to compare against. It should be specified as the actual
+        character, so if you want to look for the underscore character, then
+        use char="_" ... default is undefined.
 
 -------------------------------------------------------------------------------
 tagname     : <reqwhitespace>
