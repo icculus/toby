@@ -30,7 +30,7 @@ public class VarReferenceIntrinsic extends Intrinsic
 {
     protected GlobalLogicContext globalContext = null;
     protected LogicContext parentContext = null;
-    protected int varIndex = 0xFFFF;
+    protected int varIndex = 0xDEADBEEF;
     protected boolean global = false;
     protected int lineno = -1;
 
@@ -50,7 +50,8 @@ public class VarReferenceIntrinsic extends Intrinsic
 
     public String toString()
     {
-        return(name + " [" + getRealVar().toString() + "]");
+        String str = null;
+        return(name + "==[" + getRealVar().toString() + "]");
     } // toString
 
     protected Intrinsic getCopyImpl()
@@ -199,6 +200,11 @@ public class VarReferenceIntrinsic extends Intrinsic
         return(getRealVar().getObjectValue());
     } // getValue overload
 
+    public Intrinsic getIntrinsicValue() throws FlowException
+    {
+        return(getRealVar().getIntrinsicValue());
+    } // getValue overload
+
     public int compare(Intrinsic intr) throws FlowException
     {
         return(getRealVar().compare(intr));
@@ -211,14 +217,16 @@ public class VarReferenceIntrinsic extends Intrinsic
 
     protected void linkImpl(GlobalLogicContext glob) throws ParseException
     {
-//        _D("linkImpl", "looking for variable named [" + this.name + "].");
+        String id = getIdentifier();
+
+//        _D("linkImpl", "looking for variable named [" + id + "].");
 
         this.globalContext = glob;
-        LogicContext rc = parentContext.checkScopesForSymbol(this.name);
+        LogicContext rc = parentContext.checkScopesForSymbol(id);
         if (rc == null)
             ParseException._throw(TobyLanguage.NOT_VAR, this.lineno);
         this.global = (rc == glob);
-        this.varIndex = rc.getSymbolIndex(this.name);
+        this.varIndex = rc.getSymbolIndex(id);
     } // link
 } // VarReferenceIntrinsic
 
