@@ -417,12 +417,25 @@ public final class Toby extends JFrame implements DocumentListener,
     } // textModified
 
 
+    public boolean requestToQuit()
+    {
+        boolean retVal = false;
+
+        if (saveAndContinue() == true)
+        {
+            dispose();
+            retVal = true;
+        } // if
+
+        return(retVal);
+    } // requestToQuit
+
+
         // WindowListener implementation...
 
     public void windowClosing(WindowEvent e)
     {
-        if (saveAndContinue() == true)
-            e.getWindow().dispose();
+        requestToQuit();
     } // windowClosing
 
 

@@ -231,7 +231,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
             parent.saveFile(null);
 
         else if (mi == quitItem)
-            parent.dispose();
+            parent.requestToQuit();
 
         else if (mi == helpItem)
             parent.displayHelp();
