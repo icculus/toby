@@ -1,19 +1,19 @@
 // Things still to be done for TOBY...
 
 ongoing bugfixes :
+    Make global parsing just dump every non-blank line that doesn't start
+     with KEYWORD_BEGINFUNC to an array. Until we hit a KEYWORD_BEGINFUNC
+     line. Don't even check for syntax. Parse this array at runtime before
+     the mainline, and use dealWithVariableDeclaration() on each line. If
+     this function ever returns (false) at that time, throw an error.
+
     Graphics2D does antialiasing?
-    override update() in TurtleSpace?
-    Make TriangleTurtle only recalculate when rotated/resized.
-        Painting should only draw out the end result of the calculations.
-    Toby overwrites files without concern.
     Make inputarea use sane keys...
     Unify error displaying interface between parsing and running...
     Functions can specify a return type and then return nothing.
-    Thread.yield() doesn't seem to be doing so...
     Toby's JFrame Icon locks when you try to set it. see Toby.setTobyIcon();
     FIX VARVIEWER. It BADLY BROKEN.
-    Even on a cancel save, JFrame closes.
-    Fix menubar while running, if possible.
+    Even on a cancel save, JFrame closes, if Window manager terminating it.
     Fix equality operator
     Maximize window instead of sizing...
 
@@ -29,7 +29,8 @@ alpha3 : completed.
     line/column readout in TobyInputArea.   (COMPLETED)
 
 alpha4 : in progress.
-    more standard functions...
+    allow assignments in var declaration.   (COMPLETED)
+    more standard functions...              (COMPLETED)
     add arrays?
     add String intrinsic?
     Fix "!!!" comments...
@@ -42,16 +43,21 @@ alpha5 : not yet begun.
     Make TurtleSpace into a bean.
     Build splash screen/remove System.out.println() stuff...
 
+alpha6 : not yet begun.
+    Implement help system. Docs do not have to be complete at this point.
+    Rewrite VarViewer to be cooler.
+
 beta1 : not yet begun.
+    convert comments to javadoc format.
     fix all significant/crippling bugs.
     design webpage.
-    write tutorial.
+    write simple tutorial.
     change version and release.
 
 beta2 : not yet begun.
-    convert comments to javadoc format.
     fix bugs reported from beta1.
     Write up a "how it works" doc.
+    Write up official documentation...
     Clean up interface from reports from beta1.
     release.
 

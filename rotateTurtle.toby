@@ -1,3 +1,4 @@
+// This just rotates the turtle once around.
 
 function main() returns nothing
 	number i
@@ -7,5 +8,7 @@ function main() returns nothing
 		pause(5)
 	endfor
 endfunction
+
+
 
 
