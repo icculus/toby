@@ -11,7 +11,6 @@
  *    Written by Ryan C. Gordon.
  */
 
-import last.common.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -224,9 +223,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable
 
         JOptionPane.showMessageDialog(null, sb.toString(), "Error",
                                       JOptionPane.ERROR_MESSAGE);
-
-                    
-        //new MsgBox(Toby.TITLE, sb.toString(), parent).show();
     } // displayParseException
 
 

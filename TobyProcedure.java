@@ -11,7 +11,6 @@
  *     Written by Ryan C. Gordon.
  */
 
-import last.common.SaneTokenizer;
 import java.io.*;
 import java.util.Vector;
 
