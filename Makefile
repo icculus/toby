@@ -51,16 +51,25 @@ debugging := false
 # Set this to what your platform has.
 #   Current option(s): "pthreads", "sdl", "null".
 #-----------------------------------------------------------------------------#
-#platform_threads := pthreads
-platform_threads := sdl
+platform_threads := pthreads
+#platform_threads := sdl
 #platform_threads := null
 
 #-----------------------------------------------------------------------------#
 # Set this to what your platform has.
-#   Current option(s): "sdl", "gtk".
+#   Current option(s): "sdl", "gtk", "null".
 #-----------------------------------------------------------------------------#
-#platform_video := sdl
 platform_video := gtk
+#platform_video := sdl
+#platform_video := null
+
+#-----------------------------------------------------------------------------#
+# Set this to what your platform has.
+#   Current option(s): "sdl", "unix", "null".
+#-----------------------------------------------------------------------------#
+platform_clock := unix
+#platform_clock := sdl
+#platform_clock := null
 
 
 #-----------------------------------------------------------------------------#
@@ -137,6 +146,9 @@ ifeq ($(strip $(platform_video)),sdl)
   using_sdl_at_all := true
 endif
 ifeq ($(strip $(platform_threads)),sdl)
+  using_sdl_at_all := true
+endif
+ifeq ($(strip $(platform_clock)),sdl)
   using_sdl_at_all := true
 endif
 
@@ -231,6 +243,7 @@ EXES := $(STANDALONEEXE) #$(MAINEXE)
 
 UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp
+PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
 
 valid_threads_target := false
@@ -261,6 +274,30 @@ ifneq ($(strip $(valid_threads_target)),true)
 endif
 
 
+valid_clock_target := false
+ifeq ($(strip $(platform_clock)),sdl)
+    CLOCKSRCS := platform/clocks/sdlclock/SDLClock.cpp
+    CLOCKDIR := sdlclock
+    valid_clock_target := true
+endif
+
+ifeq ($(strip $(platform_clock)),unix)
+    CLOCKSRCS := platform/clocks/unixclock/UnixClock.cpp
+    CLOCKDIR := unixclock
+    valid_clock_target := true
+endif
+
+ifeq ($(strip $(platform_clock)),null)
+    CLOCKSRCS := platform/clocks/nullclock/NullClock.cpp
+    CLOCKDIR := nullclock
+    valid_clock_target := true
+endif
+
+ifneq ($(strip $(valid_clock_target)),true)
+  $(error platform_clock flag in Makefile is not valid.)
+endif
+
+
 valid_video_target := false
 ifeq ($(strip $(platform_video)),sdl)
   VIDEOSRCS := platform/renderers/fbrenderer/FrameBufferTurtleSpaceRenderer.cpp \
@@ -275,13 +312,18 @@ ifeq ($(strip $(platform_video)),gtk)
   valid_video_target := true
 endif
 
+ifeq ($(strip $(platform_video)),null)
+  VIDEOSRCS := platform/renderers/nullrenderer/NullTurtleSpaceRenderer.cpp
+  VIDEODIR  := nullrenderer
+  valid_video_target := true
+endif
+
 ifneq ($(strip $(valid_video_target)),true)
   $(error platform_video flag in Makefile is not valid.)
 endif
 
-
-
-COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS)
+COMMONSRCS := $(UTILSRCS) $(TURTLESPACESRCS) $(THREADSRCS) $(VIDEOSRCS) \
+              $(PARSERSRCS) $(CLOCKSRCS)
 
 # Rule for getting list of objects from source
 COMMONOBJS1 := $(COMMONSRCS:.c=.o)
@@ -323,21 +365,22 @@ $(STANDALONEEXE) : $(BINDIR) $(COMMONOBJS) $(BINDIR)/standalone.o
 	$(LINKER) -o $(STANDALONEEXE) $(LDFLAGS) $(COMMONOBJS) $(BINDIR)/standalone.o
 
 $(BINDIR):
-	@sh -c 'if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi'
-	@sh -c 'if [ ! -d $(BINDIR)/turtlespace ]; then mkdir $(BINDIR)/turtlespace; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/util ]; then mkdir $(BINDIR)/util; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform ]; then mkdir $(BINDIR)/platform; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform/renderers ]; then mkdir $(BINDIR)/platform/renderers; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform/renderers/fbrenderer ]; then mkdir $(BINDIR)/platform/renderers/fbrenderer; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform/renderers/$(VIDEODIR) ]; then mkdir $(BINDIR)/platform/renderers/$(VIDEODIR); fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform/threads ]; then mkdir $(BINDIR)/platform/threads; fi'
-	@sh -c 'if [ ! -d $(BINDIR)/platform/threads/$(THREADSDIR) ]; then mkdir $(BINDIR)/platform/threads/$(THREADSDIR); fi'
+	mkdir -p $(BINDIR)
+	mkdir -p $(BINDIR)/turtlespace
+	mkdir -p $(BINDIR)/util
+	mkdir -p $(BINDIR)/parsers/toby
+	mkdir -p $(BINDIR)/platform/renderers/$(VIDEODIR)
+	mkdir -p $(BINDIR)/platform/clocks/$(CLOCKDIR)
+	mkdir -p $(BINDIR)/platform/threads/$(THREADSDIR)
 
 clean:
 	rm -f $(CLEANUP)
 	rm -rf $(BINDIR)
 
 listobjs:
+	@echo SOURCES:
+	@echo $(COMMONSRCS)
+	@echo
 	@echo OBJECTS:
 	@echo $(COMMONOBJS)
 	@echo
@@ -350,6 +393,7 @@ showcfg:
 	@echo "ASM flag       : $(USE_ASM)"
 	@echo "Video library  : $(platform_video)"
 	@echo "Thread library : $(platform_threads)"
+	@echo "Clock library  : $(platform_clock)"
 
 #-----------------------------------------------------------------------------#
 # This section is pretty much just for Ryan's use to make distributions.
