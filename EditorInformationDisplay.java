@@ -26,7 +26,7 @@ public class EditorInformationDisplay extends JComponent implements
     {
         editor = areaToMonitor;
         editor.addCaretListener(this);
-        setBackground(Color.red);
+        setBackground(Color.blue.darker());
         setForeground(Color.yellow);
         setDisplayText();
         setDoubleBuffered(true);
@@ -81,7 +81,7 @@ public class EditorInformationDisplay extends JComponent implements
         } // catch
 
         setDisplayText();
-        repaint();
+        paintImmediately(0, 0, getWidth(), getHeight());
     } // caretUpdate
 
 } // EditorInformationDisplay
