@@ -21,7 +21,8 @@
 #define _INCLUDE_TOBYREADER_H_
 
 #include "util/TobyObject.h"
-
+#include "util/TobyString.h"
+#include "exceptions/IOException.h"
 
 /*
  *  TobyReaders are for interpretation errors at runtime, as opposed to
@@ -29,10 +30,15 @@
  *
  *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
  */
-class TobyReader : public FlowException
+class TobyReader : public TobyObject
 {
 public:
-    int feh;
+    TobyReader(void) {}
+    virtual ~TobyReader(void) {}
+
+    virtual bool isEOF(void) = 0;
+    virtual char readChar(void) throw (IOException *) = 0;
+    virtual TobyString *readLine(void) throw (IOException *) = 0;
 }; // class TobyReader
 
 #endif  // !defined _INCLUDE_TOBYREADER_H_
