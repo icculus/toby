@@ -249,7 +249,7 @@ bool XMLTree::_parseXMLThrowException(void) throw (IOException *)
 
     if (!parseHeader(&toker))
     {
-        _D(("XMLTree: invalid header on line #%d.\n", toker.currentLine()));
+        _D(("XMLTree: invalid header on line #%ld.\n", toker.currentLine()));
         return(false);
     } // if
 
@@ -273,7 +273,7 @@ bool XMLTree::_parseXMLThrowException(void) throw (IOException *)
 
         if (!parseTag(root, &toker))  // This recurses through the XML tree.
         {
-            _D(("XMLTree: document is not well-formed on line #%d.\n",
+            _D(("XMLTree: document is not well-formed on line #%ld.\n",
                  toker.currentLine()));
             break;
         } // if
