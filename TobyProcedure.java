@@ -130,7 +130,7 @@ public class TobyProcedure
         return(returnType);
     } // getReturnType
 
-
+        // !!! do we need this freeResources() thing anymore? Profile this...
     public void freeResources()
     /**
      *  This method frees up all possible resources. Expect this
@@ -542,6 +542,7 @@ public class TobyProcedure
      */
     {
         Vector codeLine;
+        String token;
         String[] retVal;
         String[] tokenCluster = null;
         int i;
@@ -577,8 +578,8 @@ public class TobyProcedure
                     codeLine.addElement(sToker.sval);
        ******************************************************************/
 
-
-                    codeLine.addElement(sToker.sval);
+                token = TobyInterpreter.staticKeywordReference(sToker.sval);
+                codeLine.addElement(token);
             } // if
         } while (sToker.ttype != SaneTokenizer.TT_EOL);
 
