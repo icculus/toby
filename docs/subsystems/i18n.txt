@@ -50,7 +50,8 @@ in German.
 
 Also, I'd like to not compile in all the internationalization stuff. If we 
 can change the default, like I mentioned above, then for less general 
-cases and resource-constrained platforms
+cases and resource-constrained platforms, we can just chuck the extra code,
+and build a tighter binary with a default language of whatever.
 
 Finally, I'd like to remove unnecessary points of failure. The Java system 
 expects you to have the langfile spell the strings' identifiers correctly, 
@@ -73,12 +74,12 @@ A langfile looks like this:
  // This is a single line comment. Blank lines are okay, too.
 
 
-TOBYSTR(TOBYLANG_OUTOFMEMORY, "Out of memory")
+TOBYI18N(TOBYLANG_OUTOFMEMORY, "Out of memory")
 
    /*
     * Multiline comments are cool, too.
     */
-TOBYSTR(TOBYLANG_SAVEBEFOREQUIT, "Save work before quitting?")
+TOBYI18N(TOBYLANG_SAVEBEFOREQUIT, "Save work before quitting?")
 
 /* --- END TOBY LANGUAGE DATA --- */
 
@@ -89,23 +90,23 @@ TOBYSTR(TOBYLANG_SAVEBEFOREQUIT, "Save work before quitting?")
 This file gets passed though the C++ preprocessor two times. From 
 TobyLanguage.cpp, this definition is used:
 
-#define TOBYSTR(sym, str) char *sym = str;
+#define TOBYI18N(sym, str) char *sym = str "\0";
 
 
 From TobyLanguage.h (used in the rest of the program), this define is used:
-#define TOBYSTR(sym, str) extern char *sym;
+#define TOBYI18N(sym, str) extern char *sym;
 
 The CALLED_FROM_TOBYLANGUAGE check is not necessary, but it's an extra
 compilation safety (The internal TobyLanguage code will define it; no other
 code should).
 
 At runtime, comments ("//" and "/**/" style) are thrown away, and so is
-whitespace. More correctly, data that isn't in the TOBYSTR() form is thrown
-away. The rest of the data is parsed by a simple tokenizer; "TOBYSTR", "(",
+whitespace. More correctly, data that isn't in the TOBYI18N() form is thrown
+away. The rest of the data is parsed by a simple tokenizer; "TOBYI18N", "(",
 and ")" are thrown away, and the parser examines the parameters. The symbol
 before the comma is looked up in the main binary via the TobyLoader facility,
 and the literal string after the comma is, if the symbol is found, assigned to
-that pointer. If the TOBYSTR is malformed, it is ignored, and parsing
+that pointer. If the TOBYI18N is malformed, it is ignored, and parsing
 continues. The program should never abort if there's a langfile problem; it
 should try to do what it can. Langfile syntax problems should be checked prior
 to runtime. This system works well, since it forces correctness; while the
@@ -151,5 +152,5 @@ and this construct to the appropriate place in src/util/TobyLanguage.h:
 Now rebuild. If it compiles, then you've done everything right.
 
 
---ryan.  (icculus@linuxgames.com)
+--ryan.  (icculus@clutteredmind.org)
 
