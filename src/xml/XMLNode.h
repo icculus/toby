@@ -51,10 +51,10 @@ public:
     XMLNode(XMLNode *_parent);
     virtual ~XMLNode(void);
 
-    void setText(const char *str);
-    const char *getText(void);
     void setTag(const char *str);
     const char *getTag(void);
+    void setText(const char *str);
+    const char *getText(void);
     TobyCollection *getAttributes(void);
     TobyCollection *getChildren(void);
     XMLNode *getParent(void);
