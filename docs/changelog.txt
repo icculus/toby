@@ -91,7 +91,16 @@ standalone program for initial testing.)
             that just makes more sense. This touched a couple of source files.
             Renamed src/test/langdef.cpp to src/test/grammar.cpp. Updated
             that source and docs/subsystem/grammar_tags.txt with reqwordchars
-            and such.
+            and such. Added needed structure to src/test/grammar.cpp for
+            testing unique elements of specific tags. Started on a lexer/
+            directory and the LexerRule hierarchy.
+09022001 - Redesigned the grammar's...uh, grammar a little. Started writing
+            the Lexer. Added append(int) and append(float) to TobyString.
+09032001 - Continued to design the Lexer subsystem.
+09042001 - Tons of work. Lots of implementation on the lexer, a bunch of
+            additions and enhancements to the Makefile. The XML schema for
+            grammars has changed a bit. Updated most of the existing subsystem
+            docs. Added XMLNode::getAttributeValue(), for convenience.
 
 // end of changelog.txt ...
 
