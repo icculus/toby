@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "io/FileReader.h"
 #include "exceptions/IOException.h"
@@ -82,9 +83,105 @@ static tagslist tags[] =
 };
 
 
+static void info(char *fmt, ...)
+{
+    va_list ap;
+    printf("* ");
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    printf("\n");
+} // info
+
+
+static void warning(char *fmt, ...)
+{
+    va_list ap;
+    printf("- ");
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    printf("\n");
+    warnings++;
+} // warning
+
+
+static void error(char *fmt, ...)
+{
+    va_list ap;
+    printf("- ");
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    printf("\n");
+    errors++;
+} // error
+
+
+void tagtest_language(XMLNode *node)
+{
+    if (!node->getAttributeValue("name"))
+        warning("<language> node should have a name attribute.");
+
+    const char *startElement = node->getAttributeValue("firstelement");
+    if (!startElement)
+        error("<language> node needs a \"firstelement\" attribute.");
+    else
+    {
+        bool found = false;
+        TobyCollection *children = node->getChildren();
+        int max = children->getSize();
+        for (int i = 0; i < max; i++)
+        {
+            XMLNode *kid = (XMLNode *) children->elementAt(i);
+            if (strcmp(kid->getTag(), "element") == 0)
+            {
+                const char *name = kid->getAttributeValue("name");
+                if ((name) && (strcmp(name, startElement) == 0))
+                {
+                    found = true;
+                    break;
+                } // if
+            } // if
+        } // for
+
+        if (!found)
+            error("The firstelement named \"%s\" was not found!", startElement);
+    } // else
+} // tagtest_language
+
+
+typedef struct
+{
+    const char *tag;
+    void (*test)(XMLNode *node);
+} TagTest;
+
+static TagTest tagtests[] = {
+                               { "language", tagtest_language },
+                               { NULL, NULL }
+                            };
+
+
+static void testSpecificNode(XMLNode *node)
+{
+    const char *tag = node->getTag();
+    for (int i = 0; tagtests[i].tag != NULL; i++)
+    {
+        if (strcmp(tag, tagtests[i].tag) == 0)
+        {
+            tagtests[i].test(node);
+            return;
+        } // if
+    } // for
+} // testSpecificNode
+
+
 static void testNode(XMLNode *node)
 {
     const char *tag = node->getTag();
+
+    testSpecificNode(node);
 
     for (int i = 0; tags[i].tag != NULL; i++)
     {
@@ -105,17 +202,13 @@ static void testNode(XMLNode *node)
                 } // for
 
                 if (tags[i].kids[q] == NULL)
-                {
-                    printf("[%s] is not a valid child of [%s].\n", kidtag, tag);
-                    errors++;
-                } // if
+                    error("[%s] is not a valid child of [%s].", kidtag, tag);
             } // for
             return;
         } // if
     } // for
 
-    printf("- Unrecognized tag [%s].\n", tag);
-    errors++;
+    error("- Unrecognized tag [%s].", tag);
 } // testNode
 
 
@@ -123,8 +216,7 @@ static void testLangTree(XMLNode *head)
 {
     if (strcmp(head->getTag(), "language") != 0)
     {
-        printf("- Toplevel tag must be <language>.\n");
-        errors++;
+        error("- Toplevel tag must be <language>.");
         return;
     } // if
 
@@ -136,20 +228,22 @@ int main(int argc, char **argv)
 {
     if (argc == 1)
     {
-        printf("USAGE: %s <file1> [file2] ... [fileN]\n", argv[0]);
+        info("Usage is %s <file1> [file2] ... [fileN]", argv[0]);
         return(42);
     } // if
+
+    printf("\n");
 
     for (int i = 1; i < argc; i++)
     {
         try
         {
-            printf("\n+ NEW FILE: [%s].\n", argv[i]);
+            info("New file: [%s].", argv[i]);
 
             XMLTree tree(new FileReader(argv[i]));
 
             if (!tree.parseXMLThrowException())
-                printf("- Document is not well-formed.\n");
+                error("Document is not well-formed.");
             else
             {
                 XMLNode *root = tree.getRootNode();
@@ -164,15 +258,14 @@ int main(int argc, char **argv)
 
         catch (IOException *ioe)
         {
-            printf("- IOException! [%s].\n", ioe->getMessage());
-            errors++;
+            error("IOException! [%s].", ioe->getMessage());
             delete ioe;
         } // catch
     } // for
 
     printf("\n");
-    printf("%d errors.\n", errors);
-    printf("%d warnings.\n", warnings);
+    info("%d errors.", errors);
+    info("%d warnings.", warnings);
     printf("\n");
 
     return(0);
