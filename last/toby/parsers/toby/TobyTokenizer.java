@@ -37,7 +37,7 @@ public class TobyTokenizer extends SaneTokenizer
     {
         super(strReader);
         parseCharsAsWords(true);
-        parseQuotedAsWords(false);
+        parseQuotedAsWords(true);
         parseNumsAsWords(true);
         eolIsSignificant(true);
         lowerCaseMode(true);
