@@ -6,7 +6,14 @@
  *   example, the basic Turtle is a green triangle, but maybe a bitmapped
  *   image of a turtle class could be made, etc...
  *
- *  !!! Justify why this is NOT a component.
+ *  This is NOT a component. We have more than one place this needs to
+ *   draw to: Icons, TurtleSpace, etc...plus, we need to be able to see the
+ *   TurtleSpace under the turtle (i.e. - TriangleTurtle is NOT a square, and
+ *   we'll need to see the uncovered parts underneath him...this gets harder
+ *   as a component than it would be as just a drawer...Also, the line
+ *   drawing and coloring routines are in here, which would either need to
+ *   be moved to TurtleSpace.java (complicates things), or kept in a
+ *   non-component Turtle...
  *
  *    Copyright (c) Lighting and Sound Technologies, 1997.
  *     Written by Ryan C. Gordon.
@@ -31,6 +38,10 @@ public abstract class Turtle implements ImageObserver
     private boolean isPenUp;          // Should we leave trails?
     private Color   penColor;
 
+
+        /**
+         * Build a turtle. Set internal variables to defaults...
+         */
     public Turtle()
     {
         penColor = colorByNumber(defaultPenColor());
@@ -40,24 +51,52 @@ public abstract class Turtle implements ImageObserver
     } // Constructor
 
 
+        /**
+         * Return the default pen color, as a Toby "number" type.
+         * This should probably be a White or gray color...
+         *
+         *   @return default pen color.
+         */
     public double defaultPenColor()
     {
         return(11.0);
     } // defaultPenColor
 
 
+
+        /**
+         * Set the turtle size. This is the maximum square a
+         *  turtle can inhabit. <em>x</em> represents both the
+         *  width and height; hence, a square.
+         *
+         *    @param x width and height to set turtle to be.
+         */
     public void setTurtleSize(double x)
     {
         sideLength = x;
     } // setSize
 
 
+        /**
+         * Get the turtle size. This is the maximum square a
+         *  turtle can inhabit. <em>x</em> represents both the
+         *  width and height; hence, a square.
+         *
+         *    @return x width and height of turtle.
+         */
     public final double getTurtleSize()
     {
         return(sideLength);
     } // getSize
 
 
+        /**
+         * Replace the current location of the turtle with
+         *  what resides in that location at copyImage.
+         *
+         *    @param g Context to blank turtle on.
+         *    @param copyImage image with non-turtle graphics.
+         */
     private void blankTurtle(Graphics g, Image copyImage)
     {
         if (isVisible)
@@ -76,6 +115,11 @@ public abstract class Turtle implements ImageObserver
     } // blankTurtle
 
 
+        /**
+         * Paint the turtle. If <em>copyImage</em> is not <em>null</em>,
+         *  we'll blank the turtle out first. This is really useful if we
+         *  are rotating the turtle on a given axis.
+         */
     public final void paint(Graphics g, Image copyImage)
     {
         if (isVisible)
@@ -87,21 +131,26 @@ public abstract class Turtle implements ImageObserver
     } // paint
 
 
+        /**
+         * This method must take into consideration the size and angle
+         *  by calling getSize() and getAngle(), respectively. This is
+         *  only called if Turtle.paint() is called, and isVisible == true.
+         *
+         * Have fun.
+         */
     protected abstract void paintImpl(Graphics g);
-    /**
-     * This method must take into consideration the size and angle
-     *  by calling getSize() and getAngle(), respectively. This is
-     *  only called if Turtle.paint() is called, and isVisible == true.
-     *
-     * Also, be sure to call all Graphics methods in a for loop, like so :
-     *
-     *         for (int i = 0; i < g.length; i++)
-     *             g[i].drawLine(x1, y1, x2, y2);
-     *
-     * Have fun.
-     */
 
 
+        /**
+         * Toggle this turtle's visible flag. If it is made invisible,
+         *  we blank the turtle image, and will not redraw the li'l guy
+         *  until he's set visible again. If he's made visible, we draw him
+         *  right now.
+         *
+         *    @param visibility Should we show the turtle?
+         *    @param g Graphics context to paint to.
+         *    @param copyImg where to get blanking image from.
+         */
     public final void setVisible(boolean visibility, Graphics g, Image copyImg)
     {
         if (isVisible != visibility)
@@ -115,14 +164,16 @@ public abstract class Turtle implements ImageObserver
     } // setVisible
 
 
+        /**
+         *  Rotate our little virtual friend. Specifying a negative
+         *   number spins him left, positive numbers spin him right.
+         *   Just like in geometry.
+         *
+         *    @param degrees Degrees to rotate turtle.
+         *    @param g Graphics context to paint to.
+         *    @param copyImage where to get blanking image from.
+         */
     public final void rotate(double degrees, Graphics g, Image copyImage)
-    /**
-     *  Rotate our little virtual friend. Specifying a negative number spins
-     *   him left, positive numbers spin him right. Just like in geometry.
-     *
-     *     params : see above.
-     *    returns : void.
-     */
     {
         angle += degrees;
         angle %= 360.0;       // check this !!!
@@ -130,13 +181,16 @@ public abstract class Turtle implements ImageObserver
     } // rotate
 
 
+        /**
+         *  Moves the Turtle back to the center of turtlespace,
+         *   and faces it north.
+         *
+         *    @param comp JComponent that we are centering in. Usually
+         *                a TurtleSpace object.
+         *    @param g Graphics context to paint to.
+         *    @param copyImage where to get blanking image from.
+         */
     public final void homeTurtle(JComponent comp, Graphics g, Image copyImage)
-    /**
-     *  Moves the Turtle back to the center of turtlespace, and face it north.
-     *
-     *     params : component that we are centering in.
-     *    returns : void.
-     */
     {
         blankTurtle(g, copyImage);
 
@@ -149,10 +203,15 @@ public abstract class Turtle implements ImageObserver
     } // homeTurtle
 
 
+        /**
+         * Explicitly set the turtle to a specified location.
+         *
+         *    @param x X coordinate.
+         *    @param y Y coordinate.
+         *    @param g Graphics context to paint to.
+         *    @param copyImage where to get blanking image from.
+         */
     public final void setXY(double x, double y, Graphics g, Image copyImage)
-    /** !!! comment !!!
-     *
-     */
     {
         blankTurtle(g, copyImage);
         turtleX = x;
@@ -163,18 +222,33 @@ public abstract class Turtle implements ImageObserver
     } // moveTurtle
 
 
+        /**
+         * Get the turtle's current X coordinate.
+         *
+         *   @return Current X coordinate.
+         */
     public final double getX()
     {
         return(turtleX);
     } // getX
 
 
+        /**
+         * Get the turtle's current Y coordinate.
+         *
+         *   @return Current Y coordinate.
+         */
     public final double getY()
     {
         return(turtleY);
     } // getX
 
 
+        /**
+         * Get the turtle's current X <i>and</i> Y coordinates.
+         *
+         *   @return Current X and Y coordinate, in a DoublePoint object.
+         */
     public final DoublePoint getXY()
     {
         DoublePoint retVal = new DoublePoint();
@@ -186,15 +260,22 @@ public abstract class Turtle implements ImageObserver
     } // getXY
 
 
+        /**
+         * Move turtle forward (distance) length in whatever direction he's
+         *  facing. If the "pen" is "down", then draw the appropriate lines
+         *  in every Graphics object passed. Typically, this is the
+         *  screen context, and the copyImage context. The turtle will only
+         *  be drawn (and blanked) on the single Graphics context, which
+         *  can be, and usually is, one of the objects in the graphics array.
+         *
+         *    @param distance How far to move the turtle.
+         *    @param gr Array of Graphics to draw lines to.
+         *    @param g Graphics context to paint TURTLE to.
+         *    @param copyImage where to get blanking image from.
+         */
     public final void forwardTurtle(double distance,
-                                    Graphics gr[], Graphics g, Image copyImage)
-    /**
-     * Move turtle forward (distance) length in whatever direction he's
-     *  facing.
-     *  !!! comment this! It's out of date.
-     *    params : distance == how far to move the turtle.
-     *   returns : void.
-     */
+                                    Graphics gr[], Graphics g,
+                                    Image copyImage)
     {
         DoublePoint point;
         int i;
@@ -221,12 +302,27 @@ public abstract class Turtle implements ImageObserver
     } // forwardTurtle
 
 
+        /**
+         * Get the angle the Turtle is facing. 0.0 is due north (which is
+         *  contrary to Geometric theory)...this angle will always be from
+         *  0.0 to ~359.999999999...remember that 360 degrees is just 0.0 ...
+         *
+         *     @return current Turtle angle.
+         */
     public final double getAngle()
     {
         return(angle);
     } // getAngle
 
 
+        /**
+         * Set the turtle's angle. The angle may be negative, or > 360, and
+         *  the angle will just be "wrapped."
+         *
+         *    @param newAngle New angle for turtle to face.
+         *    @param g Graphics context to paint to.
+         *    @param copyImage where to get blanking image from.
+         */
     public final void setAngle(double newAngle, Graphics g, Image copyImage)
     {
         angle = newAngle;
@@ -235,24 +331,50 @@ public abstract class Turtle implements ImageObserver
     } // setAngle
 
 
+        /**
+         * Turn the Turtle's pen on or off. If set on, future movement of
+         *  the Turtle will leave lines on TurtleSpace.
+         *
+         *   @param isIt <em>true</em> if pen should draw,
+         *               <em>false</em> otherwise.
+         */
     public final void setPenUp(boolean isIt)
     {
         isPenUp = isIt;
     } // penUp
 
 
+        /**
+         * Determine if the turtle's pen is set for drawing, currently.
+         *
+         *  @return <em>true</em> if pen is drawing, <em>false</em> otherwise.
+         */
     public final boolean isPenUp()
     {
         return(isPenUp);
     } // isPenUp
 
 
+        /**
+         * Return the current pen color, as a Java Color object.
+         *
+         *   @return Current pen color.
+         */
     public final Color getPenColor()
     {
         return(penColor);
     } // getPenColor
 
 
+        /**
+         * Set the pen color. The parameter must be valid for the color to
+         *  actually change. Future turtle movement will cause lines in the
+         *  new color.
+         *
+         *    @param colorNum new pen color.
+         *   @return <em>true</em> if new color was valid,
+         *           <em>false</em> otherwise.
+         */
     public final boolean setPenColor(double colorNum)
     {
         boolean retVal = false;
@@ -268,30 +390,33 @@ public abstract class Turtle implements ImageObserver
     } // setPenColor
 
 
+        /**
+         * Converts the current pen color to its numeric equivalent, then
+         *  converts that to a string. Yeah.
+         *
+         *    @return Current pen color number, in String form.
+         */
     public final String getPenColorNumStr()
-    /**
-     * Converts the current pen color to its numeric equivalent, then
-     *  converts that to a string. Yeah.
-     */
     {
         double penColNum = numberByColor(penColor);
         return(Double.toString(penColNum));
     } // getPenColorNumStr
 
 
+        /**
+         * Convert a number into a color. Each of the integers from 0 to 11
+         *  represent a standard color (java.awt.Color.red, for example.), and
+         *  I've tried to have them match QuickBASIC's color scheme. Sorta.
+         *  The parameter is a double, even though only whole numbers are
+         *  accepted, since Toby's NUMBER intrinsic is equivalent to Java's
+         *  double. That's what they'll specify for standard functions such
+         *  as setPenColor()...
+         *
+         *    @param number whole number from 0-11.
+         *   @return Color based on number passed as argument. <em>null</em>
+         *           if <em>number</em> is not a whole number from 0 to 11.
+         */
     public final Color colorByNumber(double number)
-    /**
-     * Convert a number into a color. Each of the integers from 0 to 11
-     *  represent a standard color (java.awt.Color.red, for example.), and
-     *  I've tried to have them match QuickBASIC's color scheme. Sorta. The
-     *  parameter is a double, even though only whole numbers are accepted,
-     *  since Toby's NUMBER intrinsic is equivalent to Java's double. That's
-     *  what they'll specify for standard functions such as setPenColor()...
-     *
-     *       params : number == whole number from 0-11.
-     *      returns : color based on number passed as argument. (null) if
-     *                (number) is not a whole number from 0 to 11.
-     */
     {
         Color retVal = null;
 
@@ -324,11 +449,14 @@ public abstract class Turtle implements ImageObserver
     } // colorByNumber
 
 
+        /**
+         * Refer to colorByNumber(). Returns appropriate number for standard
+         *  color, or (-1.0) if not a standard color.
+         *
+         *   @param color standard Java Color object to get Toby equivalent.
+         *  @return Toby equivalent number of Java color.
+         */
     public final double numberByColor(Color color)
-    /**
-     * Refer to colorByNumber(). Returns appropriate number for standard
-     *  color, or (-1.0) if not a standard color.
-     */
     {
         double retVal = -1.0;
 
@@ -361,6 +489,11 @@ public abstract class Turtle implements ImageObserver
 
 
         // ImageObserver implementation ...
+
+        /**
+         * We just need a default imageUpdate() that uniformly returns
+         *  (false), so we have SOMETHING to pass to Graphics.drawImage()...
+         */
     public boolean imageUpdate(Image img, int infoflags,
                                int x, int y, int width, int height)
     {
