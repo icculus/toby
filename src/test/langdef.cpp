@@ -55,6 +55,8 @@ static char *repeatkids[] =   { "repeat", "optional", "pickone",
                                 "reqmultilinecomment", "reqsinglelinecomment",
                                 "reqchar", "reqeof", "reqwhitespace", NULL };
 
+static char *reqwordcharkids[] = { "reqchar", NULL };
+
 static char *nokids[] =       { NULL };
 
 static tagslist tags[] =
@@ -67,6 +69,7 @@ static tagslist tags[] =
     { "pickone", repeatkids },
     { "reqelement", nokids },
     { "reqword", nokids },
+    { "reqwordchar", reqwordcharkids },
     { "reqliteralstring", nokids },
     { "reqsinglelinecomment", nokids },
     { "reqmultilinecomment", nokids },
