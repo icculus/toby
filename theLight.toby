@@ -13,6 +13,9 @@ endfunction
 
 
 function theLight() returns nothing
+
+// This will eventually step in a FOR loop...
+
     clockwise(50)
     clockwise(100)
     clockwise(150)
@@ -31,6 +34,7 @@ function main() returns nothing
 endfunction
 
 // end of theLight.toby ...
+
 
 
 

@@ -1,6 +1,10 @@
 // Things still to be done for TOBY...
 
-- Start/Stop program should be same menu option.
+
+- Add globals
+-remove msgbox
+- Make turtle into a component.
+- Convert to Swing ASAP.
 - filename filter in open dialog.
 - test BOOLEANS.
 - multithread/multiturtle?
