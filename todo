@@ -1,27 +1,48 @@
 // Things still to be done for TOBY...
 
+ongoing bugfixes :
+    Toby's JFrame Icon locks when you try to set it. see Toby.setTobyIcon();
+    FIX VARVIEWER. It BADLY BROKEN.
+    Even on a cancel save, JFrame closes.
+    Right edge of TurtleSpace isn't drawing correctly...
+    Fix menubar while running, if possible.
+    Fix equality operator
+    Maximize window instead of sizing...
 
-- Even on a cancel save, JFrame closes.
-- Right edge of TurtleSpace isn't drawing correctly...
-- Fix "!!!" comments...
-- Fix menubar while running, if possible.
-- FIX VARVIEWER. It BADLY BROKEN.
-- COMMENT EVERYTHING.
-- Write up a "how it works" doc.
-- Add globals
-- Fix equality operator
-- multithread/multiturtle?
-- descending FOR loops and STEPs...
-- WHILEs...
-- more standard functions...
-- add arrays?
-- add String intrinsic?
-- write tutorial.
-- check into this Polish notation thing...more efficient?
-- maximize window instead of sizing...
-- line/column readout.
-- Make TurtleSpace into a bean.
-- Printing?
+alpha2 : completed.
+    Get ready for presentation at interview.
+
+alpha3 : in progress.
+    Add globals
+    descending FOR loops and STEPs...
+    WHILEs...
+    line/column readout.
+
+alpha4 : not yet begun.
+    more standard functions...
+    add arrays?
+    add String intrinsic?
+    Fix "!!!" comments...
+
+alpha5 : not yet begun.
+    COMMENT EVERYTHING.
+    Printing
+    Make TurtleSpace into a bean.
+    Build splash screen/remove System.out.println() stuff...
+
+beta1 : not yet begun.
+    design webpage
+    write tutorial.
+    release.
+
+beta2 : not yet begun.
+    fix bugs reported from beta1.
+    Write up a "how it works" doc.
+    release.
+
+1.0 : not yet begun.
+    fix bugs reported from beta2.
+    release.
 
 // end of todo ...
 
