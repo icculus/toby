@@ -1,4 +1,9 @@
-/** comment/copyright !!! */
+/**
+ * TOBY intrinsic: The Boolean (true/false) type.
+ *
+ *   Copyright (c) 1997 Lighting and Sound Technologies.
+ *    Written by Ryan C. Gordon.
+ */
 
 public class BooleanIntrinsic extends Intrinsic
 {
