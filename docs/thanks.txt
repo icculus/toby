@@ -14,6 +14,7 @@ At this point, TOBY has been entirely written, and maintained by
 - Michael Roessler, who managed to sleep through the noise of my clicky
   keyboard on many consecutive nights of hacking.
 - The journal list gang, for listening to Ryan ramble about his life.
+- Bruce Perens, since ElectricFence has helped to preserve my sanity.
 - Robert Spidle, for battling ninjas.
 - The "Dragon book" for parsing concepts. Friggin' trees, man.
 - Mr. Mullen and Mrs. Kelly, for putting me up to the original project.
