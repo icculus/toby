@@ -647,16 +647,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         g[GRAPHICS_COPY] = copyImage.getGraphics();
         g[GRAPHICS_SCREEN] = getGraphics();
 
-        /* !!! waiting for Java 1.2 ...
-
-        ((Graphics2D) g[GRAPHICS_COPY]).setRenderingHint(
-                                            RenderingHint.KEY_ANTIALIASING,
-                                            RenderingHint.VALUE_ANTIALIAS_ON)
-        ((Graphics2D) g[GRAPHICS_SCREEN]).setRenderingHint(
-                                            RenderingHint.KEY_ANTIALIASING,
-                                            RenderingHint.VALUE_ANTIALIAS_ON)
-         */
-
         for (i = 0; i < g.length; i++)
         {
             g[i].setColor(getBackground());
@@ -1398,13 +1388,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         else if (funcName.equals(PROCNAME_PENUP))
         {
             buildArguments(argToks, 0);
-            turtle.setPenUp(true);
+            turtle.setPenDown(false);
         } // else if
 
         else if (funcName.equals(PROCNAME_PENDOWN))
         {
             buildArguments(argToks, 0);
-            turtle.setPenUp(false);
+            turtle.setPenDown(true);
         } // else if
 
         else if (funcName.equals(PROCNAME_PAUSE))
@@ -1446,14 +1436,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         {
             buildArguments(argToks, 0);
             retVal = new BooleanIntrinsic(null,
-                        (turtle.isPenUp()) ? KEYWORD_TRUE : KEYWORD_FALSE);
+                        (turtle.isPenDown()) ? KEYWORD_FALSE : KEYWORD_TRUE);
         } // else if
 
         else if (funcName.equals(PROCNAME_ISPENDOWN))
         {
             buildArguments(argToks, 0);
             retVal = new BooleanIntrinsic(null,
-                        (turtle.isPenUp()) ? KEYWORD_FALSE : KEYWORD_TRUE);
+                        (turtle.isPenDown()) ? KEYWORD_TRUE : KEYWORD_FALSE);
         } // else if
 
         else if (funcName.equals(PROCNAME_HIDETURTLE))
@@ -2602,7 +2592,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             initGraphics();
             terminateCode = false;
 
-            turtle.setPenUp(false);
+            turtle.setPenDown(true);
             turtle.setPenColor(turtle.defaultPenColor());
             turtle.homeTurtle(this, g[GRAPHICS_SCREEN], copyImage);
             turtle.setVisible(true, g[GRAPHICS_SCREEN], copyImage);
