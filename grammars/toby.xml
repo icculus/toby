@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
-<language name="toby" firstelement="TOPLEVEL">
+<language name="toby" fileextension="toby" firstelement="TOPLEVEL">
 
     <tokenizer casesensitive="false"
                whitespacechars=" \t"
@@ -32,7 +32,7 @@
         <pickone>
             <reqelement name="PARENTHESES"/>
             <reqelement name="FUNCTIONCALL"/>
-            <reqelement name="INDENTIFIER"/>
+            <reqelement name="IDENTIFIER"/>
             <reqelement name="BOOLEANVALUE"/>
             <reqnumber/>
             <reqliteralstring/>
@@ -83,8 +83,7 @@
             <reqchar type="letter"/>
             <repeat min="0" max="n">
                 <pickone>
-                    <reqchar type="letter"/>
-                    <reqchar type="number"/>
+                    <reqchar type="alphanumeric"/>
                     <reqchar type="specific" char="_"/>
                 </pickone>
             </repeat>
@@ -96,7 +95,7 @@
         <reqword lookup="true" text="TOBYI18N_OPER_LARRAY"/>
         <repeat min="0" max="n">
             <reqelement name="EXPRESSION"/>
-            <reqword lookup="true" text="TOBYI18N_OPER_SEPERATOR"/>
+            <reqword lookup="true" text="TOBYI18N_OPER_SEPARATOR"/>
         </repeat>
         <optional>
             <reqelement name="EXPRESSION"/>
@@ -194,13 +193,13 @@
 
     <element name="FUNCTIONPARAMETER">
         <reqelement name="VARIABLETYPE"/>
-        <reqelement name="INDENTIFIER"/>
+        <reqelement name="IDENTIFIER"/>
     </element>
 
     <element name="RETURNTYPE">
         <pickone>
             <reqelement name="VARIABLETYPE"/>
-            <reqword lookup="true" name="TOBYI18N_KEYWORD_NOTHING"/>
+            <reqword lookup="true" text="TOBYI18N_KEYWORD_NOTHING"/>
         </pickone>
     </element>
 
@@ -223,17 +222,17 @@
 
     <element name="ASSIGNMENTSTATEMENT">
         <reqelement name="IDENTIFIER"/>
-        <reqword lookup="true" name="TOBYI18N_OPER_ASSIGNMENT"/>
+        <reqword lookup="true" text="TOBYI18N_OPER_ASSIGNMENT"/>
         <reqelement name="EXPRESSION"/>
         <reqnewline/>
     </element>
 
     <element name="FORSTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_FOR"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_BEGINFOR"/>
         <reqelement name="IDENTIFIER"/>
-        <reqword lookup="true" name="TOBYI18N_OPER_ASSIGNMENT"/>
+        <reqword lookup="true" text="TOBYI18N_OPER_ASSIGNMENT"/>
         <reqelement name="EXPRESSION"/>
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_TO"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_TO"/>
         <reqelement name="EXPRESSION"/>
         <optional>
             <reqelement name="FORSTEP"/>
@@ -242,28 +241,28 @@
         <repeat min="0" max="n">
             <reqelement name="STATEMENT"/>
         </repeat>
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDFOR"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_ENDFOR"/>
         <reqnewline/>
     </element>
 
     <element name="FORSTEP">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_STEP"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_STEP"/>
         <reqelement name="EXPRESSION"/>
     </element>
 
     <element name="WHILESTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_WHILE"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_BEGINWHILE"/>
         <reqelement name="EXPRESSION"/>
         <reqnewline/>
         <repeat min="0" max="n">
             <reqelement name="STATEMENT"/>
         </repeat>
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDWHILE"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_ENDWHILE"/>
         <reqnewline/>
     </element>
 
     <element name="IFSTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_IF"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_IF"/>
         <reqelement name="EXPRESSION"/>
         <reqnewline/>
         <repeat min="0" max="n">
@@ -275,12 +274,12 @@
         <optional>
             <reqelement name="ELSESTATEMENT"/>
         </optional>
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_ENDIF"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_ENDIF"/>
         <reqnewline/>
     </element>
 
     <element name="ELSEIFSTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_ELSEIF"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_ELSEIF"/>
         <reqelement name="EXPRESSION"/>
         <reqnewline/>
         <repeat min="0" max="n">
@@ -289,7 +288,7 @@
     </element>
 
     <element name="ELSESTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_ELSE"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_ELSE"/>
         <reqnewline/>
         <repeat min="0" max="n">
             <reqelement name="STATEMENT"/>
@@ -297,7 +296,7 @@
     </element>
 
     <element name="RETURNSTATEMENT">
-        <reqword lookup="true" name="TOBYI18N_KEYWORD_RETURN"/>
+        <reqword lookup="true" text="TOBYI18N_KEYWORD_RETURN"/>
         <reqelement name="EXPRESSION"/>
         <reqnewline/>
     </element>
