@@ -15,19 +15,31 @@ public final class TriangleTurtle extends Turtle
     private static final Color DEFAULT_TURTLE_COLOR = Color.green;
     private static final Color DEFAULT_CENTER_COLOR = Color.blue;
 
-    private Color turtleColor;      // Color of turtle.
-    private Color centerColor;      // Color of center line.
-    private double centerHalf;      // ((Size of center line) / 2).
+    private boolean isVis = true;       // Turtle visible?
+    private Color turtleColor;          // Color of turtle.
+    private Color centerColor;          // Color of center line.
+    private double centerLineHalf;      // ((Size of center line) / 2).
 
         /*
-         * These are only used in paintImpl(), but are declared here,
-         *  so we don't make a new array every time we paint (which
+         * These store the results of calculating the dimensions of the Turtle.
+         *
+         * The Triangle these doubles define would draw in at position (0, 0)
+         *  in TurtleSpace. They are offset and stored in (intsX) and (intsY)
+         *  during paintImpl() for correct placement.
+         */
+    private double[] pointsX;
+    private double[] pointsY;
+    private DoublePoint centerDbl;
+
+        /*
+         * These store the less-precise screen coordinates for the Turtle's
+         *  polygon points, but we keep them as instance variables,
+         *  so we don't make a new array every time we call paintImpl() (which
          *  can be several thousand times even in a simple TOBY program...)
          */
-    private double[] pointsX = new double[3];
-    private double[] pointsY = new double[3];
-    private int[] intsX = new int[3];
-    private int[] intsY = new int[3];
+    private int[] intsX;
+    private int[] intsY;
+    private Point centerInt;
 
 
         /**
@@ -42,36 +54,109 @@ public final class TriangleTurtle extends Turtle
 
 
         /**
-         *  Basically, we'll use this to readjust our size-related
-         *   member (centerHalfLine), which is used in paintInternal();
-         *
-         *    @param x size of turtle. This the size of one side of triangle.
+         * This gives us a change to create our arrays before the
+         *  superclass's constructor forces us to use them. This is
+         *  the first method the superclass calls.
          */
-    public void setTurtleSize(double x)
+    protected void initTurtle()
+    {
+        pointsX = new double[3];
+        pointsY = new double[3];
+        intsX = new int[3];
+        intsY = new int[3];
+        centerInt = new Point();
+    } // initTurtle
+
+
+        /**
+         * Basically, we'll use this notification to readjust our
+         *  size-related member (centerHalfLine), which is used in
+         *  to calculate the Turtle. These are ignored if Turtle is
+         *  not visible.
+         *
+         *    @param newSize Size of turtle. This the size of one side
+         *                   of the triangle.
+         */
+    protected void sizeNotify(double newSize)
     {
             // We'll use the Pythagorian Theorem to figure out how long
             //  the center line of the triangle is. Then, divided by two,
             //  we'll have half the center line. This is needed for the
-            //  paint() method. Splitting a equilateral triangle down the
-            //  center gives us a right triangle of which we know the length
-            //  of two of the sides, (sideLength, and sideLength / 2) so we
-            //  can use the Pythagorian Theorem...have you hugged your math
-            //  teacher today?  :)
+            //  calcTriangle() method. Splitting an equilateral triangle down
+            //  the center gives us a right triangle of which we know the
+            //  length of two of the sides, (sideLength, and sideLength / 2)
+            //  so we can use the Pythagorian Theorem...have you hugged your
+            //  math teacher today?  :)
 
-        centerHalf = TobyGeometry.pythagorian(x / 2, x);
-        super.setTurtleSize(x);
+        centerLineHalf = TobyGeometry.pythagorian(newSize / 2, newSize) / 2;
+
+        if (isVis)
+            calcTriangle(getAngle(), newSize);
     } // setTurtleSize
 
 
+        /**
+         * Take advantage of the notification of a new angle to recalculate
+         *  the triangle. These are ignored if Turtle is not visible.
+         *
+         *  @param newAngle New angle Turtle is facing.
+         */
+    protected void angleNotify(double newAngle)
+    {
+        if (isVis)
+            calcTriangle(newAngle, getTurtleSize());
+    } // angleNotify
+
 
         /**
-         *  We need to take into account the direction that the turtle is
-         *   facing when we draw him. This complicates the drawing process
-         *   considerably, but makes me greatful that I occasionally picked
-         *   up on what my high school math teachers were trying to explain.
-         *   (Thanks Mrs. Strohm and Mrs. Tannery!)
+         * Set a flag signifying whether Turtle is visible. If made visible,
+         *  recalculate the Triangle, to make sure it's up to date.
+         *
+         *    @param isVis Is Turtle now visible?
          */
-    public void paintImpl(Graphics g)
+    protected void visibleNotify(boolean isVis)
+    {
+        this.isVis = isVis;
+        if (isVis == true)
+            calcTriangle(getAngle(), getTurtleSize());
+    } // visibleNotify
+
+
+        /*
+         * Notifies us that the Turtle has changed positions, but not angle.
+         *  We update our screen coordinates accordingly.
+         *
+         *    @param x New X coordinate.
+         *    @param y New Y coordinate.
+         */
+    protected void positionNotify(double x, double y)
+    {
+        if (isVis == true)
+            calcTriangleLocation(x, y);
+    } // positionNotify
+
+
+        /**
+         * We need to take into account the direction that the turtle is
+         *  facing when we draw him. This complicates the drawing process
+         *  considerably, but makes me greatful that I occasionally picked
+         *  up on what my high school math teachers were trying to explain.
+         *  (Thanks Mrs. Strohm and Mrs. Tannery!)
+         *
+         * This function is called whenever the coordinates that make up
+         *  the 3 points on a triangle need to be recalculated. Specifically,
+         *  this is done when the angle or size of the turtle are changed.
+         *
+         * The calculations are stored in pointsX, pointsY, and centerDbl
+         *  for later use by paintImpl().
+         *
+         * The turtle is calculated to be at (0, 0) in TurtleSpace. We will
+         *  add the correct coordinates (and round to ints) before painting.
+         *
+         *       @param angle Angle Turtle is facing.
+         *       @param sideLength size of Turtle, as given by getTurtleSize().
+         */
+    private void calcTriangle(double angle, double sideLength)
     /*
      *                                               |
      *                                            150|150 <-- Front of turtle.
@@ -87,20 +172,18 @@ public final class TriangleTurtle extends Turtle
      *                                     /120
      */
     {
-        double sideLength = getTurtleSize();
-        double angle = getAngle();
-        int i;
         DoublePoint point;
-        DoublePoint centerPoint = getXY();
         double halfSide = sideLength / 2;
 
             // Calculate front-facing point of triangle...
-            //  We start from dead center of turtle, which we're storing in
-            //  centerPoint, and head out half the length of the centerline,
+            //  We start from dead center of turtle, which we're considering
+            //  (0, 0) to be. We head out half the length of the centerline,
             //  which we calculated when we sized this component, and stored
-            //  in centerHalf. We assign the calculated point to the arrays.
+            //  in centerLineHalf.
+            // We assign the calculated point to the arrays.
 
-        point = TobyGeometry.calculateLine(angle, centerHalf, centerPoint);
+        point = TobyGeometry.calculateLine(angle, centerLineHalf, 0, 0);
+
         pointsX[0] = point.x;
         pointsY[0] = point.y;
 
@@ -129,6 +212,7 @@ public final class TriangleTurtle extends Turtle
         pointsX[2] = point.x;
         pointsY[2] = point.y;
 
+
             // Finally, we'll draw a line down the center of the
             //  turtle, so we know which of these three equal sides is
             //  designated as the front. To do so, we'll step back to
@@ -136,27 +220,65 @@ public final class TriangleTurtle extends Turtle
             //  third that's half the size of a side of the turtle. Combined
             //  with our first point (the front point), we have a line
             //  segment that splits the turtle exactly down the center.
-            //  We'll store this point in our temp variable, (point).
+            //  We'll store this point in our instance variable, (centerDbl).
 
-        point = TobyGeometry.calculateLine(angle, halfSide,
-                                           pointsX[1], pointsY[1]);
+        centerDbl = TobyGeometry.calculateLine(angle, halfSide,
+                                               pointsX[1], pointsY[1]);
 
-           // round all the points for screen placement...
-        for (i = 0; i < pointsX.length; i++)
+            // Now, call calcTriangleLocation() to update the actual
+            //  screen coordinates for the turtle, which, by changing the
+            //  angle, have guaranteed to have changed.
+        calcTriangleLocation(getX(), getY());
+
+                // Wow, wasn't that fun? Of course it was.
+    } // calcTriangle
+
+
+        /**
+         * This function calculates the screen coordinates of the Turtle.
+         *  The values stored in pointsX and pointsY are added to
+         *  turtleX, and turtleY, respectively, and rounded to ints.
+         * This is also done for centerDbl, which is calculated and
+         *  stored in centerInt.
+         *
+         * This function must be called anytime the size, angle, or
+         *  location of the turtle has changed. Note that calcTriangle()
+         *  calls this, so you may not have to.
+         *
+         *     @param turtleX X coordinate of the Turtle in TurtleSpace.
+         *     @param turtleY Y coordinate of the Turtle in TurtleSpace.
+         */
+    private void calcTriangleLocation(double turtleX, double turtleY)
+    {
+        int i;
+
+        for (i = 0; i < intsX.length; i++)
         {
-            intsX[i] = TobyGeometry.roundDoubleToInt(pointsX[i]);
-            intsY[i] = TobyGeometry.roundDoubleToInt(pointsY[i]);
+            intsX[i] = TobyGeometry.roundDoubleToInt(pointsX[i] + turtleX);
+            intsY[i] = TobyGeometry.roundDoubleToInt(pointsY[i] + turtleY);
         } // for
 
+        centerInt.x = TobyGeometry.roundDoubleToInt(centerDbl.x + turtleX);
+        centerInt.y = TobyGeometry.roundDoubleToInt(centerDbl.y + turtleY);
+    } // calcTriangleLocation
+
+
+        /**
+         * Actual painting is done here. Take the data we calculated in
+         *  calcTriangle(), add the Turtle's current coordinates to those
+         *  points, and draw.
+         *
+         *    @param g Graphics context to draw Turtle upon.
+         */
+    protected void paintImpl(Graphics g)
+    {
         g.setColor(turtleColor);              // Color and...
 
                 //  ...draw the triangle.
-        g.fillPolygon(intsX, intsY, 3);
+        g.fillPolygon(intsX, intsY, intsX.length);
 
         g.setColor(centerColor);              // draw center line.
-        g.drawLine(intsX[0], intsY[0], (int) point.x, (int) point.y);
-
-                // Wow, wasn't that fun? Of course it was.
+        g.drawLine(intsX[0], intsY[0], centerInt.x, centerInt.y);
     } // paintImpl
 
 } // TriangleTurtle

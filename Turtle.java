@@ -13,7 +13,9 @@
  *   as a component than it would be as just a drawer...Also, the line
  *   drawing and coloring routines are in here, which would either need to
  *   be moved to TurtleSpace.java (complicates things), or kept in a
- *   non-component Turtle...
+ *   non-component Turtle...not to mention that JComponents add massive
+ *   overhead: it would be unbearable if you had to continually setLocation()
+ *   to move the Turtle around TurtleSpace. Ugh.
  *
  *    Copyright (c) Lighting and Sound Technologies, 1997.
  *     Written by Ryan C. Gordon.
@@ -30,13 +32,13 @@ public abstract class Turtle implements ImageObserver
          * Class variables and constants...
          */
 
-    private double  sideLength;       // Size of one side of Turtle.
-    private double  angle;            // 0 - 360 degrees. Direction faced.
-    private double  turtleX;          // X location of Turtle.
-    private double  turtleY;          // Y location of Turtle.
-    private boolean isVisible;        // Should we even paint this guy?
-    private boolean isPenUp;          // Should we leave trails?
-    private Color   penColor;
+    private double  sideLength = 20.0; // Size of one side of Turtle.
+    private double  angle = 0.0;       // 0 - 360 degrees. Direction faced.
+    private double  turtleX = 0.0;     // X location of Turtle.
+    private double  turtleY = 0.0;     // Y location of Turtle.
+    private boolean isVisible = true;  // Should we even paint this guy?
+    private boolean isPenUp = false;   // Should we leave trails?
+    private Color   penColor = null;   // Current pen color.
 
 
         /**
@@ -44,10 +46,14 @@ public abstract class Turtle implements ImageObserver
          */
     public Turtle()
     {
+        initTurtle();
         penColor = colorByNumber(defaultPenColor());
-        isVisible = true;
-        isPenUp = false;
-        angle = 0.0;   // due north in TobySpace.
+
+        visibleNotify(false);   // stops premature calculation.
+        sizeNotify(sideLength);
+        angleNotify(angle);      // due north in TobySpace. !!! for now.
+        positionNotify(turtleX, turtleY);
+        visibleNotify(true);
     } // Constructor
 
 
@@ -63,18 +69,18 @@ public abstract class Turtle implements ImageObserver
     } // defaultPenColor
 
 
-
         /**
          * Set the turtle size. This is the maximum square a
          *  turtle can inhabit. <em>x</em> represents both the
          *  width and height; hence, a square.
          *
-         *    @param x width and height to set turtle to be.
+         *    @param newSize width and height to set turtle to be.
          */
-    public void setTurtleSize(double x)
+    public final void setTurtleSize(double newSize)
     {
-        sideLength = x;
-    } // setSize
+        sideLength = newSize;
+        sizeNotify(newSize);
+    } // setTurtleSize
 
 
         /**
@@ -132,16 +138,6 @@ public abstract class Turtle implements ImageObserver
 
 
         /**
-         * This method must take into consideration the size and angle
-         *  by calling getSize() and getAngle(), respectively. This is
-         *  only called if Turtle.paint() is called, and isVisible == true.
-         *
-         * Have fun.
-         */
-    protected abstract void paintImpl(Graphics g);
-
-
-        /**
          * Toggle this turtle's visible flag. If it is made invisible,
          *  we blank the turtle image, and will not redraw the li'l guy
          *  until he's set visible again. If he's made visible, we draw him
@@ -160,6 +156,7 @@ public abstract class Turtle implements ImageObserver
             else
                 paint(g, copyImg);
             isVisible = visibility;
+            visibleNotify(visibility);
         } // if
     } // setVisible
 
@@ -176,7 +173,7 @@ public abstract class Turtle implements ImageObserver
     public final void rotate(double degrees, Graphics g, Image copyImage)
     {
         angle += degrees;
-        angle %= 360.0;       // check this !!!
+        angleNotify(angle);
         paint(g, copyImage);
     } // rotate
 
@@ -198,6 +195,10 @@ public abstract class Turtle implements ImageObserver
         turtleY = (double) ((comp.getHeight() - sideLength) / 2);
 
         angle = 0.0;
+
+        angleNotify(0.0);
+        positionNotify(turtleX, turtleY);
+
         if (isVisible)
             paintImpl(g);
     } // homeTurtle
@@ -216,10 +217,11 @@ public abstract class Turtle implements ImageObserver
         blankTurtle(g, copyImage);
         turtleX = x;
         turtleY = y;
+        positionNotify(x, y);
 
         if (isVisible)
             paintImpl(g);
-    } // moveTurtle
+    } // setXY
 
 
         /**
@@ -297,6 +299,8 @@ public abstract class Turtle implements ImageObserver
         blankTurtle(g, copyImage);
         turtleX = point.x;    // update internals...
         turtleY = point.y;
+        positionNotify(turtleX, turtleY);
+
         if (isVisible)
             paintImpl(g);
     } // forwardTurtle
@@ -327,6 +331,7 @@ public abstract class Turtle implements ImageObserver
     {
         angle = newAngle;
         angle %= 360.0;       // check this !!!
+        angleNotify(angle);
         paint(g, copyImage);
     } // setAngle
 
@@ -486,6 +491,55 @@ public abstract class Turtle implements ImageObserver
             retVal = 11.0;
         return(retVal);
     } // numberByColor
+
+
+        /**
+         * This gives us a change to create our subclasses' arrays before
+         *  this superclass's constructor forces us to use them. This is
+         *  the first method the superclass calls.
+         */
+    protected abstract void initTurtle();
+
+
+        /**
+         * Notify Turtle subclasses that the Turtle is now facing a new angle.
+         *  @param newAngle new angle Turtle is facing.
+         */
+    protected abstract void angleNotify(double newAngle);
+
+
+        /**
+         * Notify Turtle subclasses that the Turtle is now (in)visible.
+         *  @param isVis (true) if Turtle is now visible, (false) otherwise.
+         */
+    protected abstract void visibleNotify(boolean isVis);
+
+
+        /**
+         * Notify Turtle subclasses that the Turtle is now a new size.
+         *  @param newSize new size of Turtle.
+         */
+    protected abstract void sizeNotify(double newAngle);
+
+
+        /**
+         * Notify Turtle subclasses that the Turtle has moved,
+         *  but not changed angle.
+         *
+         *  @param newSize new size of Turtle.
+         */
+    protected abstract void positionNotify(double x, double y);
+
+
+        /**
+         * This method must take into consideration the size and angle
+         *  by calling getSize() and getAngle(), respectively. This is
+         *  only called if Turtle.paint() is called, and isVisible == true.
+         *
+         * Have fun.
+         */
+    protected abstract void paintImpl(Graphics g);
+
 
 
         // ImageObserver implementation ...
