@@ -44,7 +44,12 @@ UnixLoader::~UnixLoader(void)
 
 void *UnixLoader::getSymbol(const char *sym)
 {
-    return((dlhandle != NULL) ? dlsym(dlhandle, sym) : NULL);
+    void *retval = ((dlhandle != NULL) ? dlsym(dlhandle, sym) : NULL);
+
+    _D(("UnixLoader::getSymbol(\"%s\") %s.\n", sym,
+        (retval != NULL) ? "succeeded" : "failed"));
+
+    return(retval);
 } // UnixLoader::getSymbol
 
 
