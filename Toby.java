@@ -13,18 +13,21 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
+//import java.awt.print.*;
+
+
 public final class Toby extends JFrame implements DocumentListener,
                                                   WindowListener
 {
         // Global Constants...
     public static final String TITLE   = "Toby";
-    public static final String VERSION = "v1.0alpha2";
+    public static final String VERSION = "v1.0alpha3";
 
     public static final String USAGE = "USAGE: Toby.class [sourceFile.toby]";
 
     public static final String WRITTENBY = "Written by Ryan C. Gordon.";
     public static final String COPYRIGHT =
-                     "Copyright (c) 1997 Lighting and Sound Technologies";
+                    "Copyright (c) 1997-1999 Lighting and Sound Technologies.";
 
     public static final String MSG_ERROR = "Error";
 
@@ -94,6 +97,9 @@ public final class Toby extends JFrame implements DocumentListener,
 
         JOptionPane.showMessageDialog(null, msg, TITLE + " " + VERSION,
                                       JOptionPane.INFORMATION_MESSAGE);
+
+//        PrinterJob.printDialog();
+//        PrinterJob.pageDialog();
     } // doPrint
 
 
@@ -327,7 +333,6 @@ public final class Toby extends JFrame implements DocumentListener,
             if (args.length <= 1)
             {
                 toby = new Toby();
-                toby.tobyPanel.getTurtleSpace().cleanup();  // !!! hack
                 if (args.length == 1)
                     toby.openFile(args[0]);
             } // if

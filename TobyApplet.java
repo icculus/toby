@@ -186,9 +186,6 @@ public class TobyApplet extends JApplet implements ActionListener, Runnable,
 
     public void start()
     {
-        tspace.cleanup();   // !!! hack.
-        try { Thread.sleep(500); } catch (InterruptedException ie) {}
-
         if (noSourceCode)
             grabSourceCode();
     } // start

@@ -16,7 +16,6 @@ public final class TobyPanel extends JComponent implements LayoutManager
     private JScrollPane varScrollPane = null;
     private Toby frame = null;
 
-
     private void buildComponents()
     /**
      *  The various components of this panel are built and
@@ -103,23 +102,25 @@ public final class TobyPanel extends JComponent implements LayoutManager
 
     public void layoutContainer(Container target)
     {
-        Dimension d = target.getSize();
-        Insets insets = target.getInsets();
+        int width = getWidth();
+        int height = getHeight();
+        Insets insets = getInsets();
+        int widthHalf;
 
-        d.width -= (insets.left + insets.right);
-        d.width /= 2;
+        width -= (insets.left + insets.right);
+        widthHalf = width / 2;
 
-        d.height -= (insets.top + insets.bottom);
+        height -= (insets.top + insets.bottom);
 
-        tspace.setSize(d.width, d.height);
+        tspace.setSize(widthHalf, height);
         tspace.setLocation(insets.left, insets.top);
                 
-        tia.setSize(d.width, (int) (d.height * 0.75));
-        tia.setLocation(d.width + insets.left, insets.top);
+        tia.setSize(widthHalf, (int) (height * 0.75));
+        tia.setLocation(insets.left + widthHalf, insets.top);
 
-        varScrollPane.setSize(d.width, ((int) (d.height * 0.25)));
-        varScrollPane.setLocation(d.width + insets.left,
-                                  ((int) (d.height * 0.75)) + insets.top);
+        varScrollPane.setSize(widthHalf, ((int) (height * 0.25)));
+        varScrollPane.setLocation(insets.left + widthHalf,
+                                    (int) (height * 0.75) + insets.top);
     } // layoutContainer
 
 

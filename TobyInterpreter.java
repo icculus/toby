@@ -51,13 +51,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String INTRINSIC_NOTHING = "nothing";
 
        // Constants representing general TOBY keywords...
-    public final static int    KEYWORD_COUNT       = 13;
+    public final static int    KEYWORD_COUNT       = 16;
     public final static String KEYWORD_IF          = "if";
     public final static String KEYWORD_ELSEIF      = "elseif";
     public final static String KEYWORD_ELSE        = "else";
     public final static String KEYWORD_ENDIF       = "endif";
     public final static String KEYWORD_BEGINFOR    = "for";
     public final static String KEYWORD_TO          = "to";
+    public final static String KEYWORD_STEP        = "step";
     public final static String KEYWORD_ENDFOR      = "endfor";
     public final static String KEYWORD_RETURN      = "return";
     public final static String KEYWORD_BEGINFUNC   = "function";
@@ -65,6 +66,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String KEYWORD_TRUE        = "true";
     public final static String KEYWORD_FALSE       = "false";
     public final static String KEYWORD_RETURNS     = "returns";
+    public final static String KEYWORD_BEGINWHILE  = "while";
+    public final static String KEYWORD_ENDWHILE    = "endwhile";
 
        // Constants representing standard TOBY function names...
     public final static int    STDFUNC_COUNT       = 16;
@@ -108,6 +111,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     public final static String PROCERR_BAD_IDENT    = "Invalid identifier";
     public final static String PROCERR_NO_ENDFOR    = "FOR without ENDFOR";
     public final static String PROCERR_NO_FOR       = "ENDFOR without FOR";
+    public final static String PROCERR_NO_ENDWHILE  = "WHILE without ENDWHILE";
+    public final static String PROCERR_NO_WHILE     = "ENDWHILE without WHILE";
     public final static String PROCERR_ORPHAN_ELIF  = "ELSEIF without IF";
     public final static String PROCERR_ORPHAN_ELSE  = "ELSE without IF";
     public final static String PROCERR_ORPHAN_ENDIF = "ENDIF without IF";
@@ -124,6 +129,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
 
         // Instance variables...
+    private Thread codeThread = null;
     private boolean terminateCode = false;
     private Vector procList;
     private Stack globals;
@@ -150,7 +156,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // Constructor
 
 
-    private static synchronized void buildTables()
+    private static void buildTables()
     {
         if (operatorTable == null)
             buildOperatorTable();
@@ -165,9 +171,14 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             buildStdFuncTable();
     } // buildTables
 
+
     public void haltInterpreter()
     {
-        terminateCode = true;
+        if ((codeThread != null) && (terminateCode == false))
+        {
+            terminateCode = true;
+            codeThread.interrupt();
+        } // if
     } // haltInterpreter
 
 
@@ -183,7 +194,11 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         Graphics g;
         int height = getHeight();
         int width = getWidth();
+        Insets insets = getInsets();
 
+        width += 15;        // !!! this is a hack. Without this,
+        height += 15;       // !!! the image doesn't always draw to the
+                            // !!! full size of TurtleSpace.
 
         if ((width > 0) && (height > 0))
         {
@@ -302,6 +317,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         keywordTable[10] = KEYWORD_TRUE;
         keywordTable[11] = KEYWORD_FALSE;
         keywordTable[12] = KEYWORD_RETURNS;
+        keywordTable[13] = KEYWORD_BEGINWHILE;
+        keywordTable[14] = KEYWORD_ENDWHILE;
+        keywordTable[15] = KEYWORD_STEP;
     } // buildKeywordTable
 
 
@@ -335,7 +353,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // buildStdFuncTable
 
 
-    public static int searchTable(String[] table, String forThis)
+    public static int searchArray(String[] table, String forThis)
     /**
      * Find out if (forThis) is in (table).
      *
@@ -347,12 +365,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         for (i = 0; i < table.length; i++)
         {
-            if (table[i].equals(forThis))
+            if ((table[i] != null) && (table[i].equals(forThis)))
                 return(i);
         } // for
 
         return(-1);
-    } // searchTable
+    } // searchArray
 
 
 
@@ -360,13 +378,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         boolean retVal = false;
 
-        if (searchTable(operatorTable, str) != -1)
+        if (searchArray(operatorTable, str) != -1)
             retVal = true;
-        else if (searchTable(intrinsicTable, str) != -1)
+        else if (searchArray(intrinsicTable, str) != -1)
             retVal = true;
-        else if (searchTable(keywordTable, str) != -1)
+        else if (searchArray(keywordTable, str) != -1)
             retVal = true;
-        else if (searchTable(stdFuncTable, str) != -1)
+        else if (searchArray(stdFuncTable, str) != -1)
             retVal = true;
 
         return(retVal);
@@ -375,7 +393,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
     public static boolean isIntrinsic(String str)
     {
-        return((searchTable(intrinsicTable, str) != -1) ? true : false);
+        return((searchArray(intrinsicTable, str) != -1) ? true : false);
     } // isIntrinsic
 
 
@@ -434,7 +452,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
      *    returns : void.
      */
     {
-        Thread codeThread;
         StringReader strReader;
         SaneTokenizer sToker;
         
@@ -864,7 +881,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         {
             if (src[i] != null)
             {
-                thisPrecedence = searchTable(operatorTable, src[i]);
+                thisPrecedence = searchArray(operatorTable, src[i]);
                 if (thisPrecedence > highestPrecedence)
                 {
                     highestPrecedence = thisPrecedence;
@@ -1195,7 +1212,8 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             TobyParseException.throwException(PROCERR_NO_RPAREN, null);
 
         if ((priorTokens(src, tokIndex) == false) ||   // 1st token or operator?
-            (searchTable(operatorTable, src[tokIndex - 1]) != -1))
+                // !!! make a isOperator() function!
+            (searchArray(operatorTable, src[tokIndex - 1]) != -1))
         {
             calculate(innerToks);
             src[tokIndex] = innerToks[findRightValue(innerToks, 0)];
@@ -1341,14 +1359,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             long stopTime;
 
             args = buildArguments(argToks, 1);
-            tmpInt = (int) convStrToDouble((String) args.elementAt(0));
-            stopTime = currentTime + tmpInt;
-
-            do
-            {
-                Thread.yield();
-                currentTime = System.currentTimeMillis();
-            } while (currentTime < stopTime);
+            nap((long) convStrToDouble((String) args.elementAt(0)));
         } // else if
 
         else if (funcName.equals(PROCNAME_GETTURTLEX))
@@ -1496,16 +1507,110 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // findEndBlock
 
 
+    private int dealWithWhileLoop(TobyProcedure proc, String[] src, int srcLine)
+                                               throws TobyParseException
+    {
+        WhileLoopDetails whileDetails = new WhileLoopDetails(srcLine);
+        String[] initCondition;
+        int index;
+        String varType;
+        int retVal;
 
-    private int dealWithForLoop(TobyProcedure proc,
-                                String[] src,
-                                int srcLine)
-                                       throws TobyParseException
+        src[0] = null;      // blank out KEYWORD_WHILE...
+
+            // save a copy of the conditional, and make a copy to calculate().
+            //  we have to save a copy since the value may change with each
+            //  iteration.
+        whileDetails.condition = new String[src.length - 1];
+        initCondition = new String[src.length - 1];
+        System.arraycopy(src, 1, initCondition, 0, src.length - 1);
+        System.arraycopy(src, 1, whileDetails.condition, 0, src.length - 1);
+
+        // !!! split this into another function...IF uses almost identical stuff!
+        calculate(initCondition);
+
+        index = findRightValue(initCondition, 0);
+        varType = intrinsicTable[determineType(initCondition[index])];
+
+        if (!varType.equals(INTRINSIC_BOOLEAN))
+            TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
+
+        if (initCondition[index].equals(KEYWORD_TRUE))   // enter loop?
+        {
+            stack.push(whileDetails);
+            retVal = srcLine + 1;
+        } // if
+        else        // skip loop?
+        {
+            retVal = findEndBlock(proc, KEYWORD_BEGINWHILE,
+                                  srcLine, KEYWORD_ENDWHILE);
+            if (retVal == -1)
+                TobyParseException.throwException(PROCERR_NO_ENDWHILE, null);
+        } // else
+
+        return(retVal);
+    } // dealWithWhileLoop
+
+
+    private int dealWithEndWhileLoop(TobyProcedure proc,
+                                     String[] src,
+                                     int srcLine)
+                                         throws TobyParseException
+    /** !!! comment !!! */
+    {
+        int retVal;
+        Object obj;
+        WhileLoopDetails whileDetails;
+        int index;
+        String varType;
+        String[] tmpStrs;
+
+        obj = stack.peek();
+        if (!(obj instanceof WhileLoopDetails))
+            TobyParseException.throwException(PROCERR_NO_WHILE, null);
+
+        whileDetails = (WhileLoopDetails) obj;
+
+        tmpStrs = new String[whileDetails.condition.length];
+        System.arraycopy(whileDetails.condition, 0, tmpStrs, 0, tmpStrs.length);
+
+            // !!! split off into own function!
+        calculate(tmpStrs);
+        index = findRightValue(tmpStrs, 0);
+
+        varType = intrinsicTable[determineType(tmpStrs[index])];
+
+        if (!varType.equals(INTRINSIC_BOOLEAN))
+            TobyParseException.throwException(PROCERR_TYPE_MMATCH, null);
+
+        if (tmpStrs[index].equals(KEYWORD_FALSE))
+        {
+            stack.pop();    // remove WhileLoopDetails object...
+            retVal = srcLine + 1;
+        } // if
+        else
+            retVal = whileDetails.lineNum;
+
+        return(retVal);
+    } // dealWithEndWhileLoop
+
+
+    private int dealWithForLoop(TobyProcedure proc, String[] src, int srcLine)
+                                               throws TobyParseException
+    /**
+     * !!! not only does this need a comment, but this method is BIG, HAIRY,
+     * !!!  and UGLY. Split...it...up!
+     */
     {
         Intrinsic var;
-        ForLoopDetails forDetails = new ForLoopDetails(0);
+        ForLoopDetails forDetails = new ForLoopDetails(srcLine + 1);
         String[] initValue;
         int position;
+        int i;
+        boolean stepSet = false;
+        double startVal;
+        double endVal;
+        int retVal;
 
         var = varDefined(src[1]);
         if (var == null)
@@ -1514,9 +1619,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         if ((var instanceof NumberIntrinsic) == false)
             TobyParseException.throwException(PROCERR_BAD_TYPE, null);
 
-        forDetails.ascending = true;   // !!! fix this.
         forDetails.var = var;
-        forDetails.lineNum = srcLine + 1;
 
         src[0] = null;   // lose KEYWORD_BEGINFOR...
 
@@ -1525,6 +1628,24 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
         initValue = moveGroupingToArray(src, 0, KEYWORD_TO);
         dealWithAssignment(initValue, 1);
+
+            // handle STEP argument, if it exists...
+            // !!! break this into a new function...
+        position = searchArray(src, KEYWORD_STEP);
+        if (position != -1)
+        {
+            if (src.length - position <= 1)
+                TobyParseException.throwException(PROCERR_SYNTAX_ERR, null);
+            initValue = new String[src.length - (position + 1)];
+            System.arraycopy(src, position + 1, initValue, 0, initValue.length);
+            calculate(initValue);
+            forDetails.step =
+                      convStrToDouble(initValue[findRightValue(initValue, 0)]);
+            for (i = src.length; i <= position; i--)
+                src[i] = null;      // lose STEP details...
+
+            stepSet = true;
+        } // if
 
             // locate the conditional equasion (for i = x to [conditional])...
         position = findRightValue(src, 4);
@@ -1539,21 +1660,28 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
                          forDetails.condition.length);
 
         calculate(initValue);   // !!! separate into another function...
-        if (convStrToDouble(var.getValue()) <   // fix for descending !!!
-            convStrToDouble(initValue[findRightValue(initValue, 0)]))
+
+        startVal = convStrToDouble(var.getValue());
+        endVal = convStrToDouble(initValue[findRightValue(initValue, 0)]);
+
+        if (!stepSet)   // if no STEP specified, default to...
+            forDetails.step = ((startVal < endVal) ? 1.0 : -1.0);
+
+            // need to fall into for loop in the first place?
+        if ( ((forDetails.step >= 0.0) && (startVal <= endVal)) ||
+             ((forDetails.step <  0.0) && (startVal >= endVal)) )
         {
             stack.push(forDetails);
-            return(srcLine + 1);
+            retVal = srcLine + 1;
         } // if
-        
-            // Already past condition? Skip out of FOR loop...
-        position = findEndBlock(proc, KEYWORD_BEGINFOR,
-                                srcLine, KEYWORD_ENDFOR);
-
-        if (position == -1)
-            TobyParseException.throwException(PROCERR_NO_ENDFOR, null);
-
-        return(position);
+        else  // Already past condition? Skip out of FOR loop...
+        {
+            retVal = findEndBlock(proc, KEYWORD_BEGINFOR,
+                                  srcLine, KEYWORD_ENDFOR);
+            if (retVal == -1)
+                TobyParseException.throwException(PROCERR_NO_ENDFOR, null);
+        } // else
+        return(retVal);
     } // dealWithForLoop
 
 
@@ -1579,14 +1707,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         System.arraycopy(forDetails.condition, 0, tmpStrs, 0, tmpStrs.length);
         calculate(tmpStrs);
 
-        if (forDetails.ascending)  // increment or decrement?
-            tmpDbl = convStrToDouble((String) forDetails.var.value) + 1.0;
-        else
-            tmpDbl = convStrToDouble((String) forDetails.var.value) - 1.0;
+        tmpDbl = convStrToDouble((String) forDetails.var.value) +
+                 forDetails.step;
 
         forDetails.var.value = Double.toString(tmpDbl);        // replace.
 
-        if (forDetails.ascending)
+        if (forDetails.step >= 0.0)
         {
             if (tmpDbl > convStrToDouble(tmpStrs[findRightValue(tmpStrs, 0)]))
                 breakLoop = true;
@@ -1797,6 +1923,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         else if (tok.equals(KEYWORD_ENDFOR))
             retVal = dealWithEndForLoop(proc, src, srcLine);
 
+        if (tok.equals(KEYWORD_BEGINWHILE))
+            retVal = dealWithWhileLoop(proc, src, srcLine);
+
+        else if (tok.equals(KEYWORD_ENDWHILE))
+            retVal = dealWithEndWhileLoop(proc, src, srcLine);
+
         else if (tok.equals(KEYWORD_IF))
             retVal = dealWithConditional(proc, src, srcLine);
 
@@ -2003,7 +2135,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             } // catch
         } // catch
 
-        return(searchTable(intrinsicTable, typStr));
+        return(searchArray(intrinsicTable, typStr));
     } // determineType
 
 
@@ -2191,7 +2323,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
         {
             src = proc.getSourceLine(i);
 
-            if (searchTable(intrinsicTable, src[0]) != -1)
+            if (isIntrinsic(src[0]))
             {
                 if (src.length != 2)   // !!! lift this restriction?
                 {
@@ -2255,32 +2387,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     } // updateSourceTrace
 
 
-/*    private void resizeCopyImageOnTheFly()
-     *
-     * Make a new copyImage, and copy the current one to the dead center of
-     *  it for on-the-fly continuing...relocate turtle, too.
-     *
-    {
-        int width = getWidth();
-        int height = getHeight();
-        Image tmp = createImage(width, height);
-        Graphics tmpG = tmp.getGraphics();
-        int offsetX = (width - copyImage.getWidth(this)) / 2;
-        int offsetY = (height - copyImage.getHeight(this)) / 2;
-
-        tmpG.setColor(getBackground());
-        tmpG.drawRect(0, 0, width, height);
-        tmpG.drawImage(copyImage, offsetX, offsetY, this);
-        g[GRAPHICS_COPY].dispose();
-        g[GRAPHICS_COPY] = tmpG;
-
-        turtle.setXY(turtle.getX() + offsetX, turtle.getY() + offsetY);
-
-        copyImage.flush();
-        copyImage = tmp;
-    } // resizeCopyImageOnTheFly
-*/
-
     private Intrinsic runCode(TobyProcedure proc)
                                             throws TobyParseException
     /**
@@ -2317,8 +2423,6 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
             while (srcLine < proc.sourceLineCount())
             {
-                Thread.yield();   // just to be nice.  :)
-
                 if (terminateCode)
                 {
                     TobyParseException tpe = new TobyParseException(null);
@@ -2418,6 +2522,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
 
             deleteProcedures();   // get rid of code, now that it has ran...
             terminateCode = false;
+            codeThread = null;
             notifyEndInterpretation(normalTermination);
             deInitGraphics();
         } // if

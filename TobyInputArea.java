@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
 import javax.swing.*;
+import javax.swing.event.*;
 
 
 public class TobyInputArea extends JPanel implements LayoutManager,
@@ -19,6 +20,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
     private JScrollPane scrollPane = null;
     private String endl;
     private Vector lineIndexes;
+    private EditorInformationDisplay edInfo = null;
 
     public TobyInputArea(Toby frame)
     {
@@ -26,7 +28,7 @@ public class TobyInputArea extends JPanel implements LayoutManager,
         lineIndexes = new Vector();
 
         buildComponents(frame);
-        setBackground(Color.red);
+        setBackground(Color.gray);
         setForeground(Color.black);
         setLayout(this);
     } // Constructor
@@ -174,10 +176,12 @@ public class TobyInputArea extends JPanel implements LayoutManager,
         inputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         inputArea.getDocument().addDocumentListener(frame);
 
+        edInfo = new EditorInformationDisplay(inputArea);
         scrollPane = new JScrollPane(inputArea,
                                      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                                      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         add(scrollPane);
+        add(edInfo);
     } // buildComponents
 
 
@@ -221,17 +225,15 @@ public class TobyInputArea extends JPanel implements LayoutManager,
      */
     {
         Insets insets = getInsets();
-        int origWidth = getWidth();
-        int origHeight = getHeight();
-        int width = origWidth - (insets.left + insets.right);
-        int height = origHeight - (insets.top + insets.bottom);
+        int width = getWidth() - (insets.left + insets.right);
+        int height = getHeight() - (insets.top + insets.bottom);
+        int textHeight = getFontMetrics(edInfo.getFont()).getHeight();
 
-        width =  (int) (((double) width)  * 0.98);
-        height = (int) (((double) height) * 0.98);
+        scrollPane.setSize(width, height - textHeight);
+        scrollPane.setLocation(insets.left, insets.top);
 
-        scrollPane.setSize(width, height);
-        scrollPane.setLocation(insets.left + ((origWidth  - width)  / 2),
-                               insets.top  + ((origHeight - height) / 2));
+        edInfo.setSize(width, textHeight);
+        edInfo.setLocation(insets.left, (insets.top + height) - textHeight);
     } // layoutContainer
 
 

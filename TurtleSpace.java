@@ -22,6 +22,7 @@ public abstract class TurtleSpace extends JComponent
     public final static int DEFAULT_TRACE_DELAY = 200;
     public final static int STEP_TRACE_DELAY = -1;
     public final static double TURTLE_RATIO = 0.02;  // 2 percent of screen.
+    public final static int SLEEP_DEPRIVED = 100;
 
     protected Turtle turtle;
     private Vector varWatchers;
@@ -31,6 +32,7 @@ public abstract class TurtleSpace extends JComponent
     private boolean traceEnabled = false;
     private int traceDelay = DEFAULT_TRACE_DELAY;
     private boolean codeRunning = false;
+    private int insomniaCount = 0;
 
         /**
          * Construct a TurtleSpace component.
@@ -328,11 +330,38 @@ public abstract class TurtleSpace extends JComponent
 
 
         /**
+         *  Same as Thread.sleep(), but you don't care if there's
+         *   an interrupted exception thrown...
+         *
+         *      @param millis Number of milliseconds to sleep.
+         */
+    protected void nap(long millis)
+    {
+        try
+        {
+            Thread.sleep(millis);
+        } // try
+        catch (InterruptedException ie)
+        {
+            // don't care.
+        } // catch
+    } // nap
+
+
+        /**
          * Blocks until delay time is over. In tracing mode, this is when
          *  the specified delay time elapses. In stepping mode, this is when
          *  the user instructs the interpreter to continue.
          *
-         * If no tracing/stepping is enabled, this method returns immediately.
+         * If no tracing/stepping is enabled, this method returns almost
+         *  immediately. Every (SLEEP_DEPRIVED) calls to this function
+         *  when not stepping or tracing causes the calling thread to sleep()
+         *  for ~10 milliseconds. This allows other events to run (such as
+         *  input to the menubar), but does not significantly slow down
+         *  interpretation. Even though the interpretation thread should not
+         *  lag the cue, without this, it'll starve the processor, and still
+         *  prevent other threads from running. This is the nature of an
+         *  program that does little more than push data between arrays. :)
          *
          * Subclasses of TurtleSpace should call this method between
          *  every line of code they interpret.
@@ -346,25 +375,28 @@ public abstract class TurtleSpace extends JComponent
             if (traceDelay == STEP_TRACE_DELAY)
             {
                 while ((!nextStep) && (!haltRequested()))
-                    Thread.yield();
+                    nap(10);
                 nextStep = false;
             } // if
             else
-            {
-                endTime += traceDelay;
-                while ( (endTime > System.currentTimeMillis()) &&
-                        (!haltRequested()) )
-                {
-                    Thread.yield();
-                } // while
-            } // else
+                nap(traceDelay);
         } // if
+        else
+        {
+            insomniaCount++;
+            if (insomniaCount >= SLEEP_DEPRIVED)
+            {
+                nap(10);
+                insomniaCount = 0;
+            } // if
+        } // else
     } // delayInterpretation
 
 
     /*
-     *  The following should be overriden by a subclass that
-     *  interprets a program...paint() should probably also be overridden.
+     * The following should be overriden by a subclass that
+     *  interprets a program...paintComponent() should probably
+     *  also be overridden.
      */
 
 
