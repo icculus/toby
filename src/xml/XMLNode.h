@@ -60,6 +60,7 @@ public:
     XMLNode *getParent(void);
     const char *getAttributeValue(const char *name);
     const char *getAttributeDefault(const char *name, const char *defval);
+    bool getBoolAttribute(const char *attr, bool defval = false);
 
 protected:
     const char *tag;

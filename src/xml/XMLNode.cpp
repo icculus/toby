@@ -143,5 +143,33 @@ const char *XMLNode::getAttributeDefault(const char *name, const char *defval)
     return(retval);
 } // XMLNode::getAttributeDefault
 
+
+bool XMLNode::getBoolAttribute(const char *attr, bool defval)
+{
+    const char *defstr = (defval) ? "true" : "false";
+    const char *str = getAttributeDefault(attr, defstr);
+
+    if (strcmp(str, "true") == 0)
+        return(true);
+    else if (strcmp(str, "false") == 0)
+        return(false);
+    else if (strcmp(str, "yes") == 0)
+        return(true);
+    else if (strcmp(str, "no") == 0)
+        return(false);
+    else if (strcmp(str, "1") == 0)
+        return(true);
+    else if (strcmp(str, "0") == 0)
+        return(false);
+    else if (strcmp(str, "on") == 0)
+        return(true);
+    else if (strcmp(str, "off") == 0)
+        return(false);
+
+    assert(false);   // shouldn't ever hit this line.
+    return(false);
+} // XMLNode::getBoolAttrib
+
+
 // end of XMLNode.cpp ...
 
