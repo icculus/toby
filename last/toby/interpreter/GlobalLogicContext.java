@@ -116,6 +116,14 @@ public class GlobalLogicContext extends LogicContext
         addChild(new last.toby.interpreter.stdfunctions.SetFence());
         addChild(new last.toby.interpreter.stdfunctions.EnableFence());
         addChild(new last.toby.interpreter.stdfunctions.DisableFence());
+        addChild(new last.toby.interpreter.stdfunctions.DrawString());
+        addChild(new last.toby.interpreter.stdfunctions.StrCat());
+        addChild(new last.toby.interpreter.stdfunctions.StrLen());
+        addChild(new last.toby.interpreter.stdfunctions.StrLeft());
+        addChild(new last.toby.interpreter.stdfunctions.StrRight());
+        addChild(new last.toby.interpreter.stdfunctions.StrUpper());
+        addChild(new last.toby.interpreter.stdfunctions.StrLower());
+        addChild(new last.toby.interpreter.stdfunctions.SubStr());
     } // loadStandardFunctions
 
 
