@@ -43,12 +43,14 @@ public class FunctionLogicContext extends LogicContext
 
     public void addParameter(Object type, String identifier, Intrinsic newParam)
     {
+        newParam.setIdentifier(identifier);
         parameters.addElement(newParam);
         addScopedSymbol(type, identifier);
     } // addParameter
 
     public void addLocal(Object type, String identifier, Intrinsic newLocal)
     {
+        newLocal.setIdentifier(identifier);
         locals.addElement(newLocal);
         addScopedSymbol(type, identifier, 0);
     } // addLocal
