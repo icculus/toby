@@ -1,0 +1,238 @@
+The XML parser.
+
+Handling an XML file is pretty easy. Our XML parser is more or less a DOM
+API (there's no SAX parser), and is considered quick-and-dirty overall. Still,
+it might suit your needs (and if it doesn't, we accept patches).
+
+The basic gist is this:
+
+1) Include the headers you need.
+
+    #include "io/TobyReader.h"
+    #include "io/FileReader.h"  /* or whatever. */
+    #include "exceptions/IOException.h"
+    #include "xml/XMLNode.h"
+    #include "xml/XMLTree.h"
+
+2) Build a TobyReader from your XML data. If the XML data is in a file, build
+a FileReader. If it's in a null-terminated string, build a StringReader.
+
+    TobyReader *reader = new FileReader("mymetadata.xml");
+
+Please note that this is a TobyReader POINTER. You can NOT build this as
+a local object, since the XML tokenizer will explicitly destruct it, and
+when the stack unwinds, the reader will try to destruct a second time, which
+will probably crash your program or worse.
+
+3) Construct an XMLTree. This can be a local object, if you like.
+
+    XMLTree tree(reader);
+
+You can make that one line, if you like:
+
+    XMLTree tree(new FileReader("mymetadata.xml"));
+
+4) Parse the XML data into a node tree. This isn't done at construction, since
+it can be an expensive operation, and we need a return value.
+
+    if (tree.parseXML() == false)
+        printf("failed to parse XML data!\n");
+
+If you want a little more details on the error, use this:
+
+    try
+    {
+        if (tree.parseXMLThrowException() == false)
+            printf("failed to parse XML data!\n");
+    } // try
+    catch (IOException *ioe)
+    {
+        printf("ioexception reading XML data. problem: [%s].\n",
+                ioe->getMessage());
+        delete ioe;
+    } // catch
+
+Also, in debug builds of Toby, the XML parser will report on stdout what line
+of the input stream failed, and maybe other relevant details.
+
+5) Call getRootNode() and play with the parsed data.
+
+    XMLNode *root = tree.getRootNode();
+
+6) If you didn't built your XMLTree as a local object, don't forget to
+delete it, which will also delete the root node (and the rest of the XML tree)
+and the TobyReader, etc.
+
+
+Well-formed XML:
+
+There's actually pages of documentation from the W3C about what qualifies as
+"well-formed" XML data, and they instruct XML parsers to immediately abort
+their parsing if the document is not well-formed. Our XML rules are
+considerably less strict than the W3C's, but we aren't nearly implementing a
+complete XML parser (for example, there's no support for DTDs at this time).
+
+The basic rules:
+
+Whitespace characters are
+ASCII 32 (' '),
+ASCII 9  ('\t'),
+ASCII 13 ('\r'), and
+ASCII 10 ('\n').
+
+Whitespace is only relavant in a tag's text field.
+
+The first thing (besides whitespace) that must be in your XML document is:
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+The version and encoding values can be anything you like, but they must be
+present in that order. The values are thrown away at this point.
+
+...then, you put tags.
+
+<tag attr1="value1" attrN="valueN"/>
+
+...is a complete tag (named "tag") with two attributes. Note that attributes
+values MUST be in quotes. The quotes may be either '\"' or '\'', so long as
+each pair matches. Since there is a '/' before the '>', this means that
+this tag has no children or text.
+
+Here's a more detailed tag tree:
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<thisdocumentby writer="ryan" date="sept 2nd"/>
+
+<favoritethings owner="Haggar">
+    <thing>Ale</thing>
+    <thing>Wenches</thing>
+</favoritethings>
+
+<favoritethings owner="Mildred">
+    <thing>Haggar</thing>
+</favoritethings>
+
+...here, there are two complete tags (both named "favoritethings") with one
+attribute each. The first tag has two children, the second has one. All of the
+children in this case, are "thing" tags. The Thing tags have text fields like
+"Ale", "Wenches", and "Haggar".
+
+When you pass this through XMLTree(), you can then examine this information
+programmatically.
+
+Once you've successfully parseXML()'d this data, you can call
+tree.getRootNode(), which gives you a pointer to an XMLNode object. The
+value returned will be NULL if there was a parsing error, or an empty node
+that contains the XML data's toplevel tags as children otherwise.
+
+Here's a complete program that makes use of XMLTree and XMLNode...
+
+    /*
+     * This code fragment is placed in the public domain by Ryan C. Gordon
+     *  on Sunday, September 2nd, 2001.
+     */
+
+    #include <stdio.h>
+    #include "io/TobyReader.h"
+    #include "io/StringReader.h"
+    #include "exceptions/IOException.h"
+    #include "xml/XMLNode.h"
+    #include "xml/XMLTree.h"
+
+    void outputNodeInfo(XMLNode *root)
+    {
+        if (root == NULL)
+            return;
+
+        printf("tag: [%s].\n", root->getTag());
+        TobyCollection *attr = root->getAttributes();
+        for (int j = 0; j < attr->getSize(); j++)
+        {
+            XMLAttribute *a = (XMLAttribute *) attr->elementAt(j);
+            printf("  Attribute: %s=%s.\n", a->name, a->value);
+        } // for
+        TobyCollection *kidsofkid = root->getChildren();
+        printf("  Has %d children.\n", kidsofkid->getSize());
+        printf("  text: [%s].\n", root->getText());
+        for (int j = 0; j < kidsofkid->getSize(); j++)
+            outputNodeInfo((XMLNode *) kidsofkid->elementAt(j));
+    } // outputNodeInfo
+
+    static char xmldata[] = "<?xml version='1.0' encoding='iso-8859-1'?>\n"
+                            "\n"
+                            "<thisdocumentby writer='ryan' date='sept 2nd'/>\n"
+                            "\n"
+                            "<favoritethings owner='Haggar'>\n"
+                            "    <thing>Ale</thing>\n"
+                            "    <thing>Wenches</thing>\n"
+                            "</favoritethings>\n"
+                            "\n"
+                            "<favoritethings owner='Mildred'>\n"
+                            "    <thing>Haggar</thing>\n"
+                            "</favoritethings>\n"
+                            "\n";
+
+    int main(int argc, char **argv)
+    {
+        XMLTree tree(new StringReader(xmldata));
+        if (!tree.parseXML())
+            printf("failed to parse XML!\n");
+        else
+            outputNodeInfo(tree.getRootNode());
+        return(0);
+    } // main
+
+
+...yes, this is recursive, but it's the best way to deal with hierarchical
+data structures like XML nodes. This program would print:
+
+tag: [(null)].
+  Has 3 children.
+  text: [(null)].
+tag: [thisdocumentby].
+  Attribute: writer=ryan.
+  Attribute: date=sept 2nd.
+  Has 0 children.
+  text: [(null)].
+tag: [favoritethings].
+  Attribute: owner=Haggar.
+  Has 2 children.
+  text: [
+    ].
+tag: [thing].
+  Has 0 children.
+  text: [Ale].
+tag: [thing].
+  Has 0 children.
+  text: [Wenches].
+tag: [favoritethings].
+  Attribute: owner=Mildred.
+  Has 1 children.
+  text: [
+    ].
+tag: [thing].
+  Has 0 children.
+  text: [Haggar].
+
+...note that you only want to check the root node for children only; it has no
+text or attributes of its own, nor a tag name. We treat it like the rest of
+the nodes here, so that you can see the values it contains.
+
+...note that the whitespace in the text is probably not wanted by the program,
+but we preserve it just in case. We'll leave it as an exercise to the reader
+to figure out how to trim it. There is more room for improvement: you
+shouldn't ever use TobyCollection::getSize() as a loop condition, since the
+collection counts every element each time. It would be better to call getSize
+once and store the result in a local variable. I was lazy, though.  :)  Also,
+cleaner output (indent each child node more than the parent, etc) would be
+good. Look at src/test/xml.cpp for a more robust example.
+
+
+The future:
+
+* Make error reporting more robust (or existant in the first place).
+
+
+// end of xml.txt ...
+
