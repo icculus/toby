@@ -2,6 +2,8 @@
 
 public class NothingIntrinsic extends Intrinsic
 {
+    public static NothingIntrinsic nothing = new NothingIntrinsic();
+
 
     public NothingIntrinsic()
     {
@@ -11,7 +13,7 @@ public class NothingIntrinsic extends Intrinsic
 
     public String getType()
     {
-        return(TobyInterpreter.KEYWORD_NOTHING);
+        return(TobyInterpreter.INTRINSIC_NOTHING);
     } // getType
 
 
