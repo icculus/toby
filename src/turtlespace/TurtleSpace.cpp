@@ -40,10 +40,9 @@ TurtleSpace::~TurtleSpace(void)
         free(turtles);
 
     while (turtlePool->isEmpty() == false)
-        delete turtlePool->remove(0);
+        delete ((Turtle *) turtlePool->remove(0));
 
     delete turtlePool;
-
 } // Destructor
 
 
