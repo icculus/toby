@@ -44,7 +44,7 @@ typedef struct
 
 static char *languagekids[] = { "tokenizer", "element", NULL };
 
-static char *elementkids[] =  { "element", "repeat", "optional", "pickone",
+static char *elementkids[] =  { "repeat", "optional", "pickone",
                                 "reqelement", "reqword", "reqnewline",
                                 "reqnumber", "reqliteralstring", "reqwordchars",
                                 "reqmultilinecomment", "reqsinglelinecomment",
@@ -121,7 +121,7 @@ static void error(char *fmt, ...)
 void tagtest_language(XMLNode *node)
 {
     if (!node->getAttributeValue("name"))
-        warning("<language> node should have a name attribute.");
+        error("<language> node needs a \"name\" attribute.");
 
     const char *startElement = node->getAttributeValue("firstelement");
     if (!startElement)
@@ -151,6 +151,13 @@ void tagtest_language(XMLNode *node)
 } // tagtest_language
 
 
+void tagtest_element(XMLNode *node)
+{
+    if (!node->getAttributeValue("name"))
+        error("<element> without a \"name\" attribute.");
+} // tagtest_element
+
+
 typedef struct
 {
     const char *tag;
@@ -159,6 +166,7 @@ typedef struct
 
 static TagTest tagtests[] = {
                                { "language", tagtest_language },
+                               { "element", tagtest_element },
                                { NULL, NULL }
                             };
 
@@ -267,6 +275,9 @@ int main(int argc, char **argv)
     info("%d errors.", errors);
     info("%d warnings.", warnings);
     printf("\n");
+
+    if (warnings < 0)
+        warning("This prevents a compiler warning for now.");
 
     return(0);
 } // main
