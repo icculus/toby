@@ -19,34 +19,6 @@
 
 #include "platform/lexers/xmllexer/TokenizerRulesXML.h"
 
-/* !!! move this into XMLNode? */
-static bool getBoolAttrib(XMLNode *node, const char *attr, bool defval)
-{
-    const char *defstr = (defval) ? "true" : "false";
-    const char *str = node->getAttributeDefault("casesensitive", defstr);
-
-    if (strcmp(str, "true") == 0)
-        return(true);
-    else if (strcmp(str, "false") == 0)
-        return(false);
-    else if (strcmp(str, "yes") == 0)
-        return(true);
-    else if (strcmp(str, "no") == 0)
-        return(false);
-    else if (strcmp(str, "1") == 0)
-        return(true);
-    else if (strcmp(str, "0") == 0)
-        return(false);
-    else if (strcmp(str, "on") == 0)
-        return(true);
-    else if (strcmp(str, "off") == 0)
-        return(false);
-
-    assert(false);
-    return(false);
-} // getBoolAttrib
-
-
 static void unescapeAttrDefault(XMLNode *node, char **str, size_t *len,
                                 const char *attrname, const char *defval)
 {
@@ -107,13 +79,13 @@ LexerRules *TokenizerRulesXML::buildRules(XMLNode *node)
 {
     assert(strcmp(node->getTag(), "tokenizer") == 0);  // just in case.
 
-    bool _caseSensitive = getBoolAttrib(node, "casesensitive", true);
-    bool _ignoreWhitespace = getBoolAttrib(node, "ignorewhitespace", true);
-    bool _ignoreNewlines = getBoolAttrib(node, "ignorenewlines", true);
-    bool _ignoreSingle = getBoolAttrib(node, "ignoresinglelinecomments", true);
-    bool _ignoreMulti = getBoolAttrib(node, "ignoremultilinecomments", true);
-    bool _escaping = getBoolAttrib(node, "escaping", true);
-    bool _cvtNums = getBoolAttrib(node, "convertnumstowords", false);
+    bool _caseSensitive = node->getBoolAttribute("casesensitive", true);
+    bool _ignoreWhitespace = node->getBoolAttribute("ignorewhitespace", true);
+    bool _ignoreNewlines = node->getBoolAttribute("ignorenewlines", true);
+    bool _ignoreSingle = node->getBoolAttribute("ignoresinglelinecomments", true);
+    bool _ignoreMulti = node->getBoolAttribute("ignoremultilinecomments", true);
+    bool _escaping = node->getBoolAttribute("escaping", true);
+    bool _cvtNums = node->getBoolAttribute("convertnumstowords", false);
     const char *_singleCmt = node->getAttributeValue("singlelinecomment");
     const char *_multiCmt1 = node->getAttributeValue("multilinecommentstart");
     const char *_multiCmt2 = node->getAttributeValue("multilinecommentend");
