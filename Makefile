@@ -71,6 +71,12 @@ platform_clock := unix
 #platform_clock := null
 
 #-----------------------------------------------------------------------------#
+# Choose a default natural language.
+#   Current option(s): "english"
+#-----------------------------------------------------------------------------#
+platform_i18n := english
+
+#-----------------------------------------------------------------------------#
 # Set this to what your platform has.
 #   Current option(s): "unix", "null".
 #-----------------------------------------------------------------------------#
@@ -79,6 +85,7 @@ platform_loader := unix
 
 #-----------------------------------------------------------------------------#
 # To use a different platform's ASM or portable C, change this.
+#  Currently, this MUST be -DUSE_PORTABLE_C
 #-----------------------------------------------------------------------------#
 #USE_ASM := -DUSE_I386_ASM
 USE_ASM := -DUSE_PORTABLE_C
@@ -251,6 +258,12 @@ UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
 PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
 IOSRCS := io/FileReader.cpp io/StringReader.cpp
+
+
+#-----------------------------------------------------------------------------#
+# Language modules
+#-----------------------------------------------------------------------------#
+CFLAGS += "-ATOBYI18N_DEFAULT($(strip $(platform_i18n)))"
 
 
 #-----------------------------------------------------------------------------#
@@ -433,13 +446,14 @@ listobjs:
 	@echo $(EXES)
 
 showcfg:
-	@echo "Using CygWin   : $(cygwin)"
-	@echo "Debugging      : $(debugging)"
-	@echo "ASM flag       : $(USE_ASM)"
-	@echo "Video module   : $(platform_video)"
-	@echo "Thread module  : $(platform_threads)"
-	@echo "Clock module   : $(platform_clock)"
-	@echo "Loader module  : $(platform_loader)"
+	@echo "Using CygWin          : $(cygwin)"
+	@echo "Debugging             : $(debugging)"
+	@echo "ASM flag              : $(USE_ASM)"
+	@echo "Video module          : $(platform_video)"
+	@echo "Thread module         : $(platform_threads)"
+	@echo "Clock module          : $(platform_clock)"
+	@echo "Loader module         : $(platform_loader)"
+	@echo "Default i18n language : $(platform_i18n)"
 
 
 #-----------------------------------------------------------------------------#
