@@ -45,7 +45,7 @@ LexerRules *ElementRulesXML::buildRules(XMLNode *node)
     } // if
 
     return(new ElementRulesXML(_name, iRollback, max, rulesList));
-} // ElementRulesXML::buildRule
+} // ElementRulesXML::buildRules
 
 
 ElementRulesXML::ElementRulesXML(const char *_name, int rollback,

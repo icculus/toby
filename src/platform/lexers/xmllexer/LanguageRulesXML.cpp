@@ -69,7 +69,7 @@ LexerRules *LanguageRulesXML::buildRules(XMLNode *node)
         new LanguageRulesXML(_name, _ext, firstRule, _tokRule,
                              ruleCount, rulesList)
     );
-} // LanguageRulesXML::buildRule
+} // LanguageRulesXML::buildRules
 
 
 LanguageRulesXML::LanguageRulesXML(const char *_name, const char *_ext,
