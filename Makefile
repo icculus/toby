@@ -257,7 +257,7 @@ UTILSRCS := util/TobyCollection.cpp util/TobyStack.cpp util/TobyString.cpp \
             util/TobyLanguage.cpp
 PARSERSRCS := parsers/Parser.cpp
 TURTLESPACESRCS := turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
-IOSRCS := io/FileReader.cpp io/StringReader.cpp
+IOSRCS := io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp
 
 
 #-----------------------------------------------------------------------------#
@@ -331,6 +331,7 @@ valid_loader_target := false
 ifeq ($(strip $(platform_loader)),unix)
     LOADERSRCS := platform/loaders/unixloader/UnixLoader.cpp
     LOADERDIR := unixloader
+    LDFLAGS += -ldl
     valid_loader_target := true
 endif
 
