@@ -156,6 +156,13 @@ dynamic_parsers :=
 #USE_ASM := -DUSE_I386_ASM
 USE_ASM := -DUSE_PORTABLE_C
 
+
+#-----------------------------------------------------------------------------#
+# Set this accordingly.
+#-----------------------------------------------------------------------------#
+#strcasecmp := stricmp
+strcasecmp := strcasecmp
+
 #-----------------------------------------------------------------------------#
 # You only need to set SDL_INC_DIR and SDL_LIB_DIR if you are using CygWin
 #  as a compiler and SDL for some subsystem or another.
@@ -275,6 +282,8 @@ endif
 #-----------------------------------------------------------------------------#
 # Platform-specific binary stuff.
 #-----------------------------------------------------------------------------#
+
+CFLAGS += -Dstrcasecmp=$(strcasecmp)
 
 ifeq ($(strip $(cygwin)),true)
   ASM = nasmw
@@ -440,7 +449,15 @@ ifeq ($(strip $(platform_lexer)),xml)
                platform/lexers/xmllexer/LanguageRulesXML.cpp \
                platform/lexers/xmllexer/TokenizerRulesXML.cpp \
                platform/lexers/xmllexer/ElementRulesXML.cpp \
-               platform/lexers/xmllexer/RepeatRulesXML.cpp
+               platform/lexers/xmllexer/RepeatRulesXML.cpp \
+               platform/lexers/xmllexer/PickOneRulesXML.cpp \
+               platform/lexers/xmllexer/ReqWordRulesXML.cpp \
+               platform/lexers/xmllexer/ReqEOFRulesXML.cpp \
+               platform/lexers/xmllexer/ReqNewlineRulesXML.cpp \
+               platform/lexers/xmllexer/ReqLiteralStringRulesXML.cpp \
+               platform/lexers/xmllexer/ReqWhitespaceRulesXML.cpp \
+               platform/lexers/xmllexer/ReqSingleLineCommentRulesXML.cpp \
+               platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.cpp
   LEXERDIR  := xmllexer
   valid_lexer_target := true
 endif
@@ -506,7 +523,11 @@ IOSRCS += io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
 
 LEXERSRCS += lexer/Lexer.cpp lexer/LexerRules.cpp lexer/LanguageRules.cpp \
              lexer/TokenizerRules.cpp lexer/ElementRules.cpp \
-             lexer/RepeatRules.cpp
+             lexer/RepeatRules.cpp lexer/PickOneRules.cpp \
+             lexer/ReqEOFRules.cpp lexer/ReqWordRules.cpp \
+             lexer/ReqNewlineRules.cpp lexer/ReqLiteralStringRules.cpp \
+             lexer/ReqWhitespaceRules.cpp lexer/ReqMultiLineCommentRules.cpp \
+             lexer/ReqSingleLineCommentRules.cpp
 
 #-----------------------------------------------------------------------------#
 # Source and object parsing...
