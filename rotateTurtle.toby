@@ -1,0 +1,10 @@
+
+function main() returns nothing
+	number i
+
+	for i = 1 to 360
+		turnRight(1)
+		pause(10)
+	endfor
+endfunction
+
