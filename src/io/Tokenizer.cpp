@@ -373,18 +373,27 @@ Tokenizer::tokentype Tokenizer::tokenizeNewline(void) throw (IOException *)
 // !!! FIXME: Need to check for newlines.  Argh.
 Tokenizer::tokentype Tokenizer::tokenizeWhitespace(void) throw (IOException *)
 {
+    int ch;
+
     if (ignoreWhitespace)
     {
-        while (isWhitespaceChar(nextChar())) { /* do nothing... */ }
+        while (isWhitespaceChar(ch = nextChar()))
+        {
+            if (ch == '\n')  // !!! FIXME!
+                lineNum++;
+        } // while
         pushBackChar();
         return(nextToken());
     } // if
 
     else  // keep the whitespace...
     {
-        int ch;
         while (isWhitespaceChar(ch = nextChar()))
+        {
+            if (ch == '\n')  // !!! FIXME!
+                lineNum++;
             addToTokenBuffer((char) ch);
+        } // while
         pushBackChar();
         return(TT_WHITESPACE);
     } // else
@@ -428,7 +437,7 @@ Tokenizer::tokentype Tokenizer::tokenizeLiteralString(void)
         addToTokenBuffer(ch);
         if (ch == quoteChar)
         {
-            if ((!isEscaping) || (tokenBuffer[bufferIndex - 1] != escapeChar))
+            if ((!isEscaping) || (tokenBuffer[bufferIndex - 2] != escapeChar))
                 break;
         } // if
     } // while
