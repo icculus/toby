@@ -1,0 +1,155 @@
+i18n support in Toby.
+
+i18n == internationalization. There's 18 characters between the 'i' and 
+the 'n', so "i18n" is easier to type.
+
+Toby uses an unusual method to support multiple languages. Previously,
+rewrite #3 had the benefit of the Java Reflexion API, which meant that 
+strings, separated in the namespace by packages, could be referenced 
+directly by the program during the linking phased and modified at 
+runtime by looking them up by name. So you'd have a default value:
+
+ package my.package.name
+
+ public class SomeStrings
+ {
+     public static String myString = "here's a default value!";
+ }
+
+ Which the programs could reference and modify:
+
+  System.err.println("My string is " + my.package.name.SomeStrings.myString);
+
+ ...but which we had a simple text file parser for assigning new strings:
+
+  # this is a comment line in the text file leetspeak.tobylang ...
+  my.package.name.SomeStrings.myString = h3r3'5 4 d3f4u7t v47u3!
+
+This meant that, at runtime, the user could use a text file to drop new 
+strings in place on the fly. So all you had to do was translate the 
+textfile to French, German, or whatever, and feed the file to Toby, and 
+you had a local version.
+
+Rewrite #4 has some difficulties with this method, and I've some desires 
+for enhancement.
+
+First, there's no reflexion API. The TobyLoader abstraction gives you
+something similar, but most systems (including those that build with GNU
+C++) can't look up C++ symbols in binaries because of the name mangling
+scheme, which means you lose package names immediately. Secondly, you
+can't guarantee that there WILL be a dynamic loader for a given platform,
+or that you can look up symbols in the main binary. Much to my chagrin, I
+found that this is true for Java, too; the PalmOS virtual machine (the
+"KVM") doesn't have the Reflexion API. Write once, run anywhere?!
+
+Secondly, I don't like that the default language is English. I'd like to
+specify a default at compile time, in addition to having langfiles change 
+it at runtime. If a German is willing to rebuild the program, he shouldn't 
+have to specify a language file everytime he runs it just to get messages 
+in German.
+
+Also, I'd like to not compile in all the internationalization stuff. If we 
+can change the default, like I mentioned above, then for less general 
+cases and resource-constrained platforms
+
+Finally, I'd like to remove unnecessary points of failure. The Java system 
+expects you to have the langfile spell the strings' identifiers correctly, 
+and if you leave a string out, certain ones will remain as default, which 
+can be very confusing for end users. Obviously, there's always going to be 
+potential for typos, etc, but I want to minimize the points of failure.
+
+Here's my solution: langfiles are used as C++ include files. (AHHHH!)
+
+A langfile looks like this:
+
+----------------  cut here  ----------------
+
+#if (!defined CALLED_FROM_TOBYLANGUAGE)
+#error Do not include this header directly. Just include util/TobyLanguage.h
+#endif
+
+/* --- BEGIN TOBY LANGUAGE DATA --- */
+
+ // This is a single line comment. Blank lines are okay, too.
+
+
+TOBYSTR(TOBYLANG_OUTOFMEMORY, "Out of memory")
+
+   /*
+    * Multiline comments are cool, too.
+    */
+TOBYSTR(TOBYLANG_SAVEBEFOREQUIT, "Save work before quitting?")
+
+/* --- END TOBY LANGUAGE DATA --- */
+
+
+----------------  cut here  ----------------
+
+
+This file gets passed though the C++ preprocessor two times. From 
+TobyLanguage.cpp, this definition is used:
+
+#define TOBYSTR(sym, str) char *sym = str;
+
+
+From TobyLanguage.h (used in the rest of the program), this define is used:
+#define TOBYSTR(sym, str) extern char *sym;
+
+The CALLED_FROM_TOBYLANGUAGE check is not necessary, but it's an extra
+compilation safety (The internal TobyLanguage code will define it; no other
+code should).
+
+At runtime, comments ("//" and "/**/" style) are thrown away, and so is
+whitespace. More correctly, data that isn't in the TOBYSTR() form is thrown
+away. The rest of the data is parsed by a simple tokenizer; "TOBYSTR", "(",
+and ")" are thrown away, and the parser examines the parameters. The symbol
+before the comma is looked up in the main binary via the TobyLoader facility,
+and the literal string after the comma is, if the symbol is found, assigned to
+that pointer. If the TOBYSTR is malformed, it is ignored, and parsing
+continues. The program should never abort if there's a langfile problem; it
+should try to do what it can. Langfile syntax problems should be checked prior
+to runtime. This system works well, since it forces correctness; while the
+parser is forgiving enough to continue if there is a malformed or missing
+string definition, the compiler is not, so you can tell if your langfile is
+completely correct just by rebuilding the project with it as the default.
+
+To choose a default langfile for inclusion in the binary, specify it in the
+Makefile. There should be a section near the top that looks like this:
+
+#-----------------------------------------------------------------------------#
+# Choose a default language.
+#   Current option(s): "english"
+#-----------------------------------------------------------------------------#
+platform_i18n := english
+
+
+...if you add Nigerian language support, make it look like this:
+
+
+#-----------------------------------------------------------------------------#
+# Choose a default language.
+#   Current option(s): "english", "nigerian"
+#-----------------------------------------------------------------------------#
+platform_i18n := nigerian
+#platform_i18n := english
+
+
+
+
+To add a new language, translate one of the existing langfiles. And save it
+in src/i18n/nigerian.tobylang (or whatever). The ".tobylang" extension is to
+disuade coders from including it directly, and to let people know what it is
+more descriptively than an ".h" extension would. You can just feed it to a
+Toby binary to use it at this point, but if you'd like to check it for
+correctness and make it usable as a default, add an option to the Makefile
+and this construct to the appropriate place in src/util/TobyLanguage.h:
+
+#elif #TOBYI18N_DEFAULT (nigerian)  /* or whatever */
+#include "i18n/nigerian.tobylang"
+
+
+Now rebuild. If it compiles, then you've done everything right.
+
+
+--ryan.  (icculus@linuxgames.com)
+
