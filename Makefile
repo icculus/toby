@@ -437,8 +437,9 @@ valid_lexer_target := false
 ifeq ($(strip $(platform_lexer)),xml)
   need_xml := true
   LEXERSRCS := platform/lexers/xmllexer/XMLLexer.cpp \
-               platform/lexers/xmllexer/ElementRulesXML.cpp \
-               platform/lexers/xmllexer/LanguageRulesXML.cpp
+               platform/lexers/xmllexer/LanguageRulesXML.cpp \
+               platform/lexers/xmllexer/TokenizerRulesXML.cpp \
+               platform/lexers/xmllexer/ElementRulesXML.cpp
   LEXERDIR  := xmllexer
   valid_lexer_target := true
 endif
@@ -502,7 +503,8 @@ TURTLESPACESRCS += turtlespace/Turtle.cpp turtlespace/TurtleSpace.cpp
 IOSRCS += io/TobyReader.cpp io/FileReader.cpp io/StringReader.cpp \
           io/Tokenizer.cpp
 
-LEXERSRCS += lexer/ElementRules.cpp lexer/LanguageRules.cpp lexer/Lexer.cpp
+LEXERSRCS += lexer/Lexer.cpp lexer/LanguageRules.cpp lexer/TokenizerRules.cpp \
+             lexer/ElementRules.cpp
 
 #-----------------------------------------------------------------------------#
 # Source and object parsing...
