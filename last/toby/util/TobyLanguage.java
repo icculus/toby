@@ -138,13 +138,12 @@ public class TobyLanguage
 
 
         // Constants representing error messages...
-    public static String INTERNAL_ERROR  = "Internal Error";
+    public static String INTERNAL_ERROR  = "Internal error";
     public static String EXPECTED_TOKEN  = "Expected token";
     public static String SYNTAX_ERROR    = "Syntax error";
     public static String BAD_ASSIGNMENT  = "Assignment not allowed";
-    public static String DOUBLE_DEF      = "Duplicate Definition";
+    public static String DOUBLE_DEF      = "Duplicate definition";
     public static String ORPHAN_CODE     = "Code outside function";
-    public static String INTERNAL        = "Internal error";
     public static String BAD_TYPE        = "Bad variable type";
     public static String NOT_VAR         = "Expected variable";
     public static String NO_MAINLINE     = "Expected mainline";
@@ -171,9 +170,15 @@ public class TobyLanguage
     public static String ELSE_AFTER_ELSE = "Multiple ELSE statements";
     public static String NO_VAR_DECL     = "Can't declare variables here";
     public static String FUNC_IN_FUNC    = "FUNCTION within function";
-    public static String DIV_BY_ZERO     = "Division by Zero";
+    public static String DIV_BY_ZERO     = "Division by zero";
     public static String NOCURTURTLE     = "No current turtle";
     public static String TURTLE_FENCED   = "Turtle past fence";
+    public static String OUT_OF_RANGE    = "Out of range";
+    public static String OVERFLOW        = "Overflow";
+    public static String NOT_AN_ARRAY    = "Expected array";
+    public static String NO_RARRAY       = "Expected \"]\"";
+    public static String NO_LARRAY       = "Expected \"[\"";
+    public static String NOT_WHOLE_NUM   = "Expected whole number";
 
     public static String LANGIOEXCEPT    = "LANGUAGE: IOException reading" +
                                            " language data.";
