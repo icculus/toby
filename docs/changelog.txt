@@ -44,6 +44,11 @@ standalone program for initial testing.)
             for tokenizing C++ code. Added src/test/ directory and
             src/test/tokenizer.cpp to test...guess what. Changed "debugging"
             flag in the Makefile to "debug" and added a "tests" rule.
+08222001 - Started implementing a quick-and-dirty XML parser (DOM only).
+            Changed my email address from icculus@linuxgames.com to
+            icculus@clutteredmind.org everywhere.
+08242001 - Continued work on XML parser. Added Tokenizer::setNumbersAreWords().
+            Created an XMLNode class, and changed TobyXML to XMLTree.
 
 // end of changelog.txt ...
 
