@@ -7,6 +7,8 @@
  Java-specific.)
 
 ongoing bugfixes/enhancements :
+    Change the StringReader to MemoryReader.
+
     We're doublebuffering the offscreen/screen rendering state between
      turtlespace and the individual renderers. Move it into the renderer
      baseclass.
