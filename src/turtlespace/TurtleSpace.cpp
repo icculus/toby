@@ -32,11 +32,9 @@ TurtleSpace::TurtleSpace(TurtleSpaceRenderer *_renderer) :
 TurtleSpace::~TurtleSpace(void)
 {
     for (int i = 0; i < turtlesArraySize; i++)
-    {
-        if (turtles[i] != NULL)
-            delete turtles[i];
-    } // for
+        delete turtles[i];
 
+        // !!! FIXME: Why are we using free()?
     if (turtles != NULL)
         free(turtles);
 

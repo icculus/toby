@@ -37,8 +37,7 @@ public:
 
     virtual ~TobyException(void)
     {
-        if (msg != NULL)
-            delete msg;
+        delete msg;
     } // Destructor
 
     const char *getMessage(void)

@@ -30,8 +30,7 @@ StringReader::StringReader(const char *_str)
 
 StringReader::~StringReader(void)
 {
-    if (str != NULL)
-        delete[] str;
+    delete[] str;
 } // Destructor
 
 

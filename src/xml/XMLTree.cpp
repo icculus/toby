@@ -33,11 +33,8 @@ XMLTree::XMLTree(TobyReader *xmlStream)
 
 XMLTree::~XMLTree(void)
 {
-    if (in != NULL)
-        delete in;
-
-    if (root != NULL)
-        delete root;
+    delete in;
+    delete root;
 } // Destructor
 
 
@@ -299,11 +296,8 @@ bool XMLTree::parseXMLThrowException(void) throw (IOException *)
     } // try
     catch (IOException *ioe)
     {
-        if (root != NULL)
-        {
-            delete root;
-            root = NULL;
-        } // if
+        delete root;
+        root = NULL;
         throw(ioe);
     } // catch
 

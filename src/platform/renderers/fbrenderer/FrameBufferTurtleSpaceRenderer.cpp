@@ -51,8 +51,7 @@ bool FrameBufferTurtleSpaceRenderer::resize(int _w, int _h)
     p = getSurface();
     if (p == NULL)
     {
-        if (oldbuf == NULL)
-            delete[] oldbuf;
+        delete[] oldbuf;
         return(false);
     } // if
 
@@ -383,8 +382,7 @@ void FrameBufferTurtleSpaceRenderer::createSurface(int _w, int _h)
 
 void FrameBufferTurtleSpaceRenderer::deleteSurface(void)
 {
-    if (defaultSurface != NULL)
-        delete[] defaultSurface;
+    delete[] defaultSurface;
 } // FrameBufferTurtleSpaceRenderer::deleteSurface
 
 

@@ -36,11 +36,8 @@ XMLNode::XMLNode(XMLNode *_parent)
 
 XMLNode::~XMLNode(void)
 {
-    if (tag != NULL)
-        delete[] tag;
-
-    if (text != NULL)
-        delete[] text;
+    delete[] tag;
+    delete[] text;
 
     while (!attribs->isEmpty())
     {
@@ -52,18 +49,15 @@ XMLNode::~XMLNode(void)
     delete attribs;
 
     while (!children->isEmpty())
-    {
-        XMLNode *node = (XMLNode *) children->remove(0);
-        delete node;
-    } // while
+        delete (XMLNode *) children->remove(0);
+
     delete children;
 } // Destructor
 
 
 void XMLNode::setTag(const char *str)
 {
-    if (tag != NULL)
-        delete[] tag;
+    delete[] tag;
 
     if (str == NULL)
         tag = NULL;
@@ -83,8 +77,7 @@ const char *XMLNode::getTag(void)
 
 void XMLNode::setText(const char *str)
 {
-    if (text != NULL)
-        delete[] text;
+    delete[] text;
 
     if (str == NULL)
         text = NULL;

@@ -43,8 +43,7 @@ public:
         // !!! These should be pooled...
     virtual ~FlowException(void)
     {
-        if (procName != NULL)
-            delete procName;
+        delete procName;
     } // Destructor
 
 
