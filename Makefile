@@ -457,7 +457,8 @@ ifeq ($(strip $(platform_lexer)),xml)
                platform/lexers/xmllexer/ReqLiteralStringRulesXML.cpp \
                platform/lexers/xmllexer/ReqWhitespaceRulesXML.cpp \
                platform/lexers/xmllexer/ReqSingleLineCommentRulesXML.cpp \
-               platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.cpp
+               platform/lexers/xmllexer/ReqMultiLineCommentRulesXML.cpp \
+               platform/lexers/xmllexer/ReqNumberRulesXML.cpp
   LEXERDIR  := xmllexer
   valid_lexer_target := true
 endif
@@ -527,7 +528,7 @@ LEXERSRCS += lexer/Lexer.cpp lexer/LexerRules.cpp lexer/LanguageRules.cpp \
              lexer/ReqEOFRules.cpp lexer/ReqWordRules.cpp \
              lexer/ReqNewlineRules.cpp lexer/ReqLiteralStringRules.cpp \
              lexer/ReqWhitespaceRules.cpp lexer/ReqMultiLineCommentRules.cpp \
-             lexer/ReqSingleLineCommentRules.cpp
+             lexer/ReqSingleLineCommentRules.cpp lexer/ReqNumberRules.cpp
 
 #-----------------------------------------------------------------------------#
 # Source and object parsing...
