@@ -138,7 +138,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     private Stack stack;
     private Graphics[] g;
     private Image copyImage = null;
-
+    private long totalExecTime = 0;
 
         // Methods...
 
@@ -550,11 +550,13 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         StringReader strReader;
         SaneTokenizer sToker;
-        
+        long startTime;
+
         cleanup();
 
         if (newCode != null)
         {
+            startTime = System.currentTimeMillis();
             strReader = new StringReader(newCode);
             sToker = new TobyTokenizer(strReader);
 
@@ -570,6 +572,9 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             } // catch
 
             strReader.close();
+
+            totalExecTime = System.currentTimeMillis() - startTime;
+            System.out.println("Parse time : "+totalExecTime+" milliseconds.");
 
             codeThread = new Thread(this);
             codeThread.start();
@@ -2652,11 +2657,7 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
     {
         TobyProcedure mainLine = findProcedure(PROCNAME_MAINLINE);
         boolean normalTermination = true;
-
-                // !!!
-        long startTime = System.currentTimeMillis();
-                // !!!
-
+        long runTime = System.currentTimeMillis();
 
         if (mainLine != null)
         {
@@ -2695,11 +2696,12 @@ public final class TobyInterpreter extends TurtleSpace implements Runnable,
             codeThread = null;
             notifyEndInterpretation(normalTermination);
             deInitGraphics();
-                // !!!
-            System.out.println("Total execution time == (" +
-                                (System.currentTimeMillis() - startTime) +
-                                ") milliseconds.");
-                // !!!
+
+            runTime = (System.currentTimeMillis() - runTime);
+            totalExecTime += runTime;
+            System.out.println("Exec. time : " + runTime + " milliseconds.");
+            System.out.println("Total time : "+totalExecTime+" milliseconds.");
+            System.out.println();
         } // if
     } // run
 
