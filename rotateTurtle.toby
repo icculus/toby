@@ -4,7 +4,8 @@ function main() returns nothing
 
 	for i = 1 to 360
 		turnRight(1)
-		pause(10)
+		pause(5)
 	endfor
 endfunction
+
 

@@ -1,5 +1,35 @@
-function main() returns number
-	return (1.0)
+//----------------------------------------------------
+// This is an over-glorified test of the
+//  WHILE/ENDWHILE construct, buried in the
+//  doTriangle() function. If it works, you should
+//  end up with three filled-in triangles.
+//
+// Copyright (c) 1999 Lighting and Sound Technologies.
+//  Written by Ryan C. Gordon.
+//----------------------------------------------------
+
+function main() returns nothing
+	number i
+	triforce(150)
+endfunction
+
+
+function triForce(number size) returns nothing
+	setAngle(-90)
+	doTriangle(size)
+	
+endfunction
+
+function doTriangle(number size) returns number
+	number i
+
+	i = 1
+
+	while (i <= 3)
+		i = i + 1
+		goForward(size)
+		turnRight(360 / 3)
+	endwhile
 endfunction
 
 

@@ -5,8 +5,6 @@ function main() returns nothing
 
 	color = 0
 
-    hideTurtle()
-
     for i = 1 to 360 step 2
         circle()
         turnRight(2)
@@ -27,6 +25,7 @@ function circle() returns nothing
         turnRight(1)
     endfor
 endfunction
+
 
 
 

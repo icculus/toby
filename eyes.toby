@@ -9,7 +9,7 @@
 //number eyeballStep
 
 
-function eyeballs(number step) returns nothing
+function eyeballs(number skip) returns nothing
     number i
     boolean isDrawTime
 
@@ -24,7 +24,7 @@ function eyeballs(number step) returns nothing
             setPenUp()
             isDrawTime = true
         endif
-        goForward(step)
+        goForward(skip)
 
         if (i >= 360)
             turnRight(1)
@@ -40,6 +40,8 @@ function pupil(number x, number y) returns nothing
     number i
 
     color = 0
+
+	setTurtleXY(x, y)
 
     for i = 1 to 360
         setPenColor(color)
@@ -57,21 +59,29 @@ endfunction
 
 
 function main() returns nothing
-//    number center
+    number centerX
+    number centerY
 
+	centerX = getTurtleX()
+	centerY = getTurtleY()
 
-          number eyeballStep
-    eyeballStep = 2
+	eyeballs(2)
 
-    eyeballs(eyeballStep)
 //    center = calculateRadius(eyeballStep)
 
 
-     pupil(getTurtleX(), getTurtleY())
-    
+	pupil(centerX - 115, centerY)
+	pupil(centerX + 115, centerY)
+
+		// use the turtle as a "nose."  :)
+	setTurtleXY(centerX, centerY + 50)
+	setAngle(180)
+
 endfunction
 
 // end of eyes.toby ...
+
+
 
 
 
