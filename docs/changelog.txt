@@ -83,6 +83,15 @@ standalone program for initial testing.)
             changed the test program accordingly. The test program now
             distinguishes between errors and warnings, and outputs warning and
             error counts at the end of execution.
+08312001 - Renamed langdefs/ to grammars/, and docs/subsystems/langdef_tags.txt
+            to docs/subsystems/grammar_tags.txt.
+09022001 - Happy September. Committed docs/subsystems/code_generation.txt,
+            docs/subsystems/grammar_tags.txt and docs/subsystems/xml.txt.
+            Changed TobyCollection::size() to TobyCollection::getSize(), since
+            that just makes more sense. This touched a couple of source files.
+            Renamed src/test/langdef.cpp to src/test/grammar.cpp. Updated
+            that source and docs/subsystem/grammar_tags.txt with reqwordchars
+            and such.
 
 // end of changelog.txt ...
 

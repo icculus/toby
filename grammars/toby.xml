@@ -81,14 +81,16 @@
     </element>
 
     <element name="IDENTIFIER">
-        <reqchar type="letter"/>
-        <repeat min="0" max="n">
-            <pickone>
-                <reqchar type="letter"/>
-                <reqchar type="number"/>
-                <reqchar type="specific" char="_"/>
-            </pickone>
-        </repeat>
+        <reqwordchars>
+            <reqchar type="letter"/>
+            <repeat min="0" max="n">
+                <pickone>
+                    <reqchar type="letter"/>
+                    <reqchar type="number"/>
+                    <reqchar type="specific" char="_"/>
+                </pickone>
+            </repeat>
+        </reqwordchars>
     </element>
 
     <element name="FUNCTIONCALL">

@@ -165,7 +165,7 @@ attributes  :
 -------------------------------------------------------------------------------
 tagname     : <reqwordchars>
 parent      : <element>, <repeat>, <optional>, <pickone>
-children    : <reqchar>
+children    : <reqchar>, <repeat>, <optional>, <pickone>
 description : The current token must be a word and match the characters
               specified by its <reqchar> children.
 attributes  : [no attributes]

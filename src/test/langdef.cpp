@@ -45,7 +45,7 @@ static char *languagekids[] = { "tokenizer", "element", NULL };
 
 static char *elementkids[] =  { "element", "repeat", "optional", "pickone",
                                 "reqelement", "reqword", "reqnewline",
-                                "reqnumber", "reqliteralstring",
+                                "reqnumber", "reqliteralstring", "reqwordchars",
                                 "reqmultilinecomment", "reqsinglelinecomment",
                                 "reqchar", "reqeof", "reqwhitespace", NULL };
 
@@ -55,7 +55,8 @@ static char *repeatkids[] =   { "repeat", "optional", "pickone",
                                 "reqmultilinecomment", "reqsinglelinecomment",
                                 "reqchar", "reqeof", "reqwhitespace", NULL };
 
-static char *reqwordcharkids[] = { "reqchar", NULL };
+static char *reqwordcharskids[] = { "repeat", "optional", "pickone",
+                                    "reqchar", NULL };
 
 static char *nokids[] =       { NULL };
 
@@ -69,7 +70,7 @@ static tagslist tags[] =
     { "pickone", repeatkids },
     { "reqelement", nokids },
     { "reqword", nokids },
-    { "reqwordchar", reqwordcharkids },
+    { "reqwordchars", reqwordcharskids },
     { "reqliteralstring", nokids },
     { "reqsinglelinecomment", nokids },
     { "reqmultilinecomment", nokids },
