@@ -6,7 +6,6 @@ standalone program for initial testing.)
             Got turtle rendering in GTKTurtleSpaceRenderer. Added gdk_flush()
             calls to GTKTurtleSpaceRenderer, so it syncs up with the X server
             and doesn't hog the processor. Added -lm to the linker line.
-
 05072001 - Filled in offscreen rendering API, for page flipping/bitblt'ing
             of entire screen at once. This should facilitate using Toby for
             animation. FrameBufferTurtleSpaceRenderer hasn't filled in this
@@ -16,20 +15,23 @@ standalone program for initial testing.)
             rendering. Started initial Tokenizer implementation. Feeling
             intimidated. Added some debugging output to Reader subclasses.
             Changed some internal structure names.
-
 05252001 - Added programs/birthday.toby.
-
 07242001 - Added TobyLoader module and Unix/Null implementations.
-
 07262001 - Fixed some comments in the platform/clocks tree. Wrote up
            documentation for my wacky new i18n scheme. Renamed src/localization
            to src/i18n. Committed a buttload of stuff to CVS, which is now
            publically hosted at icculus.org.
-
 07272001 - Rewrote the tobylang files for the new format, and put together
             util/TobyLanguage.h and util/TobyLanguage.cpp for the new format.
             Naturally, this breaks everything.  :)
-
+08042001 - Patched NullTurtleSpaceRenderer to compile. Redesigned the
+            TobyReader hierarchy somewhat; TobyReader.cpp exists (and was
+            added to the Makefile), EOF reads don't throw an IOException
+            anymore, added a pushback to the base class, moved readLine to
+            TobyReader (and fixed the MacOS endline thing). readLine can be
+            overridden by a subclass for something more efficient but less
+            generic. Added TobyReader::isOpened(). This is preparation for the
+            Tokenizer class. Added -ldl to UnixLoader's LDFLAGS.
 
 // end of changelog.txt ...
 
