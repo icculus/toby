@@ -32,6 +32,9 @@
 #include "xml/XMLTree.h"
 #include "xml/XMLNode.h"
 
+static int warnings = 0;
+static int errors = 0;
+
 typedef struct
 {
     char *tag;
@@ -44,13 +47,13 @@ static char *elementkids[] =  { "element", "repeat", "optional", "pickone",
                                 "reqelement", "reqword", "reqnewline",
                                 "reqnumber", "reqliteralstring",
                                 "reqmultilinecomment", "reqsinglelinecomment",
-                                "reqchar", NULL };
+                                "reqchar", "reqeof", "reqwhitespace", NULL };
 
 static char *repeatkids[] =   { "repeat", "optional", "pickone",
                                 "reqelement", "reqword", "reqnewline",
                                 "reqnumber", "reqliteralstring",
                                 "reqmultilinecomment", "reqsinglelinecomment",
-                                "reqchar", NULL };
+                                "reqchar", "reqeof", "reqwhitespace", NULL };
 
 static char *nokids[] =       { NULL };
 
@@ -70,6 +73,7 @@ static tagslist tags[] =
     { "reqchar", nokids },
     { "reqnumber", nokids },
     { "reqnewline", nokids },
+    { "reqeof", nokids },
     { NULL, NULL }
 };
 
@@ -97,13 +101,17 @@ static void testNode(XMLNode *node)
                 } // for
 
                 if (tags[i].kids[q] == NULL)
+                {
                     printf("[%s] is not a valid child of [%s].\n", kidtag, tag);
+                    errors++;
+                } // if
             } // for
             return;
         } // if
     } // for
 
     printf("- Unrecognized tag [%s].\n", tag);
+    errors++;
 } // testNode
 
 
@@ -112,6 +120,7 @@ static void testLangTree(XMLNode *head)
     if (strcmp(head->getTag(), "language") != 0)
     {
         printf("- Toplevel tag must be <language>.\n");
+        errors++;
         return;
     } // if
 
@@ -143,21 +152,25 @@ int main(int argc, char **argv)
                 assert(root->getTag() == NULL);
                 assert(root->getText() == NULL);
                 TobyCollection *children = root->getChildren();
-                if (children->size() != 1)
-                    printf("- There should be one toplevel (<language>) tag.\n");
-                else
-                    testLangTree((XMLNode *) children->elementAt(0));
+                int max = children->size();
+                for (int j = 0; j < max; j++)
+                    testLangTree((XMLNode *) children->elementAt(j));
             } // else
         } // try
 
         catch (IOException *ioe)
         {
             printf("- IOException! [%s].\n", ioe->getMessage());
+            errors++;
             delete ioe;
         } // catch
     } // for
 
     printf("\n");
+    printf("%d errors.\n", errors);
+    printf("%d warnings.\n", warnings);
+    printf("\n");
+
     return(0);
 } // main
 
