@@ -40,13 +40,20 @@ public:
     virtual ~TobyString(void);
 
     const char *c_str(void) const;
+
     void append(bool trueFalse);
     void append(float num);
     void append(double num);
-    void append(long num);
-    void append(int num);
-    void append(char ch);
+    void append(signed long num);
+    void append(unsigned long num);
+    void append(signed int num);
+    void append(unsigned int num);
+    void append(signed short num);
+    void append(unsigned short num);
+    void append(signed char ch);
+    void append(unsigned char ch);
     void append(const char *str);
+    void append(TobyString *str);
 
     bool replaceFormatToken(int n, const char *val);
     bool replaceFormatToken(int n, int val);

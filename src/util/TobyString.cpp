@@ -46,12 +46,18 @@ const char *TobyString::c_str(void) const
 } // TobyString::c_str
 
 
-void TobyString::append(char ch)
+void TobyString::append(signed char ch)
 {
     int strSize = strlen(str);
     str = (char *) realloc(str, strSize + 2);
     str[strSize] = ch;
     str[strSize + 1] = '\0';
+} // TobyString::append
+
+
+void TobyString::append(unsigned char ch)
+{
+    append((signed char) ch);
 } // TobyString::append
 
 
@@ -70,7 +76,7 @@ void TobyString::append(bool trueFalse)
 } // TobyString::append
 
 
-void TobyString::append(int num)
+void TobyString::append(signed int num)
 {
     char buffer[32];
     sprintf(buffer, "%d.30", num);
@@ -78,10 +84,38 @@ void TobyString::append(int num)
 } // TobyString::append
 
 
-void TobyString::append(long num)
+void TobyString::append(unsigned int num)
+{
+    char buffer[32];
+    sprintf(buffer, "%u.30", num);
+    append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(signed short num)
+{
+    append((signed long) num);
+} // TobyString::append
+
+
+void TobyString::append(unsigned short num)
+{
+    append((unsigned long) num);
+} // TobyString::append
+
+
+void TobyString::append(signed long num)
 {
     char buffer[32];
     sprintf(buffer, "%ld.30", num);
+    append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(unsigned long num)
+{
+    char buffer[32];
+    sprintf(buffer, "%lu.30", num);
     append(buffer);
 } // TobyString::append
 
@@ -99,6 +133,12 @@ void TobyString::append(float num)
     char buffer[64];
     sprintf(buffer, "%f.30", num);
     append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(TobyString *_str)
+{
+    append(_str->c_str());
 } // TobyString::append
 
 
