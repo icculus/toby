@@ -40,6 +40,8 @@ public:
     virtual ~TobyString(void);
 
     const char *c_str(void) const;
+    void append(float num);
+    void append(int num);
     void append(char ch);
     void append(const char *str);
 

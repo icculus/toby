@@ -64,6 +64,22 @@ void TobyString::append(const char *_str)
 } // TobyString::append
 
 
+void TobyString::append(int num)
+{
+    char buffer[32];
+    sprintf(buffer, "%d.30", num);
+    append(buffer);
+} // TobyString::append
+
+
+void TobyString::append(float num)
+{
+    char buffer[64];
+    sprintf(buffer, "%f.30", num);
+    append(buffer);
+} // TobyString::append
+
+
 void TobyString::assignCStr(const char *_str)
 {
     if (_str == NULL)
