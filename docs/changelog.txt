@@ -101,6 +101,14 @@ standalone program for initial testing.)
             additions and enhancements to the Makefile. The XML schema for
             grammars has changed a bit. Updated most of the existing subsystem
             docs. Added XMLNode::getAttributeValue(), for convenience.
+09052001 - Started changing ints to size_t and long, where appropriate. Thus
+            far, src/io/Tokenizer.* and related code has been the only place
+            this has been changed, but it will be necessary to get this
+            building on CodeWarrior for MacOS Classic eventually. More work
+            on the lexer. Added TobyString::append(bool),
+            TobyString::append(double), and TobyString::append(long). Added
+            caseSensitive and ignoreNewlines flags to Tokenizer. Added
+            XMLNode::getAttributeDefault() for even more convenience.
 
 // end of changelog.txt ...
 
