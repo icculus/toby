@@ -65,9 +65,8 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
     public JMenu debugMenu;
     public JMenuItem stepItem;
-    public JMenuItem traceItem;
+    public JCheckBoxMenuItem traceItem;
     public JCheckBoxMenuItem watchVarsItem;
-
 
     private JMenuItem setupMenuItem(JMenu m, String itemStr,
                                     boolean isEnabled, KeyStroke keys)
@@ -184,6 +183,10 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
     private void doStep()
     {
+        TobyInputArea tia = parent.getTobyPanel().getInputArea();
+        if (tia != null)
+            tia.setTracing(true);
+
         if (this.globalContext != null)
         {
             this.globalContext.pauseExecution();
@@ -199,23 +202,27 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
     private void setupTrace(JCheckBoxMenuItem cbmi)
     {
-        System.err.println("*** last.toby.gui.TobyMenuBar.setupTrace(): This is stubbed.");
-//        parent.getTobyPanel().getTurtleSpace().enableTracing(cbmi.getState());
+        boolean val = cbmi.getState();
+        if (this.globalContext != null)
+            this.globalContext.setTracing(val);
+
+        TobyInputArea tia = parent.getTobyPanel().getInputArea();
+        if (tia != null)
+            tia.setTracing(val);
     } // setupTrace
 
 
     private void setupWatchVars(JCheckBoxMenuItem cbmi)
     {
-        System.err.println("*** last.toby.gui.TobyMenuBar.setupWatchVars(): This is stubbed.");
-/*
-        TurtleSpace tspace = parent.getTobyPanel().getTurtleSpace();
         VarWatcher vw = parent.getTobyPanel().getVarWatcher();
 
+        if (this.globalContext == null)
+            return;
+
         if (cbmi.getState())              // true == enable variable watching.
-            tspace.addVarWatcher(vw);
+            this.globalContext.addVarWatcher(vw);
         else
-            tspace.removeVarWatcher(vw);
-*/
+            this.globalContext.removeVarWatcher(vw);
     } // setupWatchVars
 
 
@@ -241,7 +248,8 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
             parent.requestToQuit();
 
         else if (mi == helpItem)
-//            parent.displayHelp();
+            parent.displayHelp();
+/*
 // !!!
         {
 //            try
@@ -261,6 +269,7 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 //            } // catch
 
         } // else if
+*/
 
         else if (mi == aboutItem)
             parent.createAboutBox();
@@ -351,6 +360,9 @@ public final class TobyMenuBar extends JMenuBar implements ActionListener,
 
             this.globalContext.addSourceWatcher(this);
             this.globalContext.addSourceWatcher(tia);
+
+            setupTrace(this.traceItem);
+            setupWatchVars(this.watchVarsItem);
 
             if (this.startWithStep == false)
                 this.globalContext.execute();
