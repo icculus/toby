@@ -1,0 +1,46 @@
+// boxes.toby : Various cool geometrics with simple boxes.
+
+function box(number size) returns nothing
+//---------------------------------------------------------//
+//  Most functions in this package make use of this        //
+//   function for cool stuff.                              //
+//                                                         //
+//      params : (number) size == size of one side of box. //
+//     returns : void.                                     //
+//---------------------------------------------------------//
+    number i
+    for i = 1 to 4
+        goForward(size)
+        turnRight(90)
+    endfor
+endfunction
+
+
+
+function webBox(number size, number angle) returns nothing
+//---------------------------------------------------------//
+//  Make a weblike pattern out of boxes.                   //
+//                                                         //
+//      params : (number) size == size of one side of box. //
+//               (number) angle == amount of turn for each //
+//                                 box. Smaller number ==  //
+//                                 more boxes.             //
+//     returns : void.                                     //
+//---------------------------------------------------------//
+    number i
+    for i = 1 to (360 / angle)
+        box(size)
+        turnRight(angle)
+    endfor
+endfunction
+
+
+function main() returns nothing
+    webBox(100, 2)
+endfunction
+
+// end of boxes.toby ...
+
+
+
+

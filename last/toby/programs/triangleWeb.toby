@@ -1,0 +1,43 @@
+function main() returns nothing
+	number top = getTurtleSpaceWidth()
+	if (top < getTurtleSpaceHeight())
+		top = getTurtleSpaceHeight()
+	endif
+
+	setPenColor(8)
+	spiderWeb(top, top * 0.03, top * 0.15)
+endfunction
+
+function spiderWeb(number max, number min, number increment) returns nothing
+	number i
+
+	if (increment > 0.0)
+		increment = increment * -1.0
+	endif
+
+	for i = max downto min step increment
+		triangleWheel(i, 12)
+	endfor
+endfunction
+
+
+function triangleWheel(number size, number angle) returns nothing
+	number i
+
+	for i = 1 to 360 / angle
+		isosceles(size)
+		turnRight(angle)
+	endfor
+endfunction
+
+
+function isosceles(number size) returns nothing
+	number i
+
+	for i = 1 to 3
+		goForward(size)
+		turnRight(120)
+	endfor
+endfunction
+
+

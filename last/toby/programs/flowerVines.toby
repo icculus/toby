@@ -1,0 +1,53 @@
+number r = 0.0
+number g = 0.0
+number b = 0.0
+
+function main() returns nothing
+	hideTurtle()
+	disableFence()
+	rightDragon(20, 3)
+endfunction
+
+function leftDragon(number iteration, number dist) returns nothing
+	r = r + 0.001
+	if (r > 1.0)
+		r = 0.0
+	endif
+	setPenColorRGB(r, g, b)
+	if (iteration == 0)
+		g = g + 0.01
+		if (g > 1.0)
+			g = 0.0
+		endif
+		goForward(dist)
+	else
+		leftDragon(iteration - 1, dist)
+		turnLeft(90)
+		rightDragon(iteration - 1, dist)
+	endif
+endfunction
+
+
+function rightDragon(number iteration, number dist) returns nothing
+	b = b + 0.001
+	if (b > 1.0)
+		b = 0.0
+	endif
+	setPenColorRGB(r, g, b)
+	if (iteration == 0)
+		g = g + 0.01
+		if (g > 1.0)
+			g = 0.0
+		endif
+		goForward(dist)
+	else
+		leftDragon(iteration - 1, dist)
+		turnRight(90)
+		rightDragon(iteration - 1, dist)
+	endif
+endfunction
+
+
+
+
+

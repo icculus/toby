@@ -1,0 +1,206 @@
+// Things still to be done for TOBY...
+
+ongoing bugfixes/enhancements :
+    TobyMenuBar.java : Need to not hardcode TobyParser...
+    TobyMenuBar.java : Move execution to separate class.
+
+    The statics in LogicContext prevent multiple concurrent interpreters.
+
+    swing turtle should be fixed width, not based on screen size.
+
+    Allow JTurtleSpace to load graphics in background.
+
+    stdfunctions should have their names assigned at construction by
+     the caller.
+
+    Keep static references to the stdfunctions logic contexts, and
+     have the parsers install them in the globallogiccontext themselves.
+
+    Add TurtleSpaceException.
+
+    Have a turtle built on startup.
+
+    Are all the linkImpl()s protected? executeImpl?
+
+    use gratuitous verifyEndLine() calls.
+
+    elseif hoses.
+
+    Why are the fields in FlowException public?
+
+    Can I have one java.awt.Graphics object per thread? So I don't need to
+     synchronize graphic functions?
+
+    Sometimes program locks before initial paint. File open problem?
+
+    Remove as many synchronizings from TurtleSpaces as possible.
+
+    Make it so swing turtles don't need to be a square. This code is mostly in
+     place. Nuke private setSize() and the sideLength var and see what breaks...
+
+    JTurtleSpace.getTurtleSpaceWidth() and height must not return different
+     values during interpretation, so must handle component resize events...
+
+    Move VERSION and TITLE from last.toby.Toby to last.toby.util.TobyLanguage?
+
+    Need method in TurtleSpace to determine due north
+     (it's different for Toby and LOGO...)
+
+    not one damned comment is correct anymore.  :)
+
+    (See if getParent()/getValue() vs. public members are much slower...)
+    check all nodetrees freeResourceImpls...
+
+    Make tobylanguage more neutral.
+
+    Make ReturnException.
+    Make GotoException.
+    Make BreakException.
+
+    Change NodeTree to TreeNode. ANnoying.
+
+    We need to remove as many "SYNTAX ERROR" messages as possible. This
+     should be a last-choice message for when the parser is COMPLETELY
+     confused as to the state of the program. It should NEVER be used by
+     the interpreter. This might add a bunch of strings to TobyLanguage.
+
+    incompatibility : Drawing on eastern edge of turtle space leaves
+     graphic artifacts on Win32 Sun JDK ...
+
+    Parser.searchAlphabeticArray() could have a better search
+     algorithm. And alphabetizeArrayElements() is weak. It's just a lame
+     bubble sort right now.
+
+    operator precedence needs to be done on levels (i.e. '*' and '/' are
+     on the same "level"...)
+
+    Have Toby not start at screen size, but something average, and then
+     save the window position/size...?
+
+    Maybe we can move all the file i/o from TobyFrame.java to its own class?
+
+    Better splash graphic. PLEASE.
+
+    Literal strings are all centralized into a static class, which is
+     good. Now, It would be better if TobyLanguage would, at startup,
+     read the literals from disk, so not even a recompile is needed to
+     change the language of the application. If worse comes to worse,
+     we default to the English literals which are static.
+
+    can we pre-JIT specific classes/methods?
+
+    Alt-hotkey should bring up the menus. A lot of the hotkeys aren't making
+     it past the text editor component right now.
+
+    The ultimate ongoing fix are the "!!!" comments. Any comments containing
+     '!!!' have been placed there to alert me that there is a bug/deficiency
+     in the code that is worth revisiting, but probably isn't crippling. As
+     such, they tend to build up. Feel free to fix any of these and submit
+     patches to rgordon@xnot.com ...
+
+    Since operators are replaced with static references, make all runtime
+     checks for them use (a soon to be written) searchArrayForReferences(),
+     since they currently search (unnecessarily) with String.equals()...
+
+    Make all identifiers resolve before runtime, so we can replace them
+     with unified references. The more often we can safely replace
+     string1.equals(string2) calls with (string1 == string2) constructs,
+     the faster the interpretation will be. Most of the code already replaces
+     keywords, operators, etc. with references from a static table in
+     TobyInterpreter.
+
+    Make inputarea use sane keys...I don't like the Swing defaults. Therefore
+     someday I'd like to either replace the Swing component with a homegrown
+     prettier/more functional textarea, or make some sort of customizer;
+     config file or whatnot. Mostly, I'd like SHIFT-DELETE and SHIFT-INSERT
+     to cut and paste.  :) Other enhancements welcome.
+
+    Unify error displaying interface between parsing and running...They both
+     result from the catching of TobyParseExceptions, but are caught and
+     handled in completely separate places and ways. (This is fixed in the
+     "unstable" tree.)
+
+    Functions can specify a return type and then return nothing. This should
+     be considered a bug. (Java and C consider it a feature, and it is, but
+     it confuses beginning programmers.)
+
+    FIX VARVIEWER. It is BADLY broken. It's never worked right.
+
+    When program is quitting, and you hit cancel on the "save" dialog, the
+     window still closes (although the VM doesn't terminate). This behavior
+     only seems to happen when the window manager tries to close the window
+     (clicking the little 'X' in win95, or whatnot under Linux)...selecting
+     "Quit" from the Toby menu seems to work correctly.
+
+    Maximize window instead of sizing to screen width and height: is there a
+     way to do this in Swing?
+
+    Move copyImage code from TobyInterpreter into TurtleSpace.
+
+    TriangleTurtle still looks wrong. Check math. Center line isn't drawing
+     correctly...could be symptom of bug in TobyGeometry.calculateLine(), or
+     TriangleTurtle.calcTriangle()...I'm voting for the latter.
+
+    Move parse and execution time report code to more user-friendly output.
+     Right now it just dumps to stdout. I'd like it to go to
+     EditorInformationDisplay or something.
+
+    Make Applet work with JavaScript...so JScript can pass a string of TOBY
+     code (perhaps from a form's textarea...) to the applet to draw.
+
+    (Does the applet even work anymore?)
+
+
+Milestones:
+
+alpha2 : completed.
+    Convert from AWT 1.1 to Swing.          (COMPLETED)
+    remove dependency on last.* packages.   (COMPLETED)
+    remove glaring bugs.                    (COMPLETED)
+
+alpha3 : completed.
+    Add globals                             (COMPLETED)
+    descending FOR loops and STEPs...       (COMPLETED)
+    WHILEs...                               (COMPLETED)
+    line/column readout in TobyInputArea.   (COMPLETED)
+
+alpha4 : completed.
+    allow assignments in var declaration.   (COMPLETED)
+    more standard functions...              (COMPLETED)
+    Fix as many "!!!" comments as possible. (COMPLETED)
+    Initial dynamic language support.       (COMPLETED)
+    Add splash screen code.                 (COMPLETED)
+
+alpha5 : in progress.
+    Fully separate parser and interpreter.  (COMPLETED)
+    Separate interpreter and TurtleSpace.   (COMPLETED)
+    Complete dynamic language support.
+    Split this thing up into packages.      (COMPLETED)
+    Abstract TurtleSpace into interface.    (COMPLETED)
+
+alpha6 : not yet begun.
+    COMMENT EVERYTHING.
+    add arrays?
+    add String intrinsic?
+    Printing source code.
+    Printing current TurtleSpace.
+    Undo/redo
+    Make TurtleSpace into a bean.
+    Add status bar to bottom of frame...
+    Implement help system.
+    Rewrite VarViewer to be cooler.
+    Rewrite/replace text editor.
+    German langfile.
+    Spanish langfile.
+    Write Spotlet version of TurtleSpace.
+    Verify the applet works in a
+     Java 1.2 compatible browser (HotJava?)
+
+1.0 : not yet begun.
+    fix bugs reported from betas.
+    Clean up interface problems reported in beta2.
+    fix all outstanding bugs.
+    release.
+
+// end of todo ...
+

@@ -1,0 +1,61 @@
+function main() returns nothing
+	// april kicks ass
+	flower()
+endfunction
+
+
+function flower() returns nothing
+	number i
+	number bob
+	number direction
+
+	direction = 1
+
+	bob = 0
+
+	for i = 100 downto 10 step -5
+		bob = bob + direction
+	
+		if (bob >= 12)
+			bob = 11
+			direction = -1
+		endif
+
+		if (bob <= 0)
+			bob = 0
+			direction = 1
+		endif
+
+		setPenColor(bob)
+
+		webbox(i)
+	endfor
+
+endfunction
+
+
+function webbox(number m) returns nothing
+	number i
+
+	for i = 1 to 360 / 10
+		box(m)
+		turnRight(10)
+
+	endfor
+endfunction
+
+
+function box(number size) returns nothing
+
+	number i
+
+	for i = 1 to 4
+		goForward(size)
+		turnRight(90)
+	endfor
+
+endfunction
+
+
+
+

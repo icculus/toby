@@ -1,0 +1,85 @@
+Toby CHANGELOG.
+
+
+Please note that only the most significant changes are noted here. Also,
+things that aren't visually interesting usually aren't mentioned. For
+example, the fact that the keyword tables are now autosorted doesn't get
+noted, but the fact that there's now a splash screen is noted. This is
+meant to be informative, but not authoritative.
+
+
+If you want a byte-for-byte revision history, please use the CVS server:
+  set CVSROOT=:pserver:anonymous@cvs.xnot.com:/cvs/toby/cvsroot
+  cvs login
+    (password is "anonymous", without the quotes)
+  cvs checkout toby
+  cvs log fileToExamine.java
+
+
+What's new in Toby alpha5:
+- Fixes, improvements, and revisions, oh my!
+- Added a thanks.txt file to the docs.
+- Added some basic batch file/scripts for running Toby.
+- The parser and interpreter have been COMPLETELY rewritten. The new system
+  has been termed the TUD engine (for Toby Universal Domination), and it's
+  much, MUCH, faster than the alpha4 interpreter for several reasons.
+  At the same time, it's also much more flexible, which means sooner or later
+  more languages will get plugged into this project. An honest-to-God LOGO
+  implementation comes to mind, but other things like scientific modelling
+  languages and such should not be ruled out, either. Please see TUD.txt for
+  info on what's better about the new engine.
+- TurtleSpace has become an interface, which is implemented by a
+  JComponent-based widget. This abstraction will, eventually, allow us to
+  create a Spotlet (Java UI on the Palm Pilot) version of Toby.
+- A lot of handy code was moved from TobyProcedure.java (most of what wasn't
+  moved out of this class was eventually rewritten) to SaneTokenizer.java.
+  Anything that could be considered abstract was moved out of TobyTokenizer
+  and placed in SaneTokenizer, too. Now TobyTokenizer.java does just what is
+  absolutely specific to the Toby language.
+- The program has been separated into packages under the last.toby.* tree.
+- Lots of things that had wide use, like TobyParseException, have been made
+  more abstract (in this case, renamed to "ParseException").
+- The interpreter is no longer a subclass of TurtleSpace. They are completely
+  separate entities, which makes better sense in the long run.
+- TobyLanguage no longer uses printf()-style format tags, like "%s," "%d,"
+  etc, since this prevents true language abstraction. Now tags are simply
+  "%1," "%2," etc., so they may be in any order in the text and still
+  recieve correct replacement. Furthermore, the English text is the default
+  hardcoded language, but this may be overridden at runtime by a toby.lang
+  file, so new languages may be added without a recompile or modification of
+  the source code.
+- Toby.java is now just an entry to the code. The original Toby.java has
+  become last.toby.gui.TobyFrame ...
+- Fixes to the Swing code.
+- SaneTokenizer now handles pushBack() better.
+- Much, much more.
+
+What's new in Toby alpha4:
+- Lots of bug fixes and code improvements.
+- Required Java version is now 1.2, Java 1.1 w/ Swing will not be
+  sufficient for much longer, I think.
+- Toby now understands the "==" operator, which works like the Java
+   "==" operator...equivalence checking.
+- Splash screen code is written and incorporated. Need a better graphic.
+- An angle of zero degrees in TurtleSpace used to be due north. This was
+  because LOGO treated angles this way. This has been changed to follow
+  geometric convention; zero degrees is now due east.
+- All literal strings have been moved to TobyLanguage.java ...Code has
+  been added to make dynamic language support a reality. Soon, there will
+  be translations to other languages, and in the next alpha, you won't
+  even need a recompile (or restart) to switch languages.
+- On file open, if the file doesn't exist, we try to open filename.toby,
+  just in case. On save, if .toby extension isn't specified, we add it.
+- Checks for various incompatibilities in virtual machines/class library
+  implementations have been moved to Incompatibilities.java.
+- ...and much, much more.
+
+
+What's new in Toby alpha3:
+- Lots of stuff; this is the first public release, and I wasn't keeping a
+  changelog before this.  :)
+
+--ryan. (icculus@lokigames.com)
+
+
+

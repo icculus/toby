@@ -1,0 +1,18 @@
+expressionlogiccontext
+ - just abstract simplify, etc...
+
+    + binaryExpressionlogiccontext
+        - today's elc.
+
+        + Addition
+        + Subtraction
+        + etc.
+
+    + unaryExpressionLogicContext
+        - To be written.
+
+    + IntrinsicExprLogicContext
+        + FunctionCallExprLogicContext
+
+...lose FunctionCallIntrinsic.
+

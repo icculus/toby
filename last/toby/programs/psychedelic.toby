@@ -1,0 +1,36 @@
+number color
+
+function main() returns nothing
+    number i
+	color = 0
+	disableFence()
+hideTurtle()
+    for i = 1 to 360 step 2
+        circle()
+        turnRight(2)
+    endfor
+endfunction
+
+
+function circle() returns nothing
+    number i
+
+    for i = 1 to 360
+		color = color + 1
+		if (color > 11)
+			color = 0
+		endif
+		setPenColor(color)
+        goForward(3)
+        turnRight(1)
+    endfor
+endfunction
+
+
+
+
+
+
+
+
+

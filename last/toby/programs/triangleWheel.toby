@@ -1,0 +1,31 @@
+function main() returns nothing
+	number i
+
+	for i = 1 to 4
+		triangleWheel(120, 12)
+		triangleWheel(80, 12)
+		triangleWheel(40, 12)
+		turnRight(90)
+	endfor
+endfunction
+
+function triangleWheel(number size, number angle) returns nothing
+	number i
+
+	for i = 1 to 360 / angle
+		isosceles(size)
+		turnRight(angle)
+	endfor
+endfunction
+
+
+function isosceles(number size) returns nothing
+	number i
+
+	for i = 1 to 3
+		goForward(size)
+		turnRight(60)
+	endfor
+endfunction
+
+

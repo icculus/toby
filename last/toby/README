@@ -1,0 +1,17 @@
+Documentation is in the docs/ directory. It's meager, but there are plans to
+ greatly enhance the contents of this directory in the near future.
+
+Quick start:
+
+You can try to just run toby.bat, toby.cmd, or toby.sh, depending on
+ your platform.
+
+This program is licensed under the GNU General Public License. Please know
+ your rights and freedoms; the license text can be found in docs/LICENSE.TXT .
+
+Enjoy!
+
+--ryan. (icculus@lokigames.com)
+
+
+

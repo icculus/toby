@@ -1,0 +1,34 @@
+function main() returns nothing
+    number i
+	number j
+
+	for j = 1 to 100
+    	for i = 1 to 360
+			goForward(1)
+			turnRight(1)
+		endfor
+		turnRight(j)
+	endfor
+endfunction
+
+
+function circle() returns nothing
+    number i
+	number color
+
+    for i = 1 to 360 step 4
+
+		color = round(random() * 10) + 1
+		setPenColor(color)
+        goForward(3)
+        turnRight(1)
+    endfor
+endfunction
+
+
+
+
+
+
+
+
