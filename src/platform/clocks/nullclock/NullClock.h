@@ -23,8 +23,7 @@
 #include "util/TobyClock.h"
 
 /*
- *  An Simple Directmedia Layer (SDL) implementation of a system clock.
- *   SDL can be found at http://www.libsdl.org/
+ *  A stub implementation of a system clock, used for porting to new systems.
  *
  *     Written by Ryan C. Gordon. (icculus@linuxgames.com)
  */
