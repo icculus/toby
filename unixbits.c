@@ -52,7 +52,9 @@ char *itoa(int val, char *buf, int radix)
 
 void _outtext(char *text)
 {
-    STUBBED("_outtext");
+    //STUBBED("_outtext");
+    printf("%s", text);
+    fflush(stdout);
 }
 
 static Uint32 calcColor32(short c)
@@ -279,10 +281,12 @@ short _lineto(short _x, short _y)
     GPos.xcoord = _x;
     GPos.ycoord = _y;
 
-    // This is a standard Bresenham line-drawing algorithm, but the specific
-    //  implementation was borrowed, optimized, and mangled from
-    //  SGE's DoLine code:
-    //   http://www.etek.chalmers.se/~e8cal1/sge/
+    /*
+        This is a standard Bresenham line-drawing algorithm, but the specific
+        implementation was borrowed, optimized, and mangled from
+        SGE's DoLine code:
+        http://www.etek.chalmers.se/~e8cal1/sge/
+    */
 
     #define LINEBLITCHUNKS 10
     SDL_Rect rects[LINEBLITCHUNKS];
@@ -311,9 +315,7 @@ short _lineto(short _x, short _y)
     {
         _D(("LFB: Single pixel line fastpath.\n"));
         *(((Uint32 *) p) + ((py * w) + px)) = GColor32;
-        SDL_UpdateRect(GScreen, px, py, 1, 1);
-        return 1;
-    } // if
+    } /* if */
 
     else if (dx == 1)
     {
@@ -324,10 +326,8 @@ short _lineto(short _x, short _y)
         {
             *linep = GColor32;
             linep += incr;
-        } // for
-        SDL_UpdateRect(GScreen, (x1 < x2) ? x1 : x2, (y1 < y2) ? y1 : y2, 1, dy);
-        return 1;
-    } // else if
+        } /* for */
+    } /* else if */
 
     else if (dy == 1)
     {
@@ -338,10 +338,8 @@ short _lineto(short _x, short _y)
         {
             *linep = GColor32;
             linep += incr;
-        } // for
-        SDL_UpdateRect(GScreen, (x1 < x2) ? x1 : x2, (y1 < y2) ? y1 : y2, dx, 1);
-        return 1;
-    } // else if
+        } /* for */
+    } /* else if */
 
     else if (dx >= dy)
     {
@@ -356,7 +354,7 @@ short _lineto(short _x, short _y)
             *( ((Uint32 *) p) + ((py * w) + px) ) = GColor32;
 
             y += dy;
-            if (y >= dx)   // run length completed.
+            if (y >= dx)   /* run length completed. */
             {
                 if (rectidx != -1)
                 {
@@ -368,24 +366,17 @@ short _lineto(short _x, short _y)
                     rectidx++;
                     if (rectidx >= LINEBLITCHUNKS)
                         rectidx = -1;
-                } // if
+                } /* if */
 
                 y -= dx;
                 py += sdy;
 
                 lastX = px;
                 thisY = py;
-            } // if
+            } /* if */
             px += sdx;
-        } // for
-
-        if (rectidx != -1)
-            SDL_UpdateRects(GScreen, rectidx, rects);
-        else
-            goto tobylfb_blit_slanted_line;
-
-        return 1;
-    } // else if
+        } /* for */
+    } /* else if */
 
     else
     {
@@ -400,7 +391,7 @@ short _lineto(short _x, short _y)
             *( ((Uint32 *) p) + ((py * w) + px) ) = GColor32;
 
             x += dx;
-            if (x >= dy)  // run length completed.
+            if (x >= dy)  /* run length completed. */
             {
                 if (rectidx != -1)
                 {
@@ -412,70 +403,20 @@ short _lineto(short _x, short _y)
                     rectidx++;
                     if (rectidx >= LINEBLITCHUNKS)
                         rectidx = -1;
-                } // if
+                } /* if */
 
                 x -= dy;
                 px += sdx;
 
                 lastY = py;
                 thisX = px;
-            } // if
+            } /* if */
             py += sdy;
-        } // for
+        } /* for */
+    } /* else */
 
-        if (rectidx != -1)
-            SDL_UpdateRects(GScreen, rectidx, rects);
-        else
-            goto tobylfb_blit_slanted_line;
-
-        return 1;
-    } // else
-
-    assert(0);  // should have return'd or goto'd by here.
-
-tobylfb_blit_slanted_line:
-        // !!! This isn't rendering right in all cases.
-  {
-    int i;
-    float chunkX = ((float) dx) / ((float) LINEBLITCHUNKS);
-    float chunkY = ((float) dy) / ((float) LINEBLITCHUNKS);
-    float yincr;
-    float fx, fy;
-
-    fx = (float) ((x1 < x2) ? x1 : x2);
-
-    if ( ((sdx > 0) && (sdy > 0)) ||   // line from q1 to q4.
-         ((sdx < 0) && (sdy < 0)) )
-    {
-        fy = (float) ((y1 < y2) ? y1 : y2);
-        yincr = chunkY;
-    } // if
-
-    else   // line from q3 to q2.
-    {
-        fy = (float) (((y1 > y2) ? y1 : y2)) - chunkY;
-        yincr = -chunkY;
-    } // else
-
-    for (i = 0; i < LINEBLITCHUNKS; i++)
-    {
-        rects[i].x = (int) (fx);
-        rects[i].y = (int) (fy);
-        rects[i].w = (int) (chunkX + 0.5);
-        rects[i].h = (int) (chunkY + 0.5);
-
-        if (rects[i].w == 0)
-            rects[i].w++;
-
-        if (rects[i].h == 0)
-            rects[i].h++;
-
-        fx += chunkX;
-        fy += yincr;
-    } // for
-
-    SDL_UpdateRects(GScreen, LINEBLITCHUNKS, rects);
-  }
+    /* Not really the best way. */
+    SDL_Flip(GScreen);
     return 1;
 }
 
@@ -491,6 +432,7 @@ struct rccoord _settextposition(short row, short column)
     prev.col = GTextPos.col;
     GTextPos.row = row;
     GTextPos.col = column;
+    printf("\n");
     return prev;
 }
 
