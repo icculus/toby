@@ -36,7 +36,7 @@ import last.toby.interpreter.*;
      *   the TobyInterpreter class will perform the actual execution of the
      *   procedures, starting with the TobyProcedure named "main".
      *
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class TobyParser extends last.toby.parsers.Parser
 {

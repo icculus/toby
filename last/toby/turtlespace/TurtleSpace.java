@@ -25,7 +25,7 @@ import last.toby.util.*;
 
     /**
      *  !!! comment.
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TurtleSpace
 {

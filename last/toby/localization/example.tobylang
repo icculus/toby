@@ -12,7 +12,7 @@
 #     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
 #     work, but by submitting your work, the maintainers of Toby gain
 #     sole ownership of it. If you don't like that, stop now.
-#  3. E-mail your completed work to Ryan at icculus@lokigames.com. He'll
+#  3. E-mail your completed work to Ryan at icculus@icculus.org. He'll
 #     incorporate it into the next release of Toby.
 #  4. Lines beginning with '#' are ignored when this file is parsed.
 #     Lines with nothing but whitespace are also ignored.
@@ -32,7 +32,7 @@
 #  9. Expect to be notified if we have more translating work for you
 #     in the future.  :)
 # 10. Questions about context of strings and other concerns can be addressed
-#     to icculus@lokigames.com. Please understand that I only speak English,
+#     to icculus@icculus.org. Please understand that I only speak English,
 #     and even that poorly.  :)
 #
 #                                   Have fun,
@@ -222,7 +222,7 @@ last.toby.util.TobyLanguage.NOT_WHOLE_NUM   = Expected whole number
 
 
 # This is an internal error alert message.
-last.toby.util.TobyLanguage.SHOULDNOTBE = This should not happen. Email icculus@lokigames.com! (English only!)
+last.toby.util.TobyLanguage.SHOULDNOTBE = This should not happen. Email icculus@icculus.org! (English only!)
 
 
 # Other stuff.

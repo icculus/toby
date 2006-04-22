@@ -26,7 +26,7 @@ import java.io.Reader;
     /**
      *  Extends SaneTokenizer to handle unusual parsing circumstances.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TobyTokenizer extends SaneTokenizer
 {

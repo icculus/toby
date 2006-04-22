@@ -28,7 +28,7 @@ import last.toby.interpreter.*;
      * This class is used to display defined TOBY variables, and their current
      *  values.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class VarViewer extends JComponent implements VarWatcher
 {

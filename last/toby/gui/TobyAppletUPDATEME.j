@@ -30,7 +30,7 @@ import last.toby.interpreter.SourceWatcher;
     /**
      *   The Applet version of Toby.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TobyApplet extends JApplet implements ActionListener, Runnable,
                                                    SourceWatcher

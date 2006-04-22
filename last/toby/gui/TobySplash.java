@@ -37,7 +37,7 @@ import last.toby.util.TobyLanguage;
      *  attaching a timer to another object or attaching an event listener to
      *  this.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TobySplash extends JWindow implements ActionListener
 {

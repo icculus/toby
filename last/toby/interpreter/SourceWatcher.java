@@ -26,7 +26,7 @@ import last.toby.exceptions.ExecException;
      *   You will then be notified via these methods when the TOBY source code
      *   line number under scrutiny changes.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public interface SourceWatcher
 {

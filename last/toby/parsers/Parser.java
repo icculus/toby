@@ -27,7 +27,7 @@ import java.io.Reader;
     /**
      *  This gives us a common interface to controlling various parsers.
      *
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public abstract class Parser
 {

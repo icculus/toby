@@ -24,7 +24,7 @@ import last.toby.exceptions.*;
     /**
      * !!! comment me!
      *
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class ArrayIntrinsic extends Intrinsic
 {

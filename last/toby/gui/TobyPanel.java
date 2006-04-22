@@ -27,7 +27,7 @@ import last.toby.interpreter.VarWatcher;
     /**
      * The Main panel for TOBY, containing all the other components...
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class TobyPanel extends JComponent implements LayoutManager
 {

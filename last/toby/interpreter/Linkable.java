@@ -22,7 +22,7 @@ import last.toby.exceptions.ParseException;
 
     /**
      *  !!! comment.
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public interface Linkable
 {

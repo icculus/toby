@@ -32,7 +32,7 @@ import last.toby.exceptions.ExecException;
     /**
      *  This class will offer a place for users to enter and edit source code.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TobyInputArea extends JPanel implements LayoutManager,
                                                      SourceWatcher

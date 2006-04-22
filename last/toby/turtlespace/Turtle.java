@@ -27,7 +27,7 @@ import last.toby.util.*;
     /**
      *  The Turtle class.
      *
-     *     @author Ryan C. Gordon. (icculus@lokigames.com)
+     *     @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class Turtle
 {

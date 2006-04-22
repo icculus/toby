@@ -25,7 +25,7 @@ import last.toby.exceptions.ExecException;
 
     /**
      *  !!! comment.
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class SDLRenderer implements TurtleSpaceRenderer
 {

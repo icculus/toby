@@ -101,7 +101,7 @@ What's new in Toby alpha3:
 - Lots of stuff; this is the first public release, and I wasn't keeping a
   changelog before this.  :)
 
---ryan. (icculus@lokigames.com)
+--ryan. (icculus@icculus.org)
 
 
 

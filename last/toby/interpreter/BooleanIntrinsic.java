@@ -23,7 +23,7 @@ import last.toby.util.TobyLanguage;
 
     /**
      *  !!! comment.
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class BooleanIntrinsic extends Intrinsic
 {

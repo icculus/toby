@@ -34,7 +34,7 @@ import javax.swing.*;
      *   TurtleSpace, it can. Just override paint(), and its abstract
      *   methods.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class TobyInterpreter extends TurtleSpace implements Runnable,
                                                           ComponentListener

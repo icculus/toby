@@ -22,7 +22,7 @@ package last.toby.util;
     /**
      *  Like java.awt.Point, but with doubles instead of ints...
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class DoublePoint
 {

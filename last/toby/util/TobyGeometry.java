@@ -24,7 +24,7 @@ import java.awt.Point;
     /**
      * Extension to java.lang.math to allow calculations in TurtleSpace.
      *
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TobyGeometry
 {

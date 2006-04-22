@@ -36,7 +36,7 @@ import java.net.*;
      * A class to keep all the code involving the Toby frame's menu bar in
      *  one place.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class TobyMenuBar extends JMenuBar implements ActionListener,
                                                            ItemListener,

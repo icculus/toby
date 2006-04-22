@@ -20,7 +20,7 @@
 /**
  *  This class extends StreamTokenizer, with a few small improvements.
  *
- *    @author Ryan C. Gordon. (icculus@lokigames.com)
+ *    @author Ryan C. Gordon. (icculus@icculus.org)
  */
 
 package last.toby.util;

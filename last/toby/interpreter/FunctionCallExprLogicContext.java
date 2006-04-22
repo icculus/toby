@@ -24,7 +24,7 @@ import last.toby.util.*;
     /**
      * !!! comment me.
      *
-     *   @author Ryan C. Gordon (icculus@lokigames.com).
+     *   @author Ryan C. Gordon (icculus@icculus.org).
      */
 public class FunctionCallExprLogicContext extends ExpressionLogicContext
 {

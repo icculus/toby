@@ -29,7 +29,7 @@ import last.toby.util.TobyLanguage;
      * This is a simple JComponent that outputs the current cursor
      *  location in a JTextArea everytime it is updated.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class EditorInformationDisplay extends JComponent
                                                 implements CaretListener

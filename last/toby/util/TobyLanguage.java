@@ -27,7 +27,7 @@
  *    --langfile=/path/langfile or --langfile=url://hostname/path/langfile
  *    on the command line.
  *
- *     @author Ryan C. Gordon. (icculus@lokigames.com)
+ *     @author Ryan C. Gordon. (icculus@icculus.org)
  */
 
 package last.toby.util;
@@ -110,7 +110,7 @@ public class TobyLanguage
     public static String ERR_OUT_FUNC = "%0 on line %1";
 
     public static String SHOULDNOTBE = "This should not happen." +
-                                       " Email icculus@lokigames.com!" +
+                                       " Email icculus@icculus.org!" +
                                        " (English only!)";
 
         // Menuitems...

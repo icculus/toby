@@ -30,7 +30,7 @@ import last.toby.util.*;
      *  This class is used to kick off the rest of the application.
      *   main() resides here.
      *
-     *     @author Ryan C. Gordon (icculus@lokigames.com)
+     *     @author Ryan C. Gordon (icculus@icculus.org)
      */
 public final class Toby
 {

@@ -33,7 +33,7 @@ import javax.swing.*;
      *   class. This is in case you'd like to "plug in" a LOGO interpreter, or
      *   any other language you can dream up.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public class TurtleSpace extends JComponent
 {

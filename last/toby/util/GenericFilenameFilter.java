@@ -22,7 +22,7 @@
  *  is used to verify that only files with that extension are
  *  acceptable to a JFileChooser.
  *
- *    @author Ryan C. Gordon (icculus@lokigames.com)
+ *    @author Ryan C. Gordon (icculus@icculus.org)
  */
 
 package last.toby.util;

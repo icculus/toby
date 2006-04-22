@@ -12,7 +12,7 @@
 #     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
 #     work, but by submitting your work, the maintainers of Toby gain
 #     sole ownership of it. If you don't like that, stop now.
-#  3. E-mail your completed work to icculus@lokigames.com. He'll
+#  3. E-mail your completed work to icculus@icculus.org. He'll
 #     incorporate it into the next release of Toby.
 #  4. Lines beginning with '#' are ignored when this file is parsed.
 #     Completely blank lines are also ignored. All the text must
@@ -29,7 +29,7 @@
 #  6. Expect to be notified if we have more translating work for you
 #     in the future.  :)
 #  7. Questions about context of strings and other concerns can be addressed
-#     to icculus@lokigames.com.
+#     to icculus@icculus.org.
 #
 #                                   Have fun,
 #                                      --ryan.
@@ -118,7 +118,7 @@ line %0, column %1
 Error %0 on line %1 in function %2
 
 # This is an internal error alert message.
-This should not happen. Email icculus@lokigames.com!
+This should not happen. Email icculus@icculus.org!
 
 
 # Menu items.

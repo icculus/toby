@@ -134,7 +134,7 @@ ongoing bugfixes/enhancements :
      '!!!' have been placed there to alert me that there is a bug/deficiency
      in the code that is worth revisiting, but probably isn't crippling. As
      such, they tend to build up. Feel free to fix any of these and submit
-     patches to rgordon@xnot.com ...
+     patches to icculus@icculus.org ...
 
     Make inputarea use sane keys...I don't like the Swing defaults. Therefore
      someday I'd like to either replace the Swing component with a homegrown

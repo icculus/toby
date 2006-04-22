@@ -26,7 +26,7 @@ import java.util.Stack;
      *   will then be notified via these methods when their have been changes
      *   to variables: creation, modification, or destruction.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public interface VarWatcher
 {

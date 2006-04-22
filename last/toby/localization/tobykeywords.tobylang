@@ -7,7 +7,7 @@
 #  efficiency, some of the data sorting internally expects these strings to
 #  be lowercase.
 #
-#    --ryan c. gordon (icculus@lokigames.com)
+#    --ryan c. gordon (icculus@icculus.org)
 #
 
 last.toby.parsers.toby.TobyParser.OPER_LPAREN     = (

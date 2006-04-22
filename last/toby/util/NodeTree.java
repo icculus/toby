@@ -42,7 +42,7 @@ import java.util.Vector;
      *  the constructor. The void constructor just assumes a root node, and
      *  leaves the parent field null.
      *
-     *  @author Ryan C. Gordon (icculus@lokigames.com)
+     *  @author Ryan C. Gordon (icculus@icculus.org)
      */
 public abstract class NodeTree
 {

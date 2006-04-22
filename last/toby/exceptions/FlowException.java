@@ -22,7 +22,7 @@ package last.toby.exceptions;
     /**
      * !!! comment me.
      *
-     *   @author Ryan C. Gordon (icculus@lokigames.com).
+     *   @author Ryan C. Gordon (icculus@icculus.org).
      */
 public abstract class FlowException extends java.lang.Exception
 {

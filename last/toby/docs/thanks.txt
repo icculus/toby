@@ -1,5 +1,5 @@
 At this point, TOBY has been entirely written, and maintained by
- Ryan C. Gordon (icculus@lokigames.com), but in the spirit of the GNU
+ Ryan C. Gordon (icculus@icculus.org), but in the spirit of the GNU
  project, the software is placed under GNU General Public License, and hopes
  to see more contributors in the future. At such a time, this file will list
  more names. :)  In the meantime...

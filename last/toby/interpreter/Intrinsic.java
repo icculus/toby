@@ -25,7 +25,7 @@ import last.toby.util.TobyLanguage;
      * This is an abstract class that represents an intrinsic data type in
      *  TOBY during interpretation.
      *
-     *   @author Ryan C. Gordon. (icculus@lokigames.com)
+     *   @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public abstract class Intrinsic implements Linkable
 {

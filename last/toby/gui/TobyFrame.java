@@ -35,7 +35,7 @@ import last.toby.turtlespace.swing.*;
      *  This class is the encompassing Frame component, and contains the
      *   menubar and other GUI components. File i/o is also handled here.
      *
-     *    @author Ryan C. Gordon. (icculus@lokigames.com)
+     *    @author Ryan C. Gordon. (icculus@icculus.org)
      */
 public final class TobyFrame extends JFrame implements DocumentListener,
                                                        WindowListener
