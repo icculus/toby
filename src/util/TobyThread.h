@@ -26,7 +26,7 @@
  *  An abstraction over platform-specific threads: multiple contexts of
  *   execution in the same process space, sharing resources.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TobyThread : public TobyObject
 {

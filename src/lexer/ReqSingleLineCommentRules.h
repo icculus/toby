@@ -28,7 +28,7 @@
  *  ReqSingleLineComment lexer rule: succeeds if the next token is a
  *    single line comment.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqSingleLineCommentRules : public LexerRules
 {

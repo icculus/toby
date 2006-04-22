@@ -29,7 +29,7 @@
  *  platform driver, or for systems where you want the interpreter engine
  *  without graphic output.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class NullTurtleSpaceRenderer : public TurtleSpaceRenderer
 {

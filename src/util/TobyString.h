@@ -28,7 +28,7 @@
  * This is a relatively minimal string class, for dealing with the
  *  ugliness of string memory management.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TobyString : public TobyObject
 {

@@ -29,7 +29,7 @@
  *   grouping of subrules. These are the toplevel rules for
  *   a language's grammar.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class LanguageRules : public LexerRules
 {

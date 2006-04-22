@@ -27,7 +27,7 @@
 /*
  *  A general Unix clock implementation.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class UnixClock : public TobyClock
 {

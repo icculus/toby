@@ -25,7 +25,7 @@
 /*
  *  A stub implementation of a system clock, used for porting to new systems.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class NullClock : public TobyClock
 {

@@ -25,7 +25,7 @@
 /*
  * This is a general object stack. First in, last out.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TobyStack : public TobyCollection
 {

@@ -28,7 +28,7 @@
  *  ReqLiteralString lexer rule: succeeds if the next token is
  *   a literal string.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqLiteralStringRules : public LexerRules
 {

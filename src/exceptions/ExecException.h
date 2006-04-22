@@ -27,7 +27,7 @@
  *  ExecExceptions are for interpretation errors at runtime, as opposed to
  *   parsetime errors.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ExecException : public FlowException
 {

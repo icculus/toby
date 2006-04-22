@@ -27,7 +27,7 @@
  * Entry point for statically-compiled grammars to register themselves.
  *  These lexers (usually) consist of machine-generated C++.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class StaticLexer : public Lexer
 {

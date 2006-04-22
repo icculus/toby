@@ -28,7 +28,7 @@
  *  PickOne lexer metarule: a logical grouping of subrules that succeeds on
  *   the first subrule that succeeds.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class PickOneRules : public LexerRules
 {

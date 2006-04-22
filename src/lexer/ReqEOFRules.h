@@ -27,7 +27,7 @@
 /*
  *  ReqEOF lexer rule: succeeds if the next token is the End Of File token.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqEOFRules : public LexerRules
 {

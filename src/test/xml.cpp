@@ -19,7 +19,7 @@
 
 /*
  * This is a standalone program to test the XML classes.
- *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
+ *   Written by Ryan C. Gordon (icculus@icculus.org)
  */
 
 #include <stdio.h>

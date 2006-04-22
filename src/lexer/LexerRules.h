@@ -31,7 +31,7 @@
  * The subclass can optionally be able to produce the the C++ code needed to
  *  rebuild that instance of the rules. Here be dragons.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class LexerRules : public TobyObject
 {

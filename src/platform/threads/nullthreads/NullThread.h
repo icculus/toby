@@ -28,7 +28,7 @@
  * A null implementation of TobyThreads. Use this as a stub until you can get
  *  platform-specific code written.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class NullThread : public TobyThread
 {

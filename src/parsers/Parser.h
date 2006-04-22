@@ -38,7 +38,7 @@ typedef void GlobalLogicContext;
  *  a tree of LogicContexts, of which can then be executed as a complete
  *  program.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class Parser : public TobyObject
 {

@@ -28,7 +28,7 @@
  * A GTK+-based TurtleSpaceRenderer. GTK+ and related libraries can be
  *  found at http://www.gtk.org/.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class GTKTurtleSpaceRenderer : public TurtleSpaceRenderer
 {

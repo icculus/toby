@@ -46,7 +46,7 @@ class ElementRulesXML;  // need a forward reference.
  * An entry point for generating, from XML metadata, the LexerRules tree
  *  needed to lex a language
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class XMLLexer : public Lexer
 {

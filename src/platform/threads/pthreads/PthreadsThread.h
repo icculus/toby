@@ -30,7 +30,7 @@
  * A Pthreads-based implementation of TobyThreads. This covers most Unixes,
  *  and other POSIX-compliant systems.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class PthreadsThread : public TobyThread
 {

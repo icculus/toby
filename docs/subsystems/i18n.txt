@@ -120,7 +120,7 @@ Makefile. There should be a section near the top that looks like this:
 
 #-----------------------------------------------------------------------------#
 # Choose a default natural language.
-#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Please report incorrect translations to Ryan: icculus@icculus.org.
 #  Ryan would also love to hear from you if you are willing to translate this
 #  software to other natural languages; it's easy to do, if you are bilingual
 #  in the first place.
@@ -136,7 +136,7 @@ platform_i18n := english
 
 #-----------------------------------------------------------------------------#
 # Choose a default natural language.
-#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Please report incorrect translations to Ryan: icculus@icculus.org.
 #  Ryan would also love to hear from you if you are willing to translate this
 #  software to other natural languages; it's easy to do, if you are bilingual
 #  in the first place.
@@ -178,5 +178,5 @@ space and overwrite the previous pointer. Any strings we allocate for i18n
 purposes get an extra byte placed after the terminating NULL char, where we
 store a '!' character. Problem solved.
 
---ryan.  (icculus@clutteredmind.org)
+--ryan.  (icculus@icculus.org)
 

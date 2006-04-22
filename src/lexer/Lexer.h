@@ -34,7 +34,7 @@
  *  an XML file, or one that builds a LexerRules tree from machine-generated
  *  C++ code. (Or NullLexer, for portability).
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class Lexer : public TobyObject
 {

@@ -27,7 +27,7 @@
 /*
  *  ReqNumber lexer rule: succeeds if the next token is whitespace.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqNumberRules : public LexerRules
 {

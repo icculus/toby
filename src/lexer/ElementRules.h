@@ -27,7 +27,7 @@
 /*
  *  Element lexer rules: a logical grouping of subrules.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ElementRules : public LexerRules
 {

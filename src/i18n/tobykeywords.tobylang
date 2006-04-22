@@ -26,7 +26,7 @@
  *  efficiency, some of the data sorting internally expects these strings to
  *  be lowercase.
  *
- *    --ryan c. gordon (icculus@clutteredmind.org)
+ *    --ryan c. gordon (icculus@icculus.org)
  */
 
 #ifndef CALLED_FROM_TOBYLANGUAGE

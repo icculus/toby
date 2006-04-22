@@ -29,7 +29,7 @@
  *  ReqChar lexer rule: succeeds if the next char in the current word token
  *   matches within the specified range of chars.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqCharRules : public LexerRules
 {

@@ -19,7 +19,7 @@
 
 /*
  *
- *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
+ *   Written by Ryan C. Gordon (icculus@icculus.org)
  */
 
 #include <stdio.h>

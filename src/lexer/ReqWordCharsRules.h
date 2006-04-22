@@ -28,7 +28,7 @@
  *  ReqWordChars lexer rule: succeeds if the next token is a word and matches
  *   the characters specified by its children.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqWordCharsRules : public LexerRules
 {

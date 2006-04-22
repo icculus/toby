@@ -27,7 +27,7 @@
  *  StringReaders read from a block of null-terminated characters in
  *   memory as if it were a file.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class StringReader : public TobyReader
 {

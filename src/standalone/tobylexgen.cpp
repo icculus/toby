@@ -25,7 +25,7 @@
  *  intended for static targets that won't need to add new programming
  *  languages without recompiling, and resource-constrained/embedded targets.
  *
- *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
+ *   Written by Ryan C. Gordon (icculus@icculus.org)
  */
 
 #include <new>
@@ -66,7 +66,7 @@ static void outputIntro(LanguageRules *lang)
 " *    Language : %s\n"
 " *    Language's file extension: *.%s\n"
 " *\n"
-" *   Code generator written by Ryan C. Gordon (icculus@clutteredmind.org)\n"
+" *   Code generator written by Ryan C. Gordon (icculus@icculus.org)\n"
 " */\n"
 "\n"
 "#include \"util/TobyObject.h\"\n"

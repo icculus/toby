@@ -22,7 +22,7 @@
 # Makefile for building Toby on Unix-like systems. Follow the instructions
 #  for editing this file, then run "make" on the command line.
 #
-#  Written by Ryan C. Gordon (icculus@clutteredmind.org)
+#  Written by Ryan C. Gordon (icculus@icculus.org)
 #-----------------------------------------------------------------------------#
 
 
@@ -80,7 +80,7 @@ platform_clock := unix
 
 #-----------------------------------------------------------------------------#
 # Choose a default natural language.
-#  Please report incorrect translations to Ryan: icculus@clutteredmind.org.
+#  Please report incorrect translations to Ryan: icculus@icculus.org.
 #  Ryan would also love to hear from you if you are willing to translate this
 #  software to other natural languages; it's easy to do, if you are bilingual
 #  in the first place.
@@ -689,7 +689,7 @@ ifeq ($(strip $(platform_video)),sdl)
 	cp $(SDL_LIB_DIR)/SDL.dll .
     EXTRAPACKAGELIBS := SDL.dll
 endif
-	echo -e "\r\n\r\n\r\nHEY YOU.\r\n\r\n\r\nTake a look at README-win32bins.txt FIRST.\r\n\r\n\r\n--ryan. (icculus@clutteredmind.org)\r\n\r\n" |zip -9rz ../toby-win32bins-$(shell date +%m%d%Y).zip $(EXES) $(EXTRAPACKAGELIBS) README-win32bins.txt
+	echo -e "\r\n\r\n\r\nHEY YOU.\r\n\r\n\r\nTake a look at README-win32bins.txt FIRST.\r\n\r\n\r\n--ryan. (icculus@icculus.org)\r\n\r\n" |zip -9rz ../toby-win32bins-$(shell date +%m%d%Y).zip $(EXES) $(EXTRAPACKAGELIBS) README-win32bins.txt
 
 else
 msbins: nocygwin

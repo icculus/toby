@@ -28,7 +28,7 @@
  *  ReqMultiLineComment lexer rule: succeeds if the next token is a
  *    multiline comment.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class ReqMultiLineCommentRules : public LexerRules
 {

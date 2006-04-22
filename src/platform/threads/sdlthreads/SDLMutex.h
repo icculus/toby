@@ -30,7 +30,7 @@
  *
  * SDL source code and docs can be found at http://www.libsdl.org/  ...
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class SDLMutex : public TobyMutex
 {

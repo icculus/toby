@@ -32,7 +32,7 @@
  *
  *    SDL can be found at http://www.libsdl.org/
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class SDLTurtleSpaceRenderer : public FrameBufferTurtleSpaceRenderer
 {

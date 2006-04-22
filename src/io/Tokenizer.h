@@ -36,7 +36,7 @@
  *  parsing, removing comments and splitting the stream up into tokens of
  *  various types.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 class Tokenizer : public TobyObject

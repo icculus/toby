@@ -30,7 +30,7 @@
  *  and can output a string containing the C++ code needed to construct
  *  its parent.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class LanguageRulesXML : public LanguageRules
 {

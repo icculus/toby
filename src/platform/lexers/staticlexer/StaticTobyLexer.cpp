@@ -26,7 +26,7 @@
  *    Language : toby
  *    Language's file extension: *.toby
  *
- *   Code generator written by Ryan C. Gordon (icculus@clutteredmind.org)
+ *   Code generator written by Ryan C. Gordon (icculus@icculus.org)
  */
 
 #include "util/TobyObject.h"

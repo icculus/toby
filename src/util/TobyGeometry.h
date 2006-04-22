@@ -35,7 +35,7 @@
 /*
  * Some needed math routines.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TobyGeometry
 {

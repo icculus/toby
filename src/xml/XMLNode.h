@@ -36,7 +36,7 @@
  *    text (""). The "b" node has the text "Hello, world!". A node with a
  *    built in endtag ( <mynode attr="xxxx"/> ) will have a text of NULL.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 typedef struct
 {

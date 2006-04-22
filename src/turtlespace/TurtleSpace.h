@@ -37,7 +37,7 @@
  *   the renderer and the interpreted program, TurtleSpace handles Turtle
  *   maintenance and other TurtleGraphics-related state.
  *
- *   Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *   Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TurtleSpace : public TobyObject
 {

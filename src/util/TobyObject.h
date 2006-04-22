@@ -43,7 +43,7 @@ typedef unsigned char  toby_uint8;
 /*
  * This is a common base class for all other Toby class.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TobyObject
 {

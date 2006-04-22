@@ -41,7 +41,7 @@ typedef struct __STRUCT_FrameBufferRect
  *  is also responsible for converting the 32-bit format to their visual's
  *  format, including alpha-blending.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class FrameBufferTurtleSpaceRenderer : public TurtleSpaceRenderer
 {

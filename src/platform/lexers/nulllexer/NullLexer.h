@@ -25,7 +25,7 @@
 /*
  *  A stub implementation of Lexer, for porting, etc. purposes.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class NullLexer : public Lexer
 {

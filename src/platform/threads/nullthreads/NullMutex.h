@@ -26,7 +26,7 @@
  * A null implementation of TobyMutex. Use this as a stub to get you going
  *  until you can implement your own platform-specify mutex implementation.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class NullMutex : public TobyMutex
 {

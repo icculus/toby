@@ -22,7 +22,7 @@
  *  Ideally, we'd want to write up a DTD, and have some external tool do
  *  this for us, but oh well.
  *
- *   Written by Ryan C. Gordon (icculus@clutteredmind.org)
+ *   Written by Ryan C. Gordon (icculus@icculus.org)
  */
 
 #include <stdio.h>

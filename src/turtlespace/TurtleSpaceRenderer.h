@@ -32,7 +32,7 @@
  * Examples of subclasses would be a Qt implementation, an SDL
  *  implementation, a Win32 implementation, etc.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class TurtleSpaceRenderer : public TobyObject
 {

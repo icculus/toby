@@ -31,7 +31,7 @@
  *     name. DO NOT CHANGE THE COPYRIGHT. You will be given credit for your
  *     work, but by submitting your work, the maintainers of Toby gain
  *     sole ownership of it. If you don't like that, stop now.
- *  3. E-mail your completed work to Ryan at icculus@clutteredmind.org. He'll
+ *  3. E-mail your completed work to Ryan at icculus@icculus.org. He'll
  *     incorporate it into the next release of Toby.
  *  4. C++ comments are acceptable, both in the multiline and "//" form. They
  *     are ignored when this file is parsed. Lines with nothing but whitespace
@@ -57,7 +57,7 @@
  * 10. Expect to be notified if we have more translating work for you
  *     in the future.  :)
  * 11. Questions about context of strings and other concerns can be addressed
- *     to icculus@clutteredmind.org. Please understand that I only speak English,
+ *     to icculus@icculus.org. Please understand that I only speak English,
  *     and even that poorly.  :)
  *
  *                                   Have fun,
@@ -145,7 +145,7 @@ TOBYI18N(TOBYI18N_HERES_THE_ERR, "Pour mémoire, voici l'erreur:")
 
 // Hopefully, the end user will never see these messages.
 TOBYI18N(TOBYI18N_NOT_YET_IMPLEMENTED, "Fonctionalité non implémentée.")
-TOBYI18N(TOBYI18N_SHOULDNOTBE, "Ceci ne devrait pas arriver. Envoyer un Email à icculus@clutteredmind.org! (en Anglais seulement!)")
+TOBYI18N(TOBYI18N_SHOULDNOTBE, "Ceci ne devrait pas arriver. Envoyer un Email à icculus@icculus.org! (en Anglais seulement!)")
 // !!! TRANSLATE ME!
 TOBYI18N(TOBYI18N_NODETREE_LOCKED, "NodeTree already locked.")
 TOBYI18N(TOBYI18N_NODETREE_ULOCKED, "NodeTree already unlocked.")

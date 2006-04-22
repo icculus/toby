@@ -30,7 +30,7 @@
 /*
  *  A quick-and-dirty XML parser.
  *
- *     Written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *     Written by Ryan C. Gordon. (icculus@icculus.org)
  */
 class XMLTree : public TobyObject
 {
