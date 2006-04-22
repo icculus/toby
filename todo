@@ -5,7 +5,7 @@ ongoing bugfixes/enhancements :
      '!!!' have been placed there to alert me that there is a bug/deficiency
      in the code that is worth revisiting, but probably isn't crippling. As
      such, they tend to build up. Feel free to fix any of these and submit
-     patches to rgordon@xnot.com ...
+     patches to icculus@icculus.org ...
 
     Make global parsing just dump every non-blank line that doesn't start
      with KEYWORD_BEGINFUNC to an array. Until we hit a KEYWORD_BEGINFUNC
