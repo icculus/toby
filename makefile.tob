@@ -1,0 +1,11 @@
+toby.exe : toby.obj tobydata.obj tobygrfx.obj
+	link toby.obj+tobydata.obj+tobygrfx.obj,toby.exe /noi,nul,graphics;
+
+toby.obj : toby.c toby.h
+	cl /c /AL toby.c
+
+tobydata.obj : tobydata.c toby.h
+	cl /c /AL tobydata.c
+
+tobygrfx.obj : tobygrfx.c toby.h
+	cl /c /AL tobygrfx.c
