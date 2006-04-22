@@ -7,10 +7,17 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "toby.h"
+
+#ifdef __GNUC__
+#include "unixbits.h"
+#else
 #include <graph.h>
 #include <memory.h>
 #include <malloc.h>
-#include "toby.h"
+/* (this is probably a leftover from EMX...) */
+#define access(x,y) (-1)
+#endif
 
 extern boolean shouldsave;
 extern linkedlist *procedures;
@@ -255,6 +262,7 @@ char *rtrim(char *str)
     char *trimpoint;
     for (trimpoint = str + strlen(str) - 1; *trimpoint == ' '; trimpoint--);
         trimpoint[1] = '\0';
+    return(str);
 } /*rtrim*/
 
 
@@ -330,7 +338,7 @@ char charinput(FILE *charstream)
 
 
 
-char *getline(FILE *fromhere, char *tohere, char *prompt, int maxline)
+char *_getline(FILE *fromhere, char *tohere, char *prompt, int maxline)
 /* 
  * Reads a line of input, ending with an endline char. Allows input from a 
  *  a file or keyboard, a maximum input size, and string editing.
@@ -442,7 +450,7 @@ char *getline(FILE *fromhere, char *tohere, char *prompt, int maxline)
 
     return(tohere);
 
-} /*getline*/
+} /*_getline*/
 
 
 boolean getyn(char *prompt)
@@ -586,7 +594,7 @@ boolean define_proc(FILE *fromhere, char *declaration)
             getout = TRUE;
         } /*if*/
     
-        getline(fromhere, procedureline, "> ", MAXCOMMAND - 1);
+        _getline(fromhere, procedureline, "> ", MAXCOMMAND - 1);
         
         if (stricmp(procedureline, "END") == 0)
             getout = TRUE;
@@ -658,7 +666,7 @@ void codeload(char *filename)
             
             while (!feof(logostream))
             {
-                getline(logostream, bytebucket, "", MAXCOMMAND);
+                _getline(logostream, bytebucket, "", MAXCOMMAND);
                 if (strnicmp(bytebucket, "to ", 3) == 0)
                     define_proc(logostream, bytebucket + 3);
             } /*while*/
@@ -696,14 +704,14 @@ boolean codesave(char *fname)
         return(FALSE);
     
     if (fname == NULL)    
-        getline(NULL, filename, "Filename to save : ", MAXCOMMAND);
+        _getline(NULL, filename, "Filename to save : ", MAXCOMMAND);
     else
         strcpy(filename, fname);
     
     if (*filename != '\0')
     {
         
-        /*if (access(filename, 00) == 0)   /* Does file exist? */
+        if (access(filename, 00) == 0)   /* Does file exist? */
         {   
             if (!getyn("That file already exists. Overwrite it?"))
                 return(FALSE);
@@ -717,7 +725,7 @@ boolean codesave(char *fname)
                 _outtext("Could not open file! Aborted.\n");
                 return(FALSE);
             } /*if*/
-        /*} /*else*/
+        /*}*/ /*else*/
 
         for (listloop = procedures; listloop != NULL; listloop = listloop->next)
         {    

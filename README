@@ -1,17 +1,26 @@
 This is the original version of Toby. It was written for a senior high-school
 exit project over the first couple months of 1995.
 
-I wrote in C, with very little understanding of the language; I was a
+I wrote this in C, with very little understanding of the language; I was a
 QuickBASIC 4.5 fan at the time. This is a CRAPPY bit of code.
 
-This is a DOS program, which was built with Microsoft C 7.0 for DOS. I don't
-even know if it compiles under that environment anymore, but apparently there's
-a binary here, too, which also may or may not work.
+This is a DOS program, which was built with Microsoft C 7.0 for DOS. I have
+spent some effort reimplementing the Microsoft graphics library with SDL so
+you can build this on modern systems, but the work isn't nearly complete, and
+I didn't want to alter the original code too much, so you still get all the
+fun memory corruptions and crashes. Subversion revision #3 is the unmolested
+source as I found it several years ago...I think I probably patched it a
+little after the end of the project, probably in a failed attempt to make it
+a native, 16-bit OS/2 app, but I can't remember. Anything after revision #3
+are just simple tweaks, more than a decade later, probably to reduce my shame.
 
 The language syntax is almost entirely LOGO, as the goal was to produce a free
 implementation of LOGO, even before I understood the GNU definition of "free",
 or that there were GPL'd LOGO packages available. At least this was a DOS one,
 since nobody I knew could have used a Unix-based version at the time.  :)
+
+I hadn't conceived of designing my own programming language at this point. I
+probably thought I wasn't allowed...not by the high school, just generally.
 
 Also, as far LOGOs go, this was just a tiny subset of the language.
 

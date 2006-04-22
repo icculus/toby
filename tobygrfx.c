@@ -7,11 +7,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <graph.h>
 #include <math.h>
 #include "toby.h"
 
-extern char graphic_flags = FALSE;    /* Bitmap of flags for graphics.     */
+#ifdef __GNUC__
+#include "unixbits.h"
+#else
+#include <graph.h>
+#endif
+
+extern char graphic_flags;            /* Bitmap of flags for graphics.     */
 extern short turtle_x;                /* Turtle's X coordinate.            */
 extern short turtle_y;                /* Turtle's Y coordinate.            */
 extern short pen_color;               /* Current pen color.                */

@@ -22,14 +22,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <graph.h>
 #include <string.h>
-#include <memory.h>
-#include <conio.h>
-#include <malloc.h>
 #include <time.h>
 #include "toby.h"
 
+#ifdef __GNUC__
+#include "unixbits.h"
+#else
+#include <graph.h>
+#include <conio.h>
+#include <memory.h>
+#include <malloc.h>
+#endif
 
 /* Global Variables... */
 linkedlist *procedures = NULL;  /* user-defined LOGO procedures.         */
@@ -38,12 +42,12 @@ errortype runtime = RT_NOERROR; /* Runtime status.                       */
 boolean shouldsave = FALSE;     /* Should we prompt to save procedures?  */
 
 /* move these? */
-char graphic_flags;            /* Bitmap of graphic-related flags.  */
+char graphic_flags = 0;        /* Bitmap of graphic-related flags.  */
 short turtle_x, turtle_y;      /* The Turtle's X and Y coordinates. */
 short pen_color;               /* Current pen color.                */
 short turtle_heading = 0;      /* the Turtle's heading : 0-360 deg. */
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 /*
  * Short, but sweet; it's the mainline.
  */
@@ -51,6 +55,7 @@ void main(int argc, char *argv[])
     logoinit(argv[1]);
     logostart();
     logofinish(NULL, ERLV_GOOD);
+    return(0);
 } /*main*/
 
 
@@ -91,7 +96,7 @@ void logostart(void)
 
         runtime = RT_NOERROR;     /* reset runtime error variable. */
 
-        getline(NULL, instruction, "? ", MAXCOMMAND);
+        _getline(NULL, instruction, "? ", MAXCOMMAND);
 
         if (strnicmp(instruction, "to ", 3) == 0)
             define_proc(NULL, instruction + 3);
@@ -575,7 +580,7 @@ char *primitives(char *instructions, linkedlist **scalars)
     {
         returns = parse_args(parameters, *scalars, 2);
         looper!!!
-    } /*else if (QUOTIENT)*/
+    } */ /*else if (QUOTIENT)*/
     
     else if (strcmp(instructions, "REMAINDER") == 0)
     {

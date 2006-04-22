@@ -96,7 +96,7 @@ char *rtrim(char *str);
 boolean twostrcmp(char *cmpthis, char *checkone, char *checktwo);
 void preprocess(char *unprocessed);
 char charinput(FILE *charstream);
-char *getline(FILE *fromhere, char *tohere, char *prompt, int maxline);
+char *_getline(FILE *fromhere, char *tohere, char *prompt, int maxline);
 boolean getyn(char *prompt);
 boolean define_proc(FILE *fromhere, char *declaration);
 void codeload(char *filename);
