@@ -252,8 +252,8 @@ int _imagesize(int x1, int y1, int x2, int y2)
     if (y2 >= GScreen->h)
         y2 = GScreen->h - 1;
 
-    w = x2 - x1;
-    h = y2 - y1;
+    w = (x2 - x1) + 1;
+    h = (y2 - y1) + 1;
 
     return (sizeof (Uint32) + sizeof (Uint32) + (w * h * 4));
 }
