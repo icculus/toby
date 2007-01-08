@@ -1018,23 +1018,22 @@ static int exp1 (LexState *ls) {
 }
 
 
-static void forbody (LexState *ls, int base, int line, int nvars, int isnum) {
-  /* forbody -> DO block */
+static void forbody (LexState *ls, int base, int line) {
+  /* forbody -> block */
   BlockCnt bl;
   FuncState *fs = ls->fs;
   int prep, endfor;
-  adjustlocalvars(ls, 3);  /* control variables */
-  prep = isnum ? luaK_codeAsBx(fs, OP_FORPREP, base, NO_JUMP) : luaK_jump(fs);
+  adjustlocalvars(ls, 4);  /* control variables */
+  prep = luaK_codeAsBx(fs, OP_FORPREP, base, NO_JUMP);
   enterblock(fs, &bl, 0);  /* scope for declared variables */
-  adjustlocalvars(ls, nvars);
-  luaK_reserveregs(fs, nvars);
+  adjustlocalvars(ls, 1);
+  luaK_reserveregs(fs, 1);
   block(ls);
   leaveblock(fs);  /* end of scope for declared variables */
   luaK_patchtohere(fs, prep);
-  endfor = (isnum) ? luaK_codeAsBx(fs, OP_FORLOOP, base, NO_JUMP) :
-                     luaK_codeABC(fs, OP_TFORLOOP, base, 0, nvars);
+  endfor = luaK_codeAsBx(fs, OP_FORLOOP, base, NO_JUMP);
   luaK_fixline(fs, line);  /* pretend that `OP_FOR' starts the loop */
-  luaK_patchlist(fs, (isnum ? endfor : luaK_jump(fs)), prep + 1);
+  luaK_patchlist(fs, endfor, prep + 1);
 }
 
 
@@ -1042,60 +1041,53 @@ static void fornum (LexState *ls, TString *varname, int line) {
   /* fornum -> NAME = exp1,exp1[,exp1] forbody */
   FuncState *fs = ls->fs;
   int base = fs->freereg;
+  int defaultstep = 1;
+
   new_localvarliteral(ls, "(for index)", 0);
   new_localvarliteral(ls, "(for limit)", 1);
   new_localvarliteral(ls, "(for step)", 2);
-  new_localvar(ls, varname, 3);
+  new_localvarliteral(ls, "(for downto)", 3);
+  // !!! FIXME: don't create a local here, Toby needs to predeclare
+  // !!! FIXME:  the loop variable.
+  new_localvar(ls, varname, 4);
   checknext(ls, '=');
   exp1(ls);  /* initial value */
-  checknext(ls, ',');
-  exp1(ls);  /* limit */
-  if (testnext(ls, ','))
+  if (testnext(ls, TK_TO)) {
+    exp1(ls);  /* limit */
+  } else if (testnext(ls, TK_DOWNTO)) {
+    defaultstep = -1;
+    exp1(ls);  /* limit */
+  } else {
+    luaX_syntaxerror(ls, LUA_QL("TO") " or " LUA_QL("DOWNTO") " expected");
+  }
+
+  if (testnext(ls, TK_STEP))
     exp1(ls);  /* optional step */
-  else {  /* default step = 1 */
-    luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, 1));
+  else {  /* default step = 1 (or -1 for downto) */
+    luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, defaultstep));
     luaK_reserveregs(fs, 1);
   }
-  forbody(ls, base, line, 1, 1);
-}
 
+  /* flag this as a TO or DOWNTO for loop... */
+  luaK_codeABx( fs, OP_LOADK, fs->freereg,
+                luaK_numberK( fs, ((defaultstep < 0) ? 1 : 0) ) );
+  luaK_reserveregs(fs, 1);
 
-static void forlist (LexState *ls, TString *indexname) {
-  /* forlist -> NAME {,NAME} IN explist1 forbody */
-  FuncState *fs = ls->fs;
-  expdesc e;
-  int nvars = 0;
-  int line;
-  int base = fs->freereg;
-  /* create control variables */
-  new_localvarliteral(ls, "(for generator)", nvars++);
-  new_localvarliteral(ls, "(for state)", nvars++);
-  new_localvarliteral(ls, "(for control)", nvars++);
-  /* create declared variables */
-  new_localvar(ls, indexname, nvars++);
-  while (testnext(ls, ','))
-    new_localvar(ls, str_checkname(ls), nvars++);
-  checknext(ls, TK_IN);
-  line = ls->linenumber;
-  adjust_assign(ls, 3, explist1(ls, &e), &e);
-  luaK_checkstack(fs, 3);  /* extra space to call generator */
-  forbody(ls, base, line, nvars - 3, 0);
+  forbody(ls, base, line);
 }
 
 
 static void forstat (LexState *ls, int line) {
-  /* forstat -> FOR (fornum | forlist) END */
+  /* forstat -> FOR (fornum) END */
   FuncState *fs = ls->fs;
   TString *varname;
   BlockCnt bl;
   enterblock(fs, &bl, 1);  /* scope for loop and control variables */
   luaX_next(ls);  /* skip `for' */
   varname = str_checkname(ls);  /* first variable name */
-  switch (ls->t.token) {
-    case '=': fornum(ls, varname, line); break;
-    case ',': case TK_IN: forlist(ls, varname); break;
-    default: luaX_syntaxerror(ls, LUA_QL("=") " or " LUA_QL("in") " expected");
-  }
+  if (ls->t.token != '=')
+    luaX_syntaxerror(ls, LUA_QL("=") " expected");
+  fornum(ls, varname, line);
   check_match(ls, TK_ENDFOR, TK_FOR, line);
   leaveblock(fs);  /* loop scope (`break' jumps to this point) */
 }
