@@ -4,13 +4,9 @@
 ** See Copyright Notice in lua.h
 */
 
-#ifndef llex_h
-#define llex_h
+#ifndef tobylex_h
+#define tobylex_h
 
-#ifdef TOBY
-/* Use mine instead. --ryan. */
-#include "../../tobylex.h"
-#else
 #include "lobject.h"
 #include "lzio.h"
 
@@ -81,6 +77,4 @@ LUAI_FUNC void luaX_lexerror (LexState *ls, const char *msg, int token);
 LUAI_FUNC void luaX_syntaxerror (LexState *ls, const char *s);
 LUAI_FUNC const char *luaX_token2str (LexState *ls, int token);
 
-
-#endif  /* TOBY */
 #endif

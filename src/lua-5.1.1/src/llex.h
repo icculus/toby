@@ -7,6 +7,10 @@
 #ifndef llex_h
 #define llex_h
 
+#ifdef TOBY
+/* Use mine instead. --ryan. */
+#include "tobylex.h"
+#else
 #include "lobject.h"
 #include "lzio.h"
 
@@ -78,4 +82,5 @@ LUAI_FUNC void luaX_syntaxerror (LexState *ls, const char *s);
 LUAI_FUNC const char *luaX_token2str (LexState *ls, int token);
 
 
+#endif  /* TOBY */
 #endif
