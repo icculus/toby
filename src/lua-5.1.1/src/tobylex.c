@@ -338,11 +338,12 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         inclinenumber(ls);
         continue;
       }
-      case '-': {
+      case '/': {
         next(ls);
-        if (ls->current != '-') return '-';
+        if (ls->current != '/') return '/';
         /* else is a comment */
         next(ls);
+        #if 0  // !!! FIXME: handle multiline comments.
         if (ls->current == '[') {
           int sep = skip_sep(ls);
           luaZ_resetbuffer(ls->buff);  /* `skip_sep' may dirty the buffer */
@@ -352,6 +353,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
             continue;
           }
         }
+        #endif
         /* else short comment */
         while (!currIsNewline(ls) && ls->current != EOZ)
           next(ls);
