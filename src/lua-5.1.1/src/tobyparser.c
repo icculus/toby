@@ -587,7 +587,7 @@ static void body (LexState *ls, expdesc *e, int needself, int line) {
   checknext(ls, ')');
   chunk(ls);
   new_fs.f->lastlinedefined = ls->linenumber;
-  check_match(ls, TK_END, TK_FUNCTION, line);
+  check_match(ls, TK_ENDFUNCTION, TK_FUNCTION, line);
   close_func(ls);
   pushclosure(ls, &new_fs, e);
 }
@@ -870,8 +870,13 @@ static void expr (LexState *ls, expdesc *v) {
 
 static int block_follow (int token) {
   switch (token) {
-    case TK_ELSE: case TK_ELSEIF: case TK_END:
-    case TK_UNTIL: case TK_EOS:
+    case TK_ELSE:
+    case TK_ELSEIF:
+    case TK_ENDFUNCTION:
+    case TK_ENDIF:
+    case TK_ENDFOR:
+    case TK_ENDWHILE:
+    case TK_EOS:
       return 1;
     default: return 0;
   }
@@ -999,7 +1004,7 @@ static void whilestat (LexState *ls, int line) {
   checknext(ls, TK_DO);
   block(ls);
   luaK_patchlist(fs, luaK_jump(fs), whileinit);
-  check_match(ls, TK_END, TK_WHILE, line);
+  check_match(ls, TK_ENDWHILE, TK_WHILE, line);
   leaveblock(fs);
   luaK_patchtohere(fs, condexit);  /* false conditions finish the loop */
 }
@@ -1120,7 +1125,7 @@ static void forstat (LexState *ls, int line) {
     case ',': case TK_IN: forlist(ls, varname); break;
     default: luaX_syntaxerror(ls, LUA_QL("=") " or " LUA_QL("in") " expected");
   }
-  check_match(ls, TK_END, TK_FOR, line);
+  check_match(ls, TK_ENDFOR, TK_FOR, line);
   leaveblock(fs);  /* loop scope (`break' jumps to this point) */
 }
 
@@ -1156,7 +1161,7 @@ static void ifstat (LexState *ls, int line) {
   else
     luaK_concat(fs, &escapelist, flist);
   luaK_patchtohere(fs, escapelist);
-  check_match(ls, TK_END, TK_IF, line);
+  check_match(ls, TK_ENDIF, TK_IF, line);
 }
 
 
