@@ -903,64 +903,14 @@ struct LHS_assign {
   expdesc v;  /* variable (global, local, upvalue, or indexed) */
 };
 
-
-/*
-** check whether, in an assignment to a local variable, the local variable
-** is needed in a previous assignment (to a table). If so, save original
-** local value in a safe place and use this safe copy in the previous
-** assignment.
-*/
-static void check_conflict (LexState *ls, struct LHS_assign *lh, expdesc *v) {
-  FuncState *fs = ls->fs;
-  int extra = fs->freereg;  /* eventual position to save local variable */
-  int conflict = 0;
-  for (; lh; lh = lh->prev) {
-    if (lh->v.k == VINDEXED) {
-      if (lh->v.u.s.info == v->u.s.info) {  /* conflict? */
-        conflict = 1;
-        lh->v.u.s.info = extra;  /* previous assignment will use safe copy */
-      }
-      if (lh->v.u.s.aux == v->u.s.info) {  /* conflict? */
-        conflict = 1;
-        lh->v.u.s.aux = extra;  /* previous assignment will use safe copy */
-      }
-    }
-  }
-  if (conflict) {
-    luaK_codeABC(fs, OP_MOVE, fs->freereg, v->u.s.info, 0);  /* make copy */
-    luaK_reserveregs(fs, 1);
-  }
-}
-
-
 static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
+  /* Toby form: var = expr */
   expdesc e;
-  check_condition(ls, VLOCAL <= lh->v.k && lh->v.k <= VINDEXED,
-                      "syntax error");
-  if (testnext(ls, ',')) {  /* assignment -> `,' primaryexp assignment */
-    struct LHS_assign nv;
-    nv.prev = lh;
-    primaryexp(ls, &nv.v);
-    if (nv.v.k == VLOCAL)
-      check_conflict(ls, lh, &nv.v);
-    assignment(ls, &nv, nvars+1);
-  }
-  else {  /* assignment -> `=' explist1 */
-    int nexps;
-    checknext(ls, '=');
-    nexps = explist1(ls, &e);
-    if (nexps != nvars) {
-      adjust_assign(ls, nvars, nexps, &e);
-      if (nexps > nvars)
-        ls->fs->freereg -= nexps - nvars;  /* remove extra values */
-    }
-    else {
-      luaK_setoneret(ls->fs, &e);  /* close last expression */
-      luaK_storevar(ls->fs, &lh->v, &e);
-      return;  /* avoid default */
-    }
-  }
-  init_exp(&e, VNONRELOC, ls->fs->freereg-1);  /* default assignment */
+  lua_assert(nvars == 1);  /* this can be != 1 in Lua. */
+  check_condition(ls, VLOCAL <= lh->v.k && lh->v.k <= VINDEXED, "syntax error");
+  checknext(ls, '=');
+  expr(ls, &e);
+  luaK_setoneret(ls->fs, &e);  /* close last expression */
   luaK_storevar(ls->fs, &lh->v, &e);
 }
 
@@ -1017,49 +967,43 @@ static int exp1 (LexState *ls) {
   return k;
 }
 
-
-static void forbody (LexState *ls, int base, int line) {
-  /* forbody -> block */
-  BlockCnt bl;
+static void forstat (LexState *ls, int line) {
+  /* forstat -> FOR var = exp1 [TO|DOWNTO] exp1 [STEP exp1] block ENDFOR */
   FuncState *fs = ls->fs;
-  int prep, endfor;
-  adjustlocalvars(ls, 4);  /* control variables */
-  prep = luaK_codeAsBx(fs, OP_FORPREP, base, NO_JUMP);
-  enterblock(fs, &bl, 0);  /* scope for declared variables */
-  adjustlocalvars(ls, 1);
-  luaK_reserveregs(fs, 1);
-  block(ls);
-  leaveblock(fs);  /* end of scope for declared variables */
-  luaK_patchtohere(fs, prep);
-  endfor = luaK_codeAsBx(fs, OP_FORLOOP, base, NO_JUMP);
-  luaK_fixline(fs, line);  /* pretend that `OP_FOR' starts the loop */
-  luaK_patchlist(fs, endfor, prep + 1);
-}
-
-
-static void fornum (LexState *ls, TString *varname, int line) {
-  /* fornum -> NAME = exp1,exp1[,exp1] forbody */
-  FuncState *fs = ls->fs;
-  int base = fs->freereg;
+  struct LHS_assign lhsassign;
+  BinOpr op;
+  expdesc v1;
+  expdesc v1copy;
+  expdesc v1copy2;
+  expdesc v2;
+  int base = 0;
   int defaultstep = 1;
+  int whileinit = 0;
+  int condexit = 0;
+  BlockCnt bl;
 
-  new_localvarliteral(ls, "(for index)", 0);
-  new_localvarliteral(ls, "(for limit)", 1);
-  new_localvarliteral(ls, "(for step)", 2);
-  new_localvarliteral(ls, "(for downto)", 3);
-  // !!! FIXME: don't create a local here, Toby needs to predeclare
-  // !!! FIXME:  the loop variable.
-  new_localvar(ls, varname, 4);
-  checknext(ls, '=');
-  exp1(ls);  /* initial value */
+  luaX_next(ls);  /* skip `for' */
+
+  singlevar(ls, &lhsassign.v);
+  memcpy(&v1, &lhsassign.v, sizeof (expdesc));  /* save for later... */
+  memcpy(&v1copy, &v1, sizeof (expdesc));  /* for when v1 gets mangled... */
+  memcpy(&v1copy2, &v1, sizeof (expdesc));  /* and so on... */
+  lhsassign.prev = NULL;
+  assignment(ls, &lhsassign, 1);
+
   if (testnext(ls, TK_TO)) {
-    exp1(ls);  /* limit */
+    defaultstep = 1;
   } else if (testnext(ls, TK_DOWNTO)) {
     defaultstep = -1;
-    exp1(ls);  /* limit */
   } else {
     luaX_syntaxerror(ls, LUA_QL("TO") " or " LUA_QL("DOWNTO") " expected");
   }
+
+  base = fs->freereg;
+  new_localvarliteral(ls, "(for limit)", 0);
+  new_localvarliteral(ls, "(for step)", 1);
+
+  exp1(ls);  /* limit */
 
   if (testnext(ls, TK_STEP))
     exp1(ls);  /* optional step */
@@ -1068,28 +1012,31 @@ static void fornum (LexState *ls, TString *varname, int line) {
     luaK_reserveregs(fs, 1);
   }
 
-  /* flag this as a TO or DOWNTO for loop... */
-  luaK_codeABx( fs, OP_LOADK, fs->freereg,
-                luaK_numberK( fs, ((defaultstep < 0) ? 1 : 0) ) );
-  luaK_reserveregs(fs, 1);
+  adjustlocalvars(ls, 2);  /* control variables */
 
-  forbody(ls, base, line);
-}
+  whileinit = luaK_getlabel(fs);
 
+  op = ((defaultstep > 0) ? OPR_LE : OPR_GE);
+  luaK_infix(fs, op, &v1);
+  init_exp(&v2, VLOCAL, base);
+  luaK_posfix(fs, op, &v1, &v2);
+  luaK_goiftrue(fs, &v1);
 
-static void forstat (LexState *ls, int line) {
-  /* forstat -> FOR (fornum) END */
-  FuncState *fs = ls->fs;
-  TString *varname;
-  BlockCnt bl;
-  enterblock(fs, &bl, 1);  /* scope for loop and control variables */
-  luaX_next(ls);  /* skip `for' */
-  varname = str_checkname(ls);  /* first variable name */
-  if (ls->t.token != '=')
-    luaX_syntaxerror(ls, LUA_QL("=") " expected");
-  fornum(ls, varname, line);
+  condexit = v1.f;
+
+  enterblock(fs, &bl, 1);
+  block(ls);
   check_match(ls, TK_ENDFOR, TK_FOR, line);
-  leaveblock(fs);  /* loop scope (`break' jumps to this point) */
+  op = OPR_ADD;
+  luaK_infix(fs, OPR_ADD, &v1copy);
+  init_exp(&v2, VLOCAL, base+1);  /* add step value to iterator variable. */
+  luaK_posfix(fs, op, &v1copy, &v2);
+  luaK_storevar(ls->fs, &v1copy2, &v1copy);
+
+  luaK_patchlist(fs, luaK_jump(fs), whileinit);
+
+  leaveblock(fs);
+  luaK_patchtohere(fs, condexit);  /* false conditions finish the loop */
 }
 
 
