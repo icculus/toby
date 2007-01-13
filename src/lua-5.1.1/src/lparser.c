@@ -55,7 +55,7 @@ static void expr (LexState *ls, expdesc *v);
 
 
 static void anchor_token (LexState *ls) {
-  if (ls->t.token == TK_NAME || ls->t.token == TK_STRING) {
+  if (ls->t.token == TK_NAME || ls->t.token == TK_STRINGLIT) {
     TString *ts = ls->t.seminfo.ts;
     luaX_newstring(ls, getstr(ts), ts->tsv.len);
   }
@@ -538,7 +538,8 @@ static void constructor (LexState *ls, expdesc *t) {
 
 /* }====================================================================== */
 
-
+static void localstat (LexState *ls, int initialize);
+static int toby_intrinsic_type(int token);
 
 static void parlist (LexState *ls) {
   /* parlist -> [ param { `,' param } ] */
@@ -548,43 +549,28 @@ static void parlist (LexState *ls) {
   f->is_vararg = 0;
   if (ls->t.token != ')') {  /* is `parlist' not empty? */
     do {
-      switch (ls->t.token) {
-        case TK_NAME: {  /* param -> NAME */
-          new_localvar(ls, str_checkname(ls), nparams++);
-          break;
-        }
-        case TK_DOTS: {  /* param -> `...' */
-          luaX_next(ls);
-#if defined(LUA_COMPAT_VARARG)
-          /* use `arg' as default name */
-          new_localvarliteral(ls, "arg", nparams++);
-          f->is_vararg = VARARG_HASARG | VARARG_NEEDSARG;
-#endif
-          f->is_vararg |= VARARG_ISVARARG;
-          break;
-        }
-        default: luaX_syntaxerror(ls, "<name> or " LUA_QL("...") " expected");
-      }
-    } while (!f->is_vararg && testnext(ls, ','));
+      localstat(ls, 0);
+      nparams++;
+    } while (testnext(ls, ','));
   }
-  adjustlocalvars(ls, nparams);
   f->numparams = cast_byte(fs->nactvar - (f->is_vararg & VARARG_HASARG));
   luaK_reserveregs(fs, fs->nactvar);  /* reserve register for parameters */
 }
 
-
-static void body (LexState *ls, expdesc *e, int needself, int line) {
+static void body (LexState *ls, expdesc *e, int line) {
   /* body ->  `(' parlist `)' chunk END */
   FuncState new_fs;
   open_func(ls, &new_fs);
   new_fs.f->linedefined = line;
   checknext(ls, '(');
-  if (needself) {
-    new_localvarliteral(ls, "self", 0);
-    adjustlocalvars(ls, 1);
-  }
   parlist(ls);
   checknext(ls, ')');
+
+  /* Toby requires variable predeclaration at the start of a function. */
+  /*  ...maybe we should change that... */
+  while (toby_intrinsic_type(ls->t.token))
+    localstat(ls, 1);
+
   chunk(ls);
   new_fs.f->lastlinedefined = ls->linenumber;
   check_match(ls, TK_ENDFUNCTION, TK_FUNCTION, line);
@@ -629,7 +615,7 @@ static void funcargs (LexState *ls, expdesc *f) {
       constructor(ls, &args);
       break;
     }
-    case TK_STRING: {  /* funcargs -> STRING */
+    case TK_STRINGLIT: {  /* funcargs -> STRINGLIT */
       codestring(ls, &args, ls->t.seminfo.ts);
       luaX_next(ls);  /* must use `seminfo' before `next' */
       break;
@@ -713,7 +699,7 @@ static void primaryexp (LexState *ls, expdesc *v) {
         funcargs(ls, v);
         break;
       }
-      case '(': case TK_STRING: case '{': {  /* funcargs */
+      case '(': case TK_STRINGLIT: case '{': {  /* funcargs */
         luaK_exp2nextreg(fs, v);
         funcargs(ls, v);
         break;
@@ -728,12 +714,12 @@ static void simpleexp (LexState *ls, expdesc *v) {
   /* simpleexp -> NUMBER | STRING | NIL | true | false | ... |
                   constructor | FUNCTION body | primaryexp */
   switch (ls->t.token) {
-    case TK_NUMBER: {
+    case TK_NUMBERLIT: {
       init_exp(v, VKNUM, 0);
       v->u.nval = ls->t.seminfo.r;
       break;
     }
-    case TK_STRING: {
+    case TK_STRINGLIT: {
       codestring(ls, v, ls->t.seminfo.ts);
       break;
     }
@@ -748,23 +734,6 @@ static void simpleexp (LexState *ls, expdesc *v) {
     case TK_FALSE: {
       init_exp(v, VFALSE, 0);
       break;
-    }
-    case TK_DOTS: {  /* vararg */
-      FuncState *fs = ls->fs;
-      check_condition(ls, fs->f->is_vararg,
-                      "cannot use " LUA_QL("...") " outside a vararg function");
-      fs->f->is_vararg &= ~VARARG_NEEDSARG;  /* don't need 'arg' */
-      init_exp(v, VVARARG, luaK_codeABC(fs, OP_VARARG, 0, 1, 0));
-      break;
-    }
-    case '{': {  /* constructor */
-      constructor(ls, v);
-      return;
-    }
-    case TK_FUNCTION: {
-      luaX_next(ls);
-      body(ls, v, 0, ls->linenumber);
-      return;
     }
     default: {
       primaryexp(ls, v);
@@ -877,6 +846,19 @@ static int block_follow (int token) {
     case TK_ENDFOR:
     case TK_ENDWHILE:
     case TK_EOS:
+      return 1;
+    default: return 0;
+  }
+}
+
+
+static int toby_intrinsic_type(int token)
+{
+  switch (token) {
+    case TK_NUMBER:
+    case TK_STRING:
+    case TK_BOOLEAN:
+    /* !!! FIXME: array */
       return 1;
     default: return 0;
   }
@@ -1081,55 +1063,33 @@ static void localfunc (LexState *ls) {
   init_exp(&v, VLOCAL, fs->freereg);
   luaK_reserveregs(fs, 1);
   adjustlocalvars(ls, 1);
-  body(ls, &b, 0, ls->linenumber);
+  body(ls, &b, ls->linenumber);
   luaK_storevar(fs, &v, &b);
   /* debug information will only see the variable after this point! */
   getlocvar(fs, fs->nactvar - 1).startpc = fs->pc;
 }
 
 
-static void localstat (LexState *ls) {
-  /* stat -> LOCAL NAME {`,' NAME} [`=' explist1] */
-  int nvars = 0;
-  int nexps;
+static void localstat (LexState *ls, int initialize) {
+  /* stat -> INTRINSICTYPE NAME */
   expdesc e;
-  do {
-    new_localvar(ls, str_checkname(ls), nvars++);
-  } while (testnext(ls, ','));
-  if (testnext(ls, '='))
-    nexps = explist1(ls, &e);
-  else {
-    e.k = VVOID;
-    nexps = 0;
+
+  /* Initialize variables with a sane default. */
+  if (testnext(ls, TK_NUMBER)) {
+    init_exp(&e, VKNUM, 0);
+    e.u.nval = 0;
+  } else if (testnext(ls, TK_BOOLEAN)) {
+    init_exp(&e, VFALSE, 0);
+  } else if (testnext(ls, TK_STRING)) {
+    codestring(ls, &e, luaX_newstring(ls, "", 0));
+  } else {
+    luaX_syntaxerror(ls, "data type expected");
   }
-  adjust_assign(ls, nvars, nexps, &e);
-  adjustlocalvars(ls, nvars);
-}
 
-
-static int funcname (LexState *ls, expdesc *v) {
-  /* funcname -> NAME {field} [`:' NAME] */
-  int needself = 0;
-  singlevar(ls, v);
-  while (ls->t.token == '.')
-    field(ls, v);
-  if (ls->t.token == ':') {
-    needself = 1;
-    field(ls, v);
-  }
-  return needself;
-}
-
-
-static void funcstat (LexState *ls, int line) {
-  /* funcstat -> FUNCTION funcname body */
-  int needself;
-  expdesc v, b;
-  luaX_next(ls);  /* skip FUNCTION */
-  needself = funcname(ls, &v);
-  body(ls, &b, needself, line);
-  luaK_storevar(ls->fs, &v, &b);
-  luaK_fixline(ls->fs, line);  /* definition `happens' in the first line */
+  new_localvar(ls, str_checkname(ls), 0);
+  if (initialize)
+    adjust_assign(ls, 1, 1, &e);
+  adjustlocalvars(ls, 1);
 }
 
 
@@ -1196,15 +1156,9 @@ static int statement (LexState *ls) {
       return 0;
     }
     case TK_FUNCTION: {
-      funcstat(ls, line);  /* stat -> funcstat */
-      return 0;
-    }
-    case TK_LOCAL: {  /* stat -> localstat */
-      luaX_next(ls);  /* skip LOCAL */
-      if (testnext(ls, TK_FUNCTION))  /* local function? */
-        localfunc(ls);
-      else
-        localstat(ls);
+      /* All user functions are "local" in Toby. */
+      luaX_next(ls);  /* skip FUNCTION */
+      localfunc(ls);  /* stat -> funcstat */
       return 0;
     }
     case TK_RETURN: {  /* stat -> retstat */

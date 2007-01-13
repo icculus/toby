@@ -39,6 +39,7 @@ const char *const luaX_tokens [] = {
     "endfunction", "endif", "endfor", "endwhile",
     "false", "for", "function", "if", "to", "downto", "step",
     "in", "local", "nil", "not", "or",
+    "number", "string", "boolean",
     "return", "true", "until", "while",
     "..", "...", "==", ">=", "<=", "~=",
     "<number>", "<name>", "<string>", "<eof>",
@@ -90,8 +91,8 @@ const char *luaX_token2str (LexState *ls, int token) {
 static const char *txtToken (LexState *ls, int token) {
   switch (token) {
     case TK_NAME:
-    case TK_STRING:
-    case TK_NUMBER:
+    case TK_STRINGLIT:
+    case TK_NUMBERLIT:
       save(ls, '\0');
       return luaZ_buffer(ls->buff);
     default:
@@ -184,7 +185,7 @@ static void trydecpoint (LexState *ls, SemInfo *seminfo) {
   if (!luaO_str2d(luaZ_buffer(ls->buff), &seminfo->r)) {
     /* format error with correct decimal point: no more options */
     buffreplace(ls, ls->decpoint, '.');  /* undo change (for error message) */
-    luaX_lexerror(ls, "malformed number", TK_NUMBER);
+    luaX_lexerror(ls, "malformed number", TK_NUMBERLIT);
   }
 }
 
@@ -283,7 +284,7 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
         continue;  /* to avoid warnings */
       case '\n':
       case '\r':
-        luaX_lexerror(ls, "unfinished string", TK_STRING);
+        luaX_lexerror(ls, "unfinished string", TK_STRINGLIT);
         continue;  /* to avoid warnings */
       case '\\': {
         int c;
@@ -310,7 +311,7 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
                 next(ls);
               } while (++i<3 && isdigit(ls->current));
               if (c > UCHAR_MAX)
-                luaX_lexerror(ls, "escape sequence too large", TK_STRING);
+                luaX_lexerror(ls, "escape sequence too large", TK_STRINGLIT);
               save(ls, c);
             }
             continue;
@@ -364,10 +365,10 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         int sep = skip_sep(ls);
         if (sep >= 0) {
           read_long_string(ls, seminfo, sep);
-          return TK_STRING;
+          return TK_STRINGLIT;
         }
         else if (sep == -1) return '[';
-        else luaX_lexerror(ls, "invalid long string delimiter", TK_STRING);
+        else luaX_lexerror(ls, "invalid long string delimiter", TK_STRINGLIT);
       }
       case '=': {
         next(ls);
@@ -392,7 +393,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       case '"':
       case '\'': {
         read_string(ls, ls->current, seminfo);
-        return TK_STRING;
+        return TK_STRINGLIT;
       }
       case '.': {
         save_and_next(ls);
@@ -404,7 +405,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         else if (!isdigit(ls->current)) return '.';
         else {
           read_numeral(ls, seminfo);
-          return TK_NUMBER;
+          return TK_NUMBERLIT;
         }
       }
       case EOZ: {
@@ -418,7 +419,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
         }
         else if (isdigit(ls->current)) {
           read_numeral(ls, seminfo);
-          return TK_NUMBER;
+          return TK_NUMBERLIT;
         }
         else if (isalpha(ls->current) || ls->current == '_') {
           /* identifier or reserved word */
