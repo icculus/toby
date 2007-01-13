@@ -444,122 +444,8 @@ static void yindex (LexState *ls, expdesc *v) {
 }
 
 
-/*
-** {======================================================================
-** Rules for Constructors
-** =======================================================================
-*/
-
-
-struct ConsControl {
-  expdesc v;  /* last list item read */
-  expdesc *t;  /* table descriptor */
-  int nh;  /* total number of `record' elements */
-  int na;  /* total number of array elements */
-  int tostore;  /* number of array elements pending to be stored */
-};
-
-
-static void recfield (LexState *ls, struct ConsControl *cc) {
-  /* recfield -> (NAME | `['exp1`]') = exp1 */
-  FuncState *fs = ls->fs;
-  int reg = ls->fs->freereg;
-  expdesc key, val;
-  int rkkey;
-  if (ls->t.token == TK_NAME) {
-    luaY_checklimit(fs, cc->nh, MAX_INT, "items in a constructor");
-    checkname(ls, &key);
-  }
-  else  /* ls->t.token == '[' */
-    yindex(ls, &key);
-  cc->nh++;
-  checknext(ls, '=');
-  rkkey = luaK_exp2RK(fs, &key);
-  expr(ls, &val);
-  luaK_codeABC(fs, OP_SETTABLE, cc->t->u.s.info, rkkey, luaK_exp2RK(fs, &val));
-  fs->freereg = reg;  /* free registers */
-}
-
-
-static void closelistfield (FuncState *fs, struct ConsControl *cc) {
-  if (cc->v.k == VVOID) return;  /* there is no list item */
-  luaK_exp2nextreg(fs, &cc->v);
-  cc->v.k = VVOID;
-  if (cc->tostore == LFIELDS_PER_FLUSH) {
-    luaK_setlist(fs, cc->t->u.s.info, cc->na, cc->tostore);  /* flush */
-    cc->tostore = 0;  /* no more items pending */
-  }
-}
-
-
-static void lastlistfield (FuncState *fs, struct ConsControl *cc) {
-  if (cc->tostore == 0) return;
-  if (hasmultret(cc->v.k)) {
-    luaK_setmultret(fs, &cc->v);
-    luaK_setlist(fs, cc->t->u.s.info, cc->na, LUA_MULTRET);
-    cc->na--;  /* do not count last expression (unknown number of elements) */
-  }
-  else {
-    if (cc->v.k != VVOID)
-      luaK_exp2nextreg(fs, &cc->v);
-    luaK_setlist(fs, cc->t->u.s.info, cc->na, cc->tostore);
-  }
-}
-
-
-static void listfield (LexState *ls, struct ConsControl *cc) {
-  expr(ls, &cc->v);
-  luaY_checklimit(ls->fs, cc->na, MAXARG_Bx, "items in a constructor");
-  cc->na++;
-  cc->tostore++;
-}
-
-
-static void constructor (LexState *ls, expdesc *t) {
-  /* constructor -> ?? */
-  FuncState *fs = ls->fs;
-  int line = ls->linenumber;
-  int pc = luaK_codeABC(fs, OP_NEWTABLE, 0, 0, 0);
-  struct ConsControl cc;
-  cc.na = cc.nh = cc.tostore = 0;
-  cc.t = t;
-  init_exp(t, VRELOCABLE, pc);
-  init_exp(&cc.v, VVOID, 0);  /* no value (yet) */
-  luaK_exp2nextreg(ls->fs, t);  /* fix it at stack top (for gc) */
-  checknext(ls, '{');
-  do {
-    lua_assert(cc.v.k == VVOID || cc.tostore > 0);
-    if (ls->t.token == '}') break;
-    closelistfield(fs, &cc);
-    switch(ls->t.token) {
-      case TK_NAME: {  /* may be listfields or recfields */
-        luaX_lookahead(ls);
-        if (ls->lookahead.token != '=')  /* expression? */
-          listfield(ls, &cc);
-        else
-          recfield(ls, &cc);
-        break;
-      }
-      case '[': {  /* constructor_item -> recfield */
-        recfield(ls, &cc);
-        break;
-      }
-      default: {  /* constructor_part -> listfield */
-        listfield(ls, &cc);
-        break;
-      }
-    }
-  } while (testnext(ls, ',') || testnext(ls, ';'));
-  check_match(ls, '}', '{', line);
-  lastlistfield(fs, &cc);
-  SETARG_B(fs->f->code[pc], luaO_int2fb(cc.na)); /* set initial array size */
-  SETARG_C(fs->f->code[pc], luaO_int2fb(cc.nh));  /* set initial table size */
-}
-
-/* }====================================================================== */
-
 static void localstat (LexState *ls, int initialize);
-static int toby_intrinsic_type(int token);
+static int toby_intrinsic_type(int token, int allownothing);
 
 static void parlist (LexState *ls) {
   /* parlist -> [ param { `,' param } ] */
@@ -577,6 +463,11 @@ static void parlist (LexState *ls) {
   luaK_reserveregs(fs, fs->nactvar);  /* reserve register for parameters */
 }
 
+static void check_intrinsic_type(LexState *ls, int allownothing) {
+  const int c = toby_intrinsic_type(ls->t.token, allownothing);
+  check_condition(ls, c, "data type expected");
+}
+
 static void body (LexState *ls, expdesc *e, int line) {
   /* body ->  `(' parlist `)' chunk END */
   FuncState new_fs;
@@ -586,9 +477,13 @@ static void body (LexState *ls, expdesc *e, int line) {
   parlist(ls);
   checknext(ls, ')');
 
+  checknext(ls, TK_RETURNS);
+  check_intrinsic_type(ls, 1);
+  luaX_next(ls); /* !!! FIXME: store return type info somewhere... */
+
   /* Toby requires variable predeclaration at the start of a function. */
   /*  ...maybe we should change that... */
-  while (toby_intrinsic_type(ls->t.token))
+  while (toby_intrinsic_type(ls->t.token, 0))
     localstat(ls, 1);
 
   chunk(ls, 0);
@@ -631,19 +526,6 @@ static void funcargs (LexState *ls, expdesc *f) {
       check_match(ls, ')', '(', line);
       break;
     }
-
-    #if 0 /* not in Toby... */
-    case '{': {  /* funcargs -> constructor */
-      constructor(ls, &args);
-      break;
-    }
-    case TK_STRINGLIT: {  /* funcargs -> STRINGLIT */
-      codestring(ls, &args, ls->t.seminfo.ts);
-      luaX_next(ls);  /* must use `seminfo' before `next' */
-      break;
-    }
-    #endif
-
     default: {
       luaX_syntaxerror(ls, "function arguments expected");
       return;
@@ -715,18 +597,6 @@ static void primaryexp (LexState *ls, expdesc *v) {
         luaK_indexed(fs, v, &key);
         break;
       }
-
-      #if 0  /* not in Toby... */
-      case ':': {  /* `:' NAME funcargs */
-        expdesc key;
-        luaX_next(ls);
-        checkname(ls, &key);
-        luaK_self(fs, v, &key);
-        funcargs(ls, v);
-        break;
-      }
-      #endif
-
       case '(': case TK_STRINGLIT: case '{': {  /* funcargs */
         luaK_exp2nextreg(fs, v);
         funcargs(ls, v);
@@ -749,10 +619,6 @@ static void simpleexp (LexState *ls, expdesc *v) {
     }
     case TK_STRINGLIT: {
       codestring(ls, v, ls->t.seminfo.ts);
-      break;
-    }
-    case TK_NIL: {
-      init_exp(v, VNIL, 0);
       break;
     }
     case TK_TRUE: {
@@ -880,7 +746,7 @@ static int block_follow (int token) {
 }
 
 
-static int toby_intrinsic_type(int token)
+static int toby_intrinsic_type(int token, int allownothing)
 {
   switch (token) {
     case TK_NUMBER:
@@ -888,6 +754,8 @@ static int toby_intrinsic_type(int token)
     case TK_BOOLEAN:
     /* !!! FIXME: array */
       return 1;
+    case TK_NOTHING:
+      return allownothing ? 1 : 0;
     default: return 0;
   }
 }
@@ -1182,9 +1050,8 @@ static int statement (LexState *ls) {
    *  function declaration. Mainline code goes into a function called "main",
    *  like in C.
    */
-  if ((!ls->infunc) && (ls->t.token != TK_FUNCTION)) {
-    error_expected(ls, TK_FUNCTION);
-  }
+  if (!ls->infunc)
+    check(ls, TK_FUNCTION);
 
   switch (ls->t.token) {
     case TK_IF: {  /* stat -> ifstat */
