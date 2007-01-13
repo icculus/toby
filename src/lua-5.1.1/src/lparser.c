@@ -248,8 +248,21 @@ static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {
 static void singlevar (LexState *ls, expdesc *var) {
   TString *varname = str_checkname(ls);
   FuncState *fs = ls->fs;
-  if (singlevaraux(fs, varname, var, 1) == VGLOBAL)
-    var->u.s.info = luaK_stringK(fs, varname);  /* info points to global name */
+  if (singlevaraux(fs, varname, var, 1) == VGLOBAL) {
+    /*
+     * Toby requires predeclaration. If there isn't a global already, it's
+     *  an error here. Everything you declare in Toby is local to some scope,
+     *  so the global table is mostly just built-in functions provided by
+     *  TurtleSpace in native code.
+     */
+    lua_getglobal(ls->L, getstr(varname));
+    int missing = lua_isnil(ls->L, -1);
+    lua_pop(ls->L, 1);
+    if (missing) luaX_syntaxerror(ls, "undefined symbol");
+
+    /* Found non-nil value in the global table, so it's an existing global. */
+    var->u.s.info = luaK_stringK(fs, varname); /* info points to global name */
+  }
 }
 
 
