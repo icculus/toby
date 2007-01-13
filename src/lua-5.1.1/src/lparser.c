@@ -50,7 +50,7 @@ typedef struct BlockCnt {
 /*
 ** prototypes for recursive non-terminal functions
 */
-static void chunk (LexState *ls);
+static void chunk (LexState *ls, int mainline);
 static void expr (LexState *ls, expdesc *v);
 
 
@@ -245,8 +245,8 @@ static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {
 }
 
 
-static void singlevar (LexState *ls, expdesc *var) {
-  TString *varname = str_checkname(ls);
+static void lookupvar(LexState *ls, TString *varname, expdesc *var)
+{
   FuncState *fs = ls->fs;
   if (singlevaraux(fs, varname, var, 1) == VGLOBAL) {
     /*
@@ -266,6 +266,10 @@ static void singlevar (LexState *ls, expdesc *var) {
     /* Found non-nil value in the global table, so it's an existing global. */
     var->u.s.info = luaK_stringK(fs, varname); /* info points to global name */
   }
+}
+
+static void singlevar (LexState *ls, expdesc *var) {
+  lookupvar(ls, str_checkname(ls), var);
 }
 
 
@@ -404,7 +408,7 @@ Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
   open_func(&lexstate, &funcstate);
   funcstate.f->is_vararg = VARARG_ISVARARG;  /* main func. is always vararg */
   luaX_next(&lexstate);  /* read first token */
-  chunk(&lexstate);
+  chunk(&lexstate, 1);
   check(&lexstate, TK_EOS);
   close_func(&lexstate);
   lua_assert(funcstate.prev == NULL);
@@ -587,7 +591,7 @@ static void body (LexState *ls, expdesc *e, int line) {
   while (toby_intrinsic_type(ls->t.token))
     localstat(ls, 1);
 
-  chunk(ls);
+  chunk(ls, 0);
   new_fs.f->lastlinedefined = ls->linenumber;
   check_match(ls, TK_ENDFUNCTION, TK_FUNCTION, line);
   close_func(ls);
@@ -627,6 +631,8 @@ static void funcargs (LexState *ls, expdesc *f) {
       check_match(ls, ')', '(', line);
       break;
     }
+
+    #if 0 /* not in Toby... */
     case '{': {  /* funcargs -> constructor */
       constructor(ls, &args);
       break;
@@ -636,6 +642,8 @@ static void funcargs (LexState *ls, expdesc *f) {
       luaX_next(ls);  /* must use `seminfo' before `next' */
       break;
     }
+    #endif
+
     default: {
       luaX_syntaxerror(ls, "function arguments expected");
       return;
@@ -707,6 +715,8 @@ static void primaryexp (LexState *ls, expdesc *v) {
         luaK_indexed(fs, v, &key);
         break;
       }
+
+      #if 0  /* not in Toby... */
       case ':': {  /* `:' NAME funcargs */
         expdesc key;
         luaX_next(ls);
@@ -715,6 +725,8 @@ static void primaryexp (LexState *ls, expdesc *v) {
         funcargs(ls, v);
         break;
       }
+      #endif
+
       case '(': case TK_STRINGLIT: case '{': {  /* funcargs */
         luaK_exp2nextreg(fs, v);
         funcargs(ls, v);
@@ -886,7 +898,7 @@ static void block (LexState *ls) {
   FuncState *fs = ls->fs;
   BlockCnt bl;
   enterblock(fs, &bl, 0);
-  chunk(ls);
+  chunk(ls, 0);
   lua_assert(bl.breaklist == NO_JUMP);
   leaveblock(fs);
 }
@@ -1075,6 +1087,11 @@ static void ifstat (LexState *ls, int line) {
 static void localfunc (LexState *ls) {
   expdesc v, b;
   FuncState *fs = ls->fs;
+
+  /* No nested functions in Toby. */
+  check_condition(ls, !ls->infunc, "function inside function");
+
+  ls->infunc = 1;
   new_localvar(ls, str_checkname(ls), 0);
   init_exp(&v, VLOCAL, fs->freereg);
   luaK_reserveregs(fs, 1);
@@ -1083,6 +1100,7 @@ static void localfunc (LexState *ls) {
   luaK_storevar(fs, &v, &b);
   /* debug information will only see the variable after this point! */
   getlocvar(fs, fs->nactvar - 1).startpc = fs->pc;
+  ls->infunc = 0;
 }
 
 
@@ -1158,6 +1176,16 @@ static void retstat (LexState *ls) {
 
 static int statement (LexState *ls) {
   int line = ls->linenumber;  /* may be needed for error messages */
+
+  /*
+   * Can't have code outside of a static function in Toby other than a
+   *  function declaration. Mainline code goes into a function called "main",
+   *  like in C.
+   */
+  if ((!ls->infunc) && (ls->t.token != TK_FUNCTION)) {
+    error_expected(ls, TK_FUNCTION);
+  }
+
   switch (ls->t.token) {
     case TK_IF: {  /* stat -> ifstat */
       ifstat(ls, line);
@@ -1194,7 +1222,7 @@ static int statement (LexState *ls) {
 }
 
 
-static void chunk (LexState *ls) {
+static void chunk (LexState *ls, int mainline) {
   /* chunk -> { stat [`;'] } */
   int islast = 0;
   enterlevel(ls);
@@ -1205,6 +1233,25 @@ static void chunk (LexState *ls) {
                ls->fs->freereg >= ls->fs->nactvar);
     ls->fs->freereg = ls->fs->nactvar;  /* free registers */
   }
+
+  /* This is the mainline chunk, so tuck a call to user's main() at the end. */
+  if (mainline) {
+    /* largely cut-and-pasted from funcargs(). This could be cleaned up... */
+    const int line = ls->linenumber;
+    const char *fn = TOBY_MAINLINE_FNNAME;
+    FuncState *fs = ls->fs;
+    int base = 0;
+    int nparams = 0;
+    expdesc f;
+    lookupvar(ls, luaX_newstring(ls, fn, strlen(fn)), &f);
+    luaK_exp2nextreg(fs, &f);
+    base = f.u.s.info;  /* base register for call */
+    nparams = fs->freereg - (base+1);
+    init_exp(&f, VCALL, luaK_codeABC(fs, OP_CALL, base, nparams+1, 2));
+    luaK_fixline(fs, line);
+    ls->fs->freereg = ls->fs->nactvar;  /* free registers */
+  }
+
   leavelevel(ls);
 }
 

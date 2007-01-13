@@ -35,6 +35,8 @@ enum RESERVED {
   TK_NAME, TK_STRINGLIT, TK_EOS
 };
 
+#define TOBY_MAINLINE_FNNAME "main"
+
 /* number of reserved words */
 #define NUM_RESERVED	(cast(int, TK_WHILE-FIRST_RESERVED+1))
 
@@ -67,6 +69,7 @@ typedef struct LexState {
   Mbuffer *buff;  /* buffer for tokens */
   TString *source;  /* current source name */
   char decpoint;  /* locale decimal point */
+  int infunc;
 } LexState;
 
 
