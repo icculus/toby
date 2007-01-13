@@ -258,7 +258,10 @@ static void singlevar (LexState *ls, expdesc *var) {
     lua_getglobal(ls->L, getstr(varname));
     int missing = lua_isnil(ls->L, -1);
     lua_pop(ls->L, 1);
-    if (missing) luaX_syntaxerror(ls, "undefined symbol");
+    if (missing) {
+      luaX_syntaxerror(ls,
+        luaO_pushfstring(ls->L, "undefined symbol " LUA_QS, getstr(varname)));
+    }
 
     /* Found non-nil value in the global table, so it's an existing global. */
     var->u.s.info = luaK_stringK(fs, varname); /* info points to global name */
