@@ -824,25 +824,14 @@ static void block (LexState *ls) {
   leaveblock(fs);
 }
 
-
-/*
-** structure to chain all variables in the left-hand side of an
-** assignment
-*/
-struct LHS_assign {
-  struct LHS_assign *prev;
-  expdesc v;  /* variable (global, local, upvalue, or indexed) */
-};
-
-static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
+static void assignment (LexState *ls, expdesc *v) {
   /* Toby form: var = expr */
   expdesc e;
-  lua_assert(nvars == 1);  /* this can be != 1 in Lua. */
-  check_condition(ls, VLOCAL <= lh->v.k && lh->v.k <= VINDEXED, "syntax error");
+  check_condition(ls, VLOCAL <= v->k && v->k <= VINDEXED, "syntax error");
   checknext(ls, '=');
   expr(ls, &e);
   luaK_setoneret(ls->fs, &e);  /* close last expression */
-  luaK_storevar(ls->fs, &lh->v, &e);
+  luaK_storevar(ls->fs, v, &e);
 }
 
 
@@ -901,8 +890,8 @@ static int exp1 (LexState *ls) {
 static void forstat (LexState *ls, int line) {
   /* forstat -> FOR var = exp1 [TO|DOWNTO] exp1 [STEP exp1] block ENDFOR */
   FuncState *fs = ls->fs;
-  struct LHS_assign lhsassign;
   BinOpr op;
+  expdesc v;
   expdesc v1;
   expdesc v1copy;
   expdesc v1copy2;
@@ -915,12 +904,11 @@ static void forstat (LexState *ls, int line) {
 
   luaX_next(ls);  /* skip `for' */
 
-  singlevar(ls, &lhsassign.v);
-  memcpy(&v1, &lhsassign.v, sizeof (expdesc));  /* save for later... */
+  singlevar(ls, &v);
+  memcpy(&v1, &v, sizeof (expdesc));  /* save for later... */
   memcpy(&v1copy, &v1, sizeof (expdesc));  /* for when v1 gets mangled... */
   memcpy(&v1copy2, &v1, sizeof (expdesc));  /* and so on... */
-  lhsassign.prev = NULL;
-  assignment(ls, &lhsassign, 1);
+  assignment(ls, &v);
 
   if (testnext(ls, TK_TO)) {
     defaultstep = 1;
@@ -1045,7 +1033,11 @@ static void localstat (LexState *ls, int initialize) {
   luaX_next(ls);  /* skip data type. */
   new_localvar(ls, str_checkname(ls), 0);
   if (initialize) {
-    default_var_value(ls, token, &e);
+    if (testnext(ls, '=')) {
+      expr(ls, &e);
+    } else {
+      default_var_value(ls, token, &e);
+    }
     adjust_assign(ls, 1, 1, &e);
   }
   adjustlocalvars(ls, 1);
@@ -1053,23 +1045,27 @@ static void localstat (LexState *ls, int initialize) {
 
 static void globalvarstat (LexState *ls) {
   expdesc v, e;
-  default_var_value(ls, ls->t.token, &e);
+  int token = ls->t.token;
   luaX_next(ls);
   lookupvar(ls, str_checkname(ls), &v, 1);
   lua_assert(v.k == VGLOBAL);  /* All functions are globals in Toby. */
-  luaK_storevar(ls->fs, &v, &e);
+  if (ls->t.token == '=') {
+    assignment(ls, &v);
+  } else {
+    default_var_value(ls, token, &e);
+    luaK_storevar(ls->fs, &v, &e);
+  }
 }
 
 static void exprstat (LexState *ls) {
   /* stat -> func | assignment */
   FuncState *fs = ls->fs;
-  struct LHS_assign v;
-  primaryexp(ls, &v.v);
-  if (v.v.k == VCALL)  /* stat -> func */
-    SETARG_C(getcode(fs, &v.v), 1);  /* call statement uses no results */
+  expdesc v;
+  primaryexp(ls, &v);
+  if (v.k == VCALL)  /* stat -> func */
+    SETARG_C(getcode(fs, &v), 1);  /* call statement uses no results */
   else {  /* stat -> assignment */
-    v.prev = NULL;
-    assignment(ls, &v, 1);
+    assignment(ls, &v);
   }
 }
 
