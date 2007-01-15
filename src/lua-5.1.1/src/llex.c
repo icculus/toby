@@ -138,6 +138,10 @@ static void inclinenumber (LexState *ls) {
 
 
 void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source) {
+  lua_newtable(L);  /* build table for resolving Toby functions at the end. */
+  ls->to_resolve_table = lua_gettop(L);
+  lua_newtable(L);  /* build table for resolving Toby functions at the end. */
+  ls->resolved_table = lua_gettop(L);
   ls->decpoint = '.';
   ls->L = L;
   ls->lookahead.token = TK_EOS;  /* no look-ahead token */

@@ -245,31 +245,56 @@ static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {
 }
 
 
-static void lookupvar(LexState *ls, TString *varname, expdesc *var)
+static void lookupvar(LexState *ls, TString *varname, expdesc *var,
+                      int create)
 {
   FuncState *fs = ls->fs;
+  int add_to_table = ls->resolved_table;
+  int already_added = 0;
+  lua_State *L = ls->L;
+
   if (singlevaraux(fs, varname, var, 1) == VGLOBAL) {
-    /*
-     * Toby requires predeclaration. If there isn't a global already, it's
-     *  an error here. Everything you declare in Toby is local to some scope,
-     *  so the global table is mostly just built-in functions provided by
-     *  TurtleSpace in native code.
-     */
+    /* see if it's an existing global provided in native code... */
     lua_getglobal(ls->L, getstr(varname));
     int missing = lua_isnil(ls->L, -1);
     lua_pop(ls->L, 1);
-    if (missing) {
-      luaX_syntaxerror(ls,
-        luaO_pushfstring(ls->L, "undefined symbol " LUA_QS, getstr(varname)));
+
+    if (create) {
+      int on_line = 0;
+      if (missing) {
+        /* see if it's an existing symbol in the user's program. */
+        lua_getfield(L, ls->resolved_table, getstr(varname));
+        missing = lua_isnil(L, -1);
+        if (!missing)
+            on_line = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+      }
+      if (!missing) {
+        luaX_syntaxerror(ls,
+          luaO_pushfstring(ls->L, LUA_QS "already defined on line %d", getstr(varname), on_line));
+      }
+    } else {   /* add it to a table to resolve after parsing... */
+      if (missing)
+        add_to_table = ls->to_resolve_table;
+      else
+        already_added = 1;
     }
 
-    /* Found non-nil value in the global table, so it's an existing global. */
+    if (!already_added) {
+      lua_getfield(L, add_to_table, getstr(varname));
+      already_added = !lua_isnil(L, -1);
+      lua_pop(L, 1);
+      if (!already_added) {
+        lua_pushinteger(L, ls->linenumber);
+        lua_setfield(L, add_to_table, getstr(varname));
+      }
+    }
     var->u.s.info = luaK_stringK(fs, varname); /* info points to global name */
   }
 }
 
 static void singlevar (LexState *ls, expdesc *var) {
-  lookupvar(ls, str_checkname(ls), var);
+  lookupvar(ls, str_checkname(ls), var, 0);
 }
 
 
@@ -399,6 +424,30 @@ static void close_func (LexState *ls) {
   if (fs) anchor_token(ls);
 }
 
+static void resolve_toby_functions(LexState *ls) {
+  lua_State *L = ls->L;
+  const int to_resolve_table = ls->to_resolve_table;
+  const int resolved_table = ls->resolved_table;
+  int missing = 0;
+
+  lua_pushnil(L);  /* first key for iteration... */
+  while (lua_next(L, to_resolve_table)) {  /* replaces key, pushes value. */
+    const char *sym = lua_tostring(L, -2);
+    const int on_line = lua_tointeger(L, -1);
+    lua_getfield(L, resolved_table, sym);
+    missing = lua_isnil(L, -1);
+    lua_pop(L, 1);
+
+    if (missing) {
+      lua_pop(L, 2);  /* remove iterator value and key. */
+      luaX_syntaxerror(ls,
+        luaO_pushfstring(ls->L, "undefined symbol " LUA_QS " on line %d", sym, on_line));
+    }
+
+    lua_pop(L, 1);  /* remove value, keep key for next iteration. */
+  }
+}
+
 
 Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
   struct LexState lexstate;
@@ -411,6 +460,10 @@ Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
   chunk(&lexstate, 1);
   check(&lexstate, TK_EOS);
   close_func(&lexstate);
+  resolve_toby_functions(&lexstate);  /* we're less dynamic than Lua.  :) */
+  lua_assert(lexstate.to_resolve_table == lua_gettop(L)-1);
+  lua_assert(lexstate.resolved_table == lua_gettop(L));
+  lua_pop(L, 2);
   lua_assert(funcstate.prev == NULL);
   lua_assert(funcstate.f->nups == 0);
   lua_assert(lexstate.fs == NULL);
@@ -597,7 +650,7 @@ static void primaryexp (LexState *ls, expdesc *v) {
         luaK_indexed(fs, v, &key);
         break;
       }
-      case '(': case TK_STRINGLIT: case '{': {  /* funcargs */
+      case '(': {  /* funcargs */
         luaK_exp2nextreg(fs, v);
         funcargs(ls, v);
         break;
@@ -952,48 +1005,60 @@ static void ifstat (LexState *ls, int line) {
 }
 
 
-static void localfunc (LexState *ls) {
+static void funcstat (LexState *ls, int line) {
+  /* funcstat -> FUNCTION funcname body */
   expdesc v, b;
-  FuncState *fs = ls->fs;
 
   /* No nested functions in Toby. */
   check_condition(ls, !ls->infunc, "function inside function");
 
   ls->infunc = 1;
-  new_localvar(ls, str_checkname(ls), 0);
-  init_exp(&v, VLOCAL, fs->freereg);
-  luaK_reserveregs(fs, 1);
-  adjustlocalvars(ls, 1);
-  body(ls, &b, ls->linenumber);
-  luaK_storevar(fs, &v, &b);
-  /* debug information will only see the variable after this point! */
-  getlocvar(fs, fs->nactvar - 1).startpc = fs->pc;
+  luaX_next(ls);  /* skip FUNCTION */
+  lookupvar(ls, str_checkname(ls), &v, 1);
+  lua_assert(v.k == VGLOBAL);  /* All functions are globals in Toby. */
+  body(ls, &b, line);
+  luaK_storevar(ls->fs, &v, &b);
+  luaK_fixline(ls->fs, line);  /* definition `happens' in the first line */
   ls->infunc = 0;
+}
+
+static void default_var_value (LexState *ls, int token, expdesc *e)
+{
+  /* Initialize variables with a sane default. */
+  if (token == TK_NUMBER) {
+    init_exp(e, VKNUM, 0);
+    e->u.nval = 0;
+  } else if (token == TK_BOOLEAN) {
+    init_exp(e, VFALSE, 0);
+  } else if (token == TK_STRING) {
+    codestring(ls, e, luaX_newstring(ls, "", 0));
+  } else {
+    luaX_syntaxerror(ls, "data type expected");
+  }
 }
 
 
 static void localstat (LexState *ls, int initialize) {
   /* stat -> INTRINSICTYPE NAME */
   expdesc e;
-
-  /* Initialize variables with a sane default. */
-  if (testnext(ls, TK_NUMBER)) {
-    init_exp(&e, VKNUM, 0);
-    e.u.nval = 0;
-  } else if (testnext(ls, TK_BOOLEAN)) {
-    init_exp(&e, VFALSE, 0);
-  } else if (testnext(ls, TK_STRING)) {
-    codestring(ls, &e, luaX_newstring(ls, "", 0));
-  } else {
-    luaX_syntaxerror(ls, "data type expected");
-  }
-
+  int token = ls->t.token;
+  luaX_next(ls);  /* skip data type. */
   new_localvar(ls, str_checkname(ls), 0);
-  if (initialize)
+  if (initialize) {
+    default_var_value(ls, token, &e);
     adjust_assign(ls, 1, 1, &e);
+  }
   adjustlocalvars(ls, 1);
 }
 
+static void globalvarstat (LexState *ls) {
+  expdesc v, e;
+  default_var_value(ls, ls->t.token, &e);
+  luaX_next(ls);
+  lookupvar(ls, str_checkname(ls), &v, 1);
+  lua_assert(v.k == VGLOBAL);  /* All functions are globals in Toby. */
+  luaK_storevar(ls->fs, &v, &e);
+}
 
 static void exprstat (LexState *ls) {
   /* stat -> func | assignment */
@@ -1067,9 +1132,7 @@ static int statement (LexState *ls) {
       return 0;
     }
     case TK_FUNCTION: {
-      /* All user functions are "local" in Toby. */
-      luaX_next(ls);  /* skip FUNCTION */
-      localfunc(ls);  /* stat -> funcstat */
+      funcstat(ls, line);  /* stat -> funcstat */
       return 0;
     }
     case TK_RETURN: {  /* stat -> retstat */
@@ -1093,6 +1156,11 @@ static void chunk (LexState *ls, int mainline) {
   /* chunk -> { stat [`;'] } */
   int islast = 0;
   enterlevel(ls);
+
+  /* Toby requires global variable predeclaration at the start of the code. */
+  while (toby_intrinsic_type(ls->t.token, 0))
+    globalvarstat(ls);
+
   while (!islast && !block_follow(ls->t.token)) {
     islast = statement(ls);
     testnext(ls, ';');
@@ -1110,7 +1178,7 @@ static void chunk (LexState *ls, int mainline) {
     int base = 0;
     int nparams = 0;
     expdesc f;
-    lookupvar(ls, luaX_newstring(ls, fn, strlen(fn)), &f);
+    lookupvar(ls, luaX_newstring(ls, fn, strlen(fn)), &f, 0);
     luaK_exp2nextreg(fs, &f);
     base = f.u.s.info;  /* base register for call */
     nparams = fs->freereg - (base+1);

@@ -69,7 +69,9 @@ typedef struct LexState {
   Mbuffer *buff;  /* buffer for tokens */
   TString *source;  /* current source name */
   char decpoint;  /* locale decimal point */
-  int infunc;
+  int infunc; /* non-zero if we're parsing a function body, 0 if we're not. */
+  int to_resolve_table;  /* pos of table of to-be-resolved on Lua stack. */
+  int resolved_table;  /* pos of table of resolved on Lua stack. */
 } LexState;
 
 
