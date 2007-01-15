@@ -14,27 +14,74 @@
 #include "lauxlib.h"
 
 /* !!! FIXME: temporary hack. */
-#define LUAHOOK_INT(sym) \
+#define LUAHOOK(sym) \
     static int luahook_##sym(lua_State *L) { \
-        const int i1 = luaL_checkinteger(L, 1); \
-        printf("\t%s(%d)\n", #sym, i1); \
+        printf("\t%s()\n", #sym); \
         return 0; \
     }
 
-LUAHOOK_INT(goForward)
-LUAHOOK_INT(turnRight)
-LUAHOOK_INT(turnLeft)
-LUAHOOK_INT(setPenColor)
+#define LUAHOOK_NUM(sym) \
+    static int luahook_##sym(lua_State *L) { \
+        const lua_Number n1 = luaL_checknumber(L, 1); \
+        printf("\t%s(%f)\n", #sym, (float) n1); \
+        return 0; \
+    }
+
+#define LUAHOOK_NUM_NUM(sym) \
+    static int luahook_##sym(lua_State *L) { \
+        const lua_Number n1 = luaL_checknumber(L, 1); \
+        const lua_Number n2 = luaL_checknumber(L, 2); \
+        printf("\t%s(%f, %f)\n", #sym, (float) n1, (float) n2); \
+        return 0; \
+    }
+
+LUAHOOK(showTurtle)
+LUAHOOK(hideTurtle)
+LUAHOOK(enableFence)
+LUAHOOK(disableFence)
+LUAHOOK(random)
+LUAHOOK(cleanupTurtleSpace)
+LUAHOOK(setPenUp)
+LUAHOOK(setPenDown)
+LUAHOOK(addTurtle)
+LUAHOOK_NUM(useTurtle)
+LUAHOOK_NUM(round)
+LUAHOOK_NUM(pause)
+LUAHOOK_NUM(setAngle)
+LUAHOOK_NUM(goForward)
+LUAHOOK_NUM(goBackward)
+LUAHOOK_NUM(turnRight)
+LUAHOOK_NUM(turnLeft)
+LUAHOOK_NUM(setPenColor)
+LUAHOOK_NUM(setTurtleXY)
+#undef LUAHOOK
+#undef LUAHOOK_NUM
+#undef LUAHOOK_NUM_NUM
 
 static void add_toby_functions(lua_State *L)
 {
     #define SET_LUAHOOK(sym) \
         lua_pushcfunction(L, luahook_##sym); \
         lua_setglobal(L, #sym);
+    SET_LUAHOOK(showTurtle)
+    SET_LUAHOOK(hideTurtle)
+    SET_LUAHOOK(enableFence)
+    SET_LUAHOOK(disableFence)
+    SET_LUAHOOK(random)
+    SET_LUAHOOK(cleanupTurtleSpace)
+    SET_LUAHOOK(setPenUp)
+    SET_LUAHOOK(setPenDown)
+    SET_LUAHOOK(addTurtle)
+    SET_LUAHOOK(useTurtle)
+    SET_LUAHOOK(round)
+    SET_LUAHOOK(pause)
+    SET_LUAHOOK(setAngle)
     SET_LUAHOOK(goForward);
+    SET_LUAHOOK(goBackward);
     SET_LUAHOOK(turnRight);
     SET_LUAHOOK(turnLeft);
     SET_LUAHOOK(setPenColor);
+    SET_LUAHOOK(setTurtleXY);
     #undef SET_LUAHOOK
 }
 
