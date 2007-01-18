@@ -497,7 +497,7 @@ static void yindex (LexState *ls, expdesc *v) {
 }
 
 
-static void localstat (LexState *ls, int initialize);
+static void vardeclstat (LexState *ls, int global, int initialize);
 static int toby_intrinsic_type(int token, int allownothing);
 
 static void parlist (LexState *ls) {
@@ -508,7 +508,7 @@ static void parlist (LexState *ls) {
   f->is_vararg = 0;
   if (ls->t.token != ')') {  /* is `parlist' not empty? */
     do {
-      localstat(ls, 0);
+      vardeclstat(ls, 0, 0);
       nparams++;
     } while (testnext(ls, ','));
   }
@@ -537,7 +537,7 @@ static void body (LexState *ls, expdesc *e, int line) {
   /* Toby requires variable predeclaration at the start of a function. */
   /*  ...maybe we should change that... */
   while (toby_intrinsic_type(ls->t.token, 0))
-    localstat(ls, 1);
+    vardeclstat(ls, 0, 1);
 
   chunk(ls, 0);
   new_fs.f->lastlinedefined = ls->linenumber;
@@ -805,7 +805,7 @@ static int toby_intrinsic_type(int token, int allownothing)
     case TK_NUMBER:
     case TK_STRING:
     case TK_BOOLEAN:
-    /* !!! FIXME: array */
+    case TK_ARRAY:
       return 1;
     case TK_NOTHING:
       return allownothing ? 1 : 0;
@@ -1010,8 +1010,7 @@ static void funcstat (LexState *ls, int line) {
   ls->infunc = 0;
 }
 
-static void default_var_value (LexState *ls, int token, expdesc *e)
-{
+static void default_var_value (LexState *ls, int token, expdesc *e) {
   /* Initialize variables with a sane default. */
   if (token == TK_NUMBER) {
     init_exp(e, VKNUM, 0);
@@ -1025,37 +1024,168 @@ static void default_var_value (LexState *ls, int token, expdesc *e)
   }
 }
 
-
-static void localstat (LexState *ls, int initialize) {
-  /* stat -> INTRINSICTYPE NAME */
-  expdesc e;
-  int token = ls->t.token;
-  luaX_next(ls);  /* skip data type. */
-  new_localvar(ls, str_checkname(ls), 0);
-  if (initialize) {
-    if (testnext(ls, '=')) {
-      expr(ls, &e);
-    } else {
-      default_var_value(ls, token, &e);
-    }
-    adjust_assign(ls, 1, 1, &e);
-  }
-  adjustlocalvars(ls, 1);
+static int check_int_next(LexState *ls) {
+    /* !!! FIXME: check for floating point... */
+    int retval = (int) ls->t.seminfo.r;
+    checknext(ls, TK_NUMBERLIT);
+    return retval;
 }
 
+static void build_array_initializer2(LexState *ls, int datatype) {
+  if (testnext(ls, '[')) {
+    FuncState *fs = ls->fs;
+    int base = fs->freereg;
+    expdesc defval;
+    expdesc var;
+    BlockCnt bl1;
+    BlockCnt bl2;
+    int lo, hi;
+    int prep, endfor;
+
+    lo = check_int_next(ls);
+    checknext(ls, TK_TO);
+    hi = check_int_next(ls);
+    checknext(ls, ']');
+    /* !!! FIXME: change this error message. */
+    check_condition(ls, (lo <= hi), "array is backwards");
+
+    /* reserve a register for this dimension of the array... */
+    enterblock(fs, &bl1, 1);  /* scope for declared variables */
+    new_localvarliteral(ls, "(a)" /*"(array register)"*/, 0);
+
+    /* Create an array in the register... */
+    luaK_codeABC(fs, OP_NEWTABLE, base, (hi - lo) + 1, 0);
+    luaK_reserveregs(fs, 1);
+    adjustlocalvars(ls, 1);
+
+    /*
+     * Build for-loop, enter level.
+     * Largely chopped from original Lua for loop parser... not sure how
+     *  much of this is needed, but OP_FORLOOP expects the locals, etc.
+     */
+    new_localvarliteral(ls, "(b)" /*"(for index)"*/, 0);
+    new_localvarliteral(ls, "(c)" /*"(for limit)"*/, 1);
+    new_localvarliteral(ls, "(d)" /*"(for step)"*/, 2);
+    new_localvarliteral(ls, "(e)" /*"(for local)"*/, 3);
+
+    luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, lo));
+    luaK_reserveregs(fs, 1);
+    luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, hi));
+    luaK_reserveregs(fs, 1);
+    luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, 1));
+    luaK_reserveregs(fs, 1);
+    adjustlocalvars(ls, 3);  /* control variables */
+
+    prep = luaK_codeAsBx(fs, OP_FORPREP, base+1, NO_JUMP);
+    enterblock(fs, &bl2, 0);  /* scope for declared variables */
+    adjustlocalvars(ls, 1);
+    luaK_reserveregs(fs, 1);
+
+    init_exp(&var, VINDEXED, base);
+    var.u.s.aux = base+4;
+
+    enterlevel(ls);
+
+    /* if token is TK_NAME, loop assigns default value to each index */
+    if (ls->t.token == TK_NAME) {
+      default_var_value(ls, datatype, &defval);
+      luaK_storevar(fs, &var, &defval);
+    } else {   /* otherwise, go deeper... */
+      build_array_initializer2(ls, datatype);
+      /* !!! FIXME: register (base+5) gets set in the recursion. Scary! */
+      luaK_codeABC(fs, OP_SETTABLE, base, base+4, base+5);
+    }
+
+    leavelevel(ls);
+    leaveblock(fs);  /* end of scope for declared variables */
+    luaK_patchtohere(fs, prep);
+    endfor = luaK_codeAsBx(fs, OP_FORLOOP, base+1, NO_JUMP);
+    luaK_patchlist(fs, endfor, prep+1);
+
+    leaveblock(fs);  /* end of scope for all of this. */
+  }
+}
+
+static void build_array_initializer(LexState *ls, int datatype, expdesc *e) {
+    check(ls, '[');
+    build_array_initializer2(ls, datatype);
+    /* !!! FIXME: This eats a free'd register! */
+    /* !!! FIXME: for now, we'll reserve it, so luaK_storevar() can free it. */
+    luaK_reserveregs(ls->fs, 1);
+    init_exp(e, VLOCAL, ls->fs->freereg-1);
+}
+
+static void vardeclstat (LexState *ls, int global, int initialize) {
+  /* stat -> INTRINSICTYPE NAME */
+  int isarray = 0;
+  expdesc v, e;
+  int datatype = ls->t.token;
+  luaX_next(ls);  /* skip data type. */
+
+  if (datatype == TK_ARRAY) {
+    isarray = 1;
+    checknext(ls, TK_OF);
+    datatype = ls->t.token;
+    luaX_next(ls);
+
+    if (initialize) {
+      build_array_initializer(ls, datatype, &e);
+    }
+  }
+
+  if (global) {
+    lookupvar(ls, str_checkname(ls), &v, 1);
+    lua_assert(v.k == VGLOBAL);
+  } else {
+    new_localvar(ls, str_checkname(ls), 0);
+  }
+
+  if (initialize) {
+    if (!isarray) {
+      if (testnext(ls, '=')) {
+        expr(ls, &e);
+      } else {
+        default_var_value(ls, datatype, &e);
+      }
+    }
+    if (global) {
+      luaK_storevar(ls->fs, &v, &e);
+    } else {
+      adjust_assign(ls, 1, 1, &e);
+    }
+  }
+
+  if (!global) {
+    adjustlocalvars(ls, 1);
+  }
+}
+
+#if 0
 static void globalvarstat (LexState *ls) {
   expdesc v, e;
-  int token = ls->t.token;
+  int datatype = ls->t.token;
   luaX_next(ls);
-  lookupvar(ls, str_checkname(ls), &v, 1);
-  lua_assert(v.k == VGLOBAL);  /* All functions are globals in Toby. */
-  if (ls->t.token == '=') {
-    assignment(ls, &v);
-  } else {
-    default_var_value(ls, token, &e);
+
+  if (datatype == TK_ARRAY) {
+    checknext(ls, TK_OF);
+    datatype = ls->t.token;
+    luaX_next(ls);
+    build_array_initializer(ls, datatype, &e);
+    lookupvar(ls, str_checkname(ls), &v, 1);
+    lua_assert(v.k == VGLOBAL);
     luaK_storevar(ls->fs, &v, &e);
+  } else {   /* scalar variable */
+    lookupvar(ls, str_checkname(ls), &v, 1);
+    lua_assert(v.k == VGLOBAL);
+    if (ls->t.token == '=') {
+      assignment(ls, &v);
+    } else {
+      default_var_value(ls, datatype, &e);
+      luaK_storevar(ls->fs, &v, &e);
+    }
   }
 }
+#endif
 
 static void exprstat (LexState *ls) {
   /* stat -> func | assignment */
@@ -1154,8 +1284,10 @@ static void chunk (LexState *ls, int mainline) {
   enterlevel(ls);
 
   /* Toby requires global variable predeclaration at the start of the code. */
-  while (toby_intrinsic_type(ls->t.token, 0))
-    globalvarstat(ls);
+  if (mainline) {
+    while (toby_intrinsic_type(ls->t.token, 0))
+      vardeclstat(ls, 1, 1);
+  }
 
   while (!islast && !block_follow(ls->t.token)) {
     islast = statement(ls);
