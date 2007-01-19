@@ -42,7 +42,7 @@ const char *const luaX_tokens [] = {
     "number", "string", "boolean", "array", "nothing",
     "return", "returns", "true", "until", "while",
     "..", "...", "==", ">=", "<=", "~=",
-    "<number>", "<name>", "<string>", "<eof>",
+    "<number>", "<name>", "<string>", "<eol>", "<eof>",
     NULL
 };
 
@@ -343,7 +343,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       case '\n':
       case '\r': {
         inclinenumber(ls);
-        continue;
+        return TK_EOL;
       }
       case '/': {
         next(ls);

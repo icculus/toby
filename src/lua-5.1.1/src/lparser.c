@@ -96,6 +96,10 @@ static void checknext (LexState *ls, int c) {
   luaX_next(ls);
 }
 
+static void skip_blank_lines (LexState *ls) {
+  while (testnext(ls, TK_EOL)) {}
+}
+
 
 #define check_condition(ls,c,msg)	{ if (!(c)) luaX_syntaxerror(ls, msg); }
 
@@ -516,15 +520,21 @@ static void body (LexState *ls, expdesc *e, int line) {
   checknext(ls, TK_RETURNS);
   check_intrinsic_type(ls, 1);
   luaX_next(ls); /* !!! FIXME: store return type info somewhere... */
+  checknext(ls, TK_EOL);
 
   /* Toby requires variable predeclaration at the start of a function. */
   /*  ...maybe we should change that... */
-  while (toby_intrinsic_type(ls->t.token, 0))
+  skip_blank_lines(ls);
+  while (toby_intrinsic_type(ls->t.token, 0)) {
     vardeclstat(ls, 0, 1);
+    checknext(ls, TK_EOL);
+    skip_blank_lines(ls);
+  }
 
   chunk(ls, 0);
   new_fs.f->lastlinedefined = ls->linenumber;
   check_match(ls, TK_ENDFUNCTION, TK_FUNCTION, line);
+  checknext(ls, TK_EOL);
   close_func(ls);
   pushclosure(ls, &new_fs, e);
 }
@@ -832,10 +842,12 @@ static void whilestat (LexState *ls, int line) {
   luaX_next(ls);  /* skip WHILE */
   whileinit = luaK_getlabel(fs);
   condexit = cond(ls);
+  checknext(ls, TK_EOL);
   enterblock(fs, &bl, 1);
   block(ls);
   luaK_patchlist(fs, luaK_jump(fs), whileinit);
   check_match(ls, TK_ENDWHILE, TK_WHILE, line);
+  checknext(ls, TK_EOL);
   leaveblock(fs);
   luaK_patchtohere(fs, condexit);  /* false conditions finish the loop */
 }
@@ -892,6 +904,7 @@ static void forstat (LexState *ls, int line) {
     luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, defaultstep));
     luaK_reserveregs(fs, 1);
   }
+  checknext(ls, TK_EOL);
 
   adjustlocalvars(ls, 2);  /* control variables */
 
@@ -908,6 +921,7 @@ static void forstat (LexState *ls, int line) {
   enterblock(fs, &bl, 1);
   block(ls);
   check_match(ls, TK_ENDFOR, TK_FOR, line);
+  checknext(ls, TK_EOL);
   op = OPR_ADD;
   luaK_infix(fs, OPR_ADD, &v1copy);
   init_exp(&v2, VLOCAL, base+1);  /* add step value to iterator variable. */
@@ -926,6 +940,7 @@ static int test_then_block (LexState *ls) {
   int condexit;
   luaX_next(ls);  /* skip IF or ELSEIF */
   condexit = cond(ls);
+  checknext(ls, TK_EOL);
   block(ls);  /* `then' part */
   return condexit;
 }
@@ -946,12 +961,14 @@ static void ifstat (LexState *ls, int line) {
     luaK_concat(fs, &escapelist, luaK_jump(fs));
     luaK_patchtohere(fs, flist);
     luaX_next(ls);  /* skip ELSE (after patch, for correct line info) */
+    checknext(ls, TK_EOL);
     block(ls);  /* `else' part */
   }
   else
     luaK_concat(fs, &escapelist, flist);
   luaK_patchtohere(fs, escapelist);
   check_match(ls, TK_ENDIF, TK_IF, line);
+  checknext(ls, TK_EOL);
 }
 
 
@@ -1139,28 +1156,27 @@ static void exprstat (LexState *ls) {
   else {  /* stat -> assignment */
     assignment(ls, &v);
   }
+  checknext(ls, TK_EOL);
 }
 
 
 static void retstat (LexState *ls) {
-  /* stat -> RETURN [expr] */
+  /* stat -> RETURN expr */
   FuncState *fs = ls->fs;
   expdesc e;
-  int first, nret;  /* registers with returned values */
+  int first;  /* registers with returned values */
   luaX_next(ls);  /* skip RETURN */
-  if (block_follow(ls->t.token))
-    first = nret = 0;  /* return no values */
-  else {
-    expr(ls, &e);  /* optional return values */
-    nret = 1;
-    first = luaK_exp2anyreg(fs, &e);
-  }
-  luaK_ret(fs, first, nret);
+  expr(ls, &e);  /* return values */
+  checknext(ls, TK_EOL);
+  first = luaK_exp2anyreg(fs, &e);
+  luaK_ret(fs, first, 1);
 }
 
 
 static int statement (LexState *ls) {
   int line = ls->linenumber;  /* may be needed for error messages */
+
+  skip_blank_lines(ls);
 
   /*
    * Can't have code outside of a static function in Toby other than a
@@ -1206,15 +1222,22 @@ static void chunk (LexState *ls, int mainline) {
 
   /* Toby requires global variable predeclaration at the start of the code. */
   if (mainline) {
-    while (toby_intrinsic_type(ls->t.token, 0))
+    skip_blank_lines(ls);
+    while (toby_intrinsic_type(ls->t.token, 0)) {
       vardeclstat(ls, 1, 1);
+      checknext(ls, TK_EOL);
+      skip_blank_lines(ls);
+    }
   }
+
+  skip_blank_lines(ls);
 
   while (!islast && !block_follow(ls->t.token)) {
     islast = statement(ls);
     lua_assert(ls->fs->f->maxstacksize >= ls->fs->freereg &&
                ls->fs->freereg >= ls->fs->nactvar);
     ls->fs->freereg = ls->fs->nactvar;  /* free registers */
+    skip_blank_lines(ls);
   }
 
   /* This is the mainline chunk, so tuck a call to user's main() at the end. */
