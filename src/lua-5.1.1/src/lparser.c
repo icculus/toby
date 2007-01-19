@@ -1148,7 +1148,7 @@ static void retstat (LexState *ls) {
   expdesc e;
   int first, nret;  /* registers with returned values */
   luaX_next(ls);  /* skip RETURN */
-  if (block_follow(ls->t.token) || ls->t.token == ';')
+  if (block_follow(ls->t.token))
     first = nret = 0;  /* return no values */
   else {
     expr(ls, &e);  /* optional return values */
@@ -1212,7 +1212,6 @@ static void chunk (LexState *ls, int mainline) {
 
   while (!islast && !block_follow(ls->t.token)) {
     islast = statement(ls);
-    testnext(ls, ';');
     lua_assert(ls->fs->f->maxstacksize >= ls->fs->freereg &&
                ls->fs->freereg >= ls->fs->nactvar);
     ls->fs->freereg = ls->fs->nactvar;  /* free registers */
