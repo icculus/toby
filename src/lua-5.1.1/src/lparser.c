@@ -1051,7 +1051,7 @@ static void build_array_initializer2(LexState *ls, int datatype) {
 
     /* reserve a register for this dimension of the array... */
     enterblock(fs, &bl1, 1);  /* scope for declared variables */
-    new_localvarliteral(ls, "(a)" /*"(array register)"*/, 0);
+    new_localvarliteral(ls, "(array register)", 0);
 
     /* Create an array in the register... */
     luaK_codeABC(fs, OP_NEWTABLE, base, (hi - lo) + 1, 0);
@@ -1063,10 +1063,10 @@ static void build_array_initializer2(LexState *ls, int datatype) {
      * Largely chopped from original Lua for loop parser... not sure how
      *  much of this is needed, but OP_FORLOOP expects the locals, etc.
      */
-    new_localvarliteral(ls, "(b)" /*"(for index)"*/, 0);
-    new_localvarliteral(ls, "(c)" /*"(for limit)"*/, 1);
-    new_localvarliteral(ls, "(d)" /*"(for step)"*/, 2);
-    new_localvarliteral(ls, "(e)" /*"(for local)"*/, 3);
+    new_localvarliteral(ls, "(for index)", 0);
+    new_localvarliteral(ls, "(for limit)", 1);
+    new_localvarliteral(ls, "(for step)", 2);
+    new_localvarliteral(ls, "(for local)", 3);
 
     luaK_codeABx(fs, OP_LOADK, fs->freereg, luaK_numberK(fs, lo));
     luaK_reserveregs(fs, 1);
