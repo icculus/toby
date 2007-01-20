@@ -283,7 +283,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
           int saweol = 0;
           do {
             next(ls);
-            if ((ls->current == '\r') || (ls->current == '\n')) {
+            if (currIsNewline(ls)) {
                 inclinenumber(ls);
                 saweol = 1;
             }
