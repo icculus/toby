@@ -212,74 +212,6 @@ static void read_numeral (LexState *ls, SemInfo *seminfo) {
 }
 
 
-static int skip_sep (LexState *ls) {
-  int count = 0;
-  int s = ls->current;
-  lua_assert(s == '[' || s == ']');
-  save_and_next(ls);
-  while (ls->current == '=') {
-    save_and_next(ls);
-    count++;
-  }
-  return (ls->current == s) ? count : (-count) - 1;
-}
-
-
-static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
-  int cont = 0;
-  (void)(cont);  /* avoid warnings when `cont' is not used */
-  save_and_next(ls);  /* skip 2nd `[' */
-  if (currIsNewline(ls))  /* string starts with a newline? */
-    inclinenumber(ls);  /* skip it */
-  for (;;) {
-    switch (ls->current) {
-      case EOZ:
-        luaX_lexerror(ls, (seminfo) ? "unfinished long string" :
-                                   "unfinished long comment", TK_EOS);
-        break;  /* to avoid warnings */
-#if defined(LUA_COMPAT_LSTR)
-      case '[': {
-        if (skip_sep(ls) == sep) {
-          save_and_next(ls);  /* skip 2nd `[' */
-          cont++;
-#if LUA_COMPAT_LSTR == 1
-          if (sep == 0)
-            luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
-#endif
-        }
-        break;
-      }
-#endif
-      case ']': {
-        if (skip_sep(ls) == sep) {
-          save_and_next(ls);  /* skip 2nd `]' */
-#if defined(LUA_COMPAT_LSTR) && LUA_COMPAT_LSTR == 2
-          cont--;
-          if (sep == 0 && cont >= 0) break;
-#endif
-          goto endloop;
-        }
-        break;
-      }
-      case '\n':
-      case '\r': {
-        save(ls, '\n');
-        inclinenumber(ls);
-        if (!seminfo) luaZ_resetbuffer(ls->buff);  /* avoid wasting space */
-        break;
-      }
-      default: {
-        if (seminfo) save_and_next(ls);
-        else next(ls);
-      }
-    }
-  } endloop:
-  if (seminfo)
-    seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + (2 + sep),
-                                     luaZ_bufflen(ls->buff) - 2*(2 + sep));
-}
-
-
 static void read_string (LexState *ls, int del, SemInfo *seminfo) {
   save_and_next(ls);
   while (ls->current != del) {
@@ -347,33 +279,35 @@ static int llex (LexState *ls, SemInfo *seminfo) {
       }
       case '/': {
         next(ls);
-        if (ls->current != '/') return '/';
-        /* else is a comment */
-        next(ls);
-        #if 0  // !!! FIXME: handle multiline comments.
-        if (ls->current == '[') {
-          int sep = skip_sep(ls);
-          luaZ_resetbuffer(ls->buff);  /* `skip_sep' may dirty the buffer */
-          if (sep >= 0) {
-            read_long_string(ls, NULL, sep);  /* long comment */
-            luaZ_resetbuffer(ls->buff);
-            continue;
-          }
+        if (ls->current == '*') {
+          int saweol = 0;
+          do {
+            next(ls);
+            if ((ls->current == '\r') || (ls->current == '\n')) {
+                inclinenumber(ls);
+                saweol = 1;
+            }
+            if (ls->current == '*') {
+                next(ls);
+                if (ls->current == '/') {
+                    next(ls);
+                    /* return EOL if we passed one */
+                    if (saweol)
+                        return TK_EOL;
+                    break;  /* otherwise, keep lexing... */
+                }
+            }
+          } while (ls->current != EOZ);
+          if (ls->current == EOZ)
+            luaX_lexerror(ls, "unfinished multiline comment", TK_EOS);
+        } else if (ls->current != '/') { /* not a comment at all. */
+            return '/';
+        } else { /* singleline comment */
+          do {
+            next(ls);
+          } while (!currIsNewline(ls) && ls->current != EOZ);
         }
-        #endif
-        /* else short comment */
-        while (!currIsNewline(ls) && ls->current != EOZ)
-          next(ls);
-        continue;
-      }
-      case '[': {
-        int sep = skip_sep(ls);
-        if (sep >= 0) {
-          read_long_string(ls, seminfo, sep);
-          return TK_STRINGLIT;
-        }
-        else if (sep == -1) return '[';
-        else luaX_lexerror(ls, "invalid long string delimiter", TK_STRINGLIT);
+        continue;   /* just in case... */
       }
       case '=': {
         next(ls);
