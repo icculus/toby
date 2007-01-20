@@ -298,8 +298,9 @@ static int llex (LexState *ls, SemInfo *seminfo) {
                 }
             }
           } while (ls->current != EOZ);
-          if (ls->current == EOZ)
+          if (ls->current == EOZ) {
             luaX_lexerror(ls, "unfinished multiline comment", TK_EOS);
+          }
         } else if (ls->current != '/') { /* not a comment at all. */
             return '/';
         } else { /* singleline comment */
