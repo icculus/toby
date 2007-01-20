@@ -430,6 +430,8 @@ static int llex (LexState *ls, SemInfo *seminfo) {
           /* identifier or reserved word */
           TString *ts;
           do {
+            /* force to lowercase, since Toby is case-insensitive. */
+            ls->current = tolower(ls->current);
             save_and_next(ls);
           } while (isalnum(ls->current) || ls->current == '_');
           ts = luaX_newstring(ls, luaZ_buffer(ls->buff),

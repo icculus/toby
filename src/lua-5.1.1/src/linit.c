@@ -66,66 +66,66 @@
         return 0; \
     }
 
-LUAHOOK(showTurtle)
-LUAHOOK(hideTurtle)
-LUAHOOK(homeTurtle)
-LUAHOOK(enableFence)
-LUAHOOK(disableFence)
-LUAHOOK_STR(drawString)
+LUAHOOK(showturtle)
+LUAHOOK(hideturtle)
+LUAHOOK(hometurtle)
+LUAHOOK(enablefence)
+LUAHOOK(disablefence)
+LUAHOOK_STR(drawstring)
 LUAHOOK_RETNUM(random)
-LUAHOOK_RETNUM(getTurtleX)
-LUAHOOK_RETNUM(getTurtleY)
-LUAHOOK_RETNUM(getTurtleSpaceWidth)
-LUAHOOK_RETNUM(getTurtleSpaceHeight)
-LUAHOOK(cleanupTurtleSpace)
-LUAHOOK(setPenUp)
-LUAHOOK(setPenDown)
-LUAHOOK(addTurtle)
-LUAHOOK_NUM_NUM_NUM(setPenColorRGB)
-LUAHOOK_NUM(useTurtle)
+LUAHOOK_RETNUM(getturtlex)
+LUAHOOK_RETNUM(getturtley)
+LUAHOOK_RETNUM(getturtlespacewidth)
+LUAHOOK_RETNUM(getturtlespaceheight)
+LUAHOOK(cleanupturtlespace)
+LUAHOOK(setpenup)
+LUAHOOK(setpendown)
+LUAHOOK(addturtle)
+LUAHOOK_NUM_NUM_NUM(setpencolorrgb)
+LUAHOOK_NUM(useturtle)
 LUAHOOK_NUM_RETNUM(round)
 LUAHOOK_NUM_RETNUM(stringlength)
 LUAHOOK_NUM(pause)
-LUAHOOK_NUM(setAngle)
-LUAHOOK_NUM(goForward)
-LUAHOOK_NUM(goBackward)
-LUAHOOK_NUM(turnRight)
-LUAHOOK_NUM(turnLeft)
-LUAHOOK_NUM(setPenColor)
-LUAHOOK_NUM_NUM(setTurtleXY)
+LUAHOOK_NUM(setangle)
+LUAHOOK_NUM(goforward)
+LUAHOOK_NUM(gobackward)
+LUAHOOK_NUM(turnright)
+LUAHOOK_NUM(turnleft)
+LUAHOOK_NUM(setpencolor)
+LUAHOOK_NUM_NUM(setturtlexy)
 
 static void add_toby_functions(lua_State *L)
 {
     #define SET_LUAHOOK(sym) \
         lua_pushcfunction(L, luahook_##sym); \
         lua_setglobal(L, #sym);
-    SET_LUAHOOK(showTurtle)
-    SET_LUAHOOK(hideTurtle)
-    SET_LUAHOOK(homeTurtle)
-    SET_LUAHOOK(enableFence)
-    SET_LUAHOOK(disableFence)
-    SET_LUAHOOK(drawString)
+    SET_LUAHOOK(showturtle)
+    SET_LUAHOOK(hideturtle)
+    SET_LUAHOOK(hometurtle)
+    SET_LUAHOOK(enablefence)
+    SET_LUAHOOK(disablefence)
+    SET_LUAHOOK(drawstring)
     SET_LUAHOOK(random)
-    SET_LUAHOOK(getTurtleSpaceWidth)
-    SET_LUAHOOK(getTurtleSpaceHeight)
-    SET_LUAHOOK(getTurtleX)
-    SET_LUAHOOK(getTurtleY)
-    SET_LUAHOOK(cleanupTurtleSpace)
-    SET_LUAHOOK(setPenColorRGB)
-    SET_LUAHOOK(setPenUp)
-    SET_LUAHOOK(setPenDown)
-    SET_LUAHOOK(addTurtle)
-    SET_LUAHOOK(useTurtle)
+    SET_LUAHOOK(getturtlespacewidth)
+    SET_LUAHOOK(getturtlespaceheight)
+    SET_LUAHOOK(getturtlex)
+    SET_LUAHOOK(getturtley)
+    SET_LUAHOOK(cleanupturtlespace)
+    SET_LUAHOOK(setpencolorrgb)
+    SET_LUAHOOK(setpenup)
+    SET_LUAHOOK(setpendown)
+    SET_LUAHOOK(addturtle)
+    SET_LUAHOOK(useturtle)
     SET_LUAHOOK(round)
     SET_LUAHOOK(stringlength)
     SET_LUAHOOK(pause)
-    SET_LUAHOOK(setAngle)
-    SET_LUAHOOK(goForward);
-    SET_LUAHOOK(goBackward);
-    SET_LUAHOOK(turnRight);
-    SET_LUAHOOK(turnLeft);
-    SET_LUAHOOK(setPenColor);
-    SET_LUAHOOK(setTurtleXY);
+    SET_LUAHOOK(setangle)
+    SET_LUAHOOK(goforward);
+    SET_LUAHOOK(gobackward);
+    SET_LUAHOOK(turnright);
+    SET_LUAHOOK(turnleft);
+    SET_LUAHOOK(setpencolor);
+    SET_LUAHOOK(setturtlexy);
     #undef SET_LUAHOOK
 }
 
