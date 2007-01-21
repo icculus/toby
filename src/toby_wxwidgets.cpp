@@ -27,6 +27,8 @@ public:
     inline void scaleXY(int &x, int &y) const;
     void onPaint(wxPaintEvent &evt);
 
+    enum { windowFlags=wxFULL_REPAINT_ON_RESIZE };
+
 private:
     int currentW;  // width for current run.
     int currentH;  // height for current run.
@@ -170,7 +172,7 @@ void TOBY_messageBox(const char *msg)
 // The rest of the application...
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
-    : wxWindow(parent, wxID_ANY)
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, windowFlags)
     , currentW(1)
     , currentH(1)
     , backing(NULL)
