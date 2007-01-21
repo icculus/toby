@@ -12,29 +12,30 @@
 // Interfaces ...
 
 // TurtleSpace is the canvas we draw on...it manages a backing store for
-//  repaints, if necessary for a given wxWidgets target, and handles rescaling
+//  repaints, if necessary for a given wxWidgets target, and handles
 //  the canvas if the window resizes.
 class TurtleSpace : public wxWindow
 {
 public:
     TurtleSpace(wxWindow *parent);
     virtual ~TurtleSpace();
+    void startingNewRun();
+    void calcOffset(int &xoff, int &yoff) const;
+    void clipDC(wxDC &dc) const;
     wxBitmap *getBacking() const { return this->backing; }
     wxDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(int &x, int &y) const;
-    void onResize(wxSizeEvent &evt);
     void onPaint(wxPaintEvent &evt);
 
 private:
-    // !!! FIXME: check wxWindow::IsDoubleBuffered() before building a
-    // !!! FIXME:  backing store...
+    int currentW;  // width for current run.
+    int currentH;  // height for current run.
     wxBitmap *backing;
     wxMemoryDC *backingDC;
     DECLARE_EVENT_TABLE()
 };
 
 BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
-    EVT_SIZE(TurtleSpace::onResize)
     EVT_PAINT(TurtleSpace::onPaint)
 END_EVENT_TABLE()
 
@@ -111,25 +112,26 @@ int TOBY_pumpEvents()
 } // TOBY_pumpEvents
 
 
-static inline void doLine(wxDC *dc, wxPen &pen, int x1, int y1, int x2, int y2)
-{
-    if (dc != NULL)
-    {
-        dc->SetPen(pen);
-        dc->DrawLine(x1, y1, x2, y2);
-    } // if
-} // doLine
-
-
 void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    int xoff, yoff;
+    tspace->calcOffset(xoff, yoff);
     tspace->scaleXY(x1, y1);
     tspace->scaleXY(x2, y2);
     wxPen pen(wxColour(r, g, b));
-    doLine(tspace->getBackingDC(), pen, x1, y1, x2, y2);
+
+    wxDC *backDC = tspace->getBackingDC();
+    if (backDC != NULL)
+    {
+        backDC->SetPen(pen);
+        backDC->DrawLine(x1, y1, x2, y2);
+    } // if
+
     wxClientDC clientdc(tspace);
-    doLine(&clientdc, pen, x1, y1, x2, y2);
+    tspace->clipDC(clientdc);
+    clientdc.SetPen(pen);
+    clientdc.DrawLine(x1, y1, x2, y2);
 } // TOBY_drawLine
 
 
@@ -139,25 +141,21 @@ void TOBY_drawTurtle(int x, int y, int angle, int w, int h)
 } // TOBY_drawTurtle
 
 
-static inline void doCleanup(wxDC *dc, wxBrush &brush)
-{
-    if (dc != NULL)
-    {
-        wxColor origColor(dc->GetBackground().GetColour());
-        dc->SetBackground(brush);
-        dc->Clear();
-        dc->SetBackground(wxBrush(origColor));
-    } // if
-} // doCleanup
-
-
 void TOBY_cleanup(int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     wxBrush brush(wxColour(r, g, b));
-    doCleanup(tspace->getBackingDC(), brush);
+
+    wxDC *backDC = tspace->getBackingDC();
+    if (backDC != NULL)
+    {
+        backDC->SetBackground(brush);
+        backDC->Clear();
+    } // if
+
     wxClientDC clientdc(tspace);
-    doCleanup(&clientdc, brush);
+    clientdc.SetBackground(brush);
+    clientdc.Clear();
 } // TOBY_cleanup
 
 
@@ -173,6 +171,8 @@ void TOBY_messageBox(const char *msg)
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
     : wxWindow(parent, wxID_ANY)
+    , currentW(1)
+    , currentH(1)
     , backing(NULL)
     , backingDC(NULL)
 {
@@ -191,28 +191,75 @@ TurtleSpace::~TurtleSpace()
 
 void TurtleSpace::scaleXY(int &x, int &y) const
 {
-    const wxSize &size = this->GetClientSize();
-    x = ((float) size.GetWidth()) * (((float) x) / 1000.0f);
-    y = ((float) size.GetHeight()) * (((float) y) / 1000.0f);
+    x = ((float) this->currentW) * (((float) x) / 1000.0f);
+    y = ((float) this->currentH) * (((float) y) / 1000.0f);
 } // TurtleSpace::scaleXY
 
 
-void TurtleSpace::onResize(wxSizeEvent &evt)
+void TurtleSpace::calcOffset(int &xoff, int &yoff) const
 {
-    printf("TurtleSpace::onResize\n");
-} // TobyStandaloneFrame::onResize
+    int w, h;
+    this->GetClientSize(&w, &h);
+    xoff = (w - this->currentW) / 2;
+    yoff = (h - this->currentH) / 2;
+} // TurtleSpace::calcOffset
+
+
+void TurtleSpace::clipDC(wxDC &dc) const
+{
+    int xoff, yoff;
+    this->calcOffset(xoff, yoff);
+    if ((xoff != 0) || (yoff != 0))
+    {
+        dc.SetClippingRegion(xoff, yoff, this->currentW, this->currentH);
+    } // if
+} // TurtleSpace::clipDC
+
+
+void TurtleSpace::startingNewRun()
+{
+    int w, h;
+    this->GetClientSize(&w, &h);
+
+    // resized since last run?
+    if ((w != this->currentW) || (h != this->currentH))
+    {
+        // (these may be NULL already, that's okay.)
+        delete this->backingDC;
+        delete this->backing;
+        this->backingDC = NULL;
+        this->backing = NULL;
+    } // if
+
+    // Build new backing store if necessary...
+    if (this->backing == NULL)
+    {
+        wxASSERT(this->backingDC == NULL);
+        this->backing = new wxBitmap(w, h);
+        this->backingDC = new wxMemoryDC(*this->backing);
+        this->currentW = w;
+        this->currentH = h;
+        TOBY_cleanup(0, 0, 0);
+
+        // !!! FIXME: test code, ditch this...
+        TOBY_drawLine(10, 10, 990, 990, 255, 0, 0);
+        TOBY_drawLine(990, 10, 10, 990, 0, 255, 0);
+        TOBY_drawLine(500, 10, 500, 990, 0, 0, 255);
+    } // if
+} // TurtleSpace::startingNewRun
 
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
-    printf("TurtleSpace::onPaint\n");
-    wxPaintDC(this);
-
-    // !!! FIXME: not right at all...
-    TOBY_cleanup(0, 0, 0);
-    TOBY_drawLine(10, 10, 990, 990, 255, 0, 0);
-    TOBY_drawLine(990, 10, 10, 990, 0, 255, 0);
-    TOBY_drawLine(500, 10, 500, 990, 0, 0, 255);
+    wxPaintDC dc(this);
+    dc.SetBackground(wxBrush(wxColour(0, 0, 0)));
+    dc.Clear();
+    if (this->backing != NULL)
+    {
+        int xoff, yoff;
+        this->calcOffset(xoff, yoff);
+        dc.DrawBitmap(*this->backing, xoff, yoff, false);
+    } // if
 } // TurtleSpace::onPaint
 
 
@@ -250,6 +297,7 @@ void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
 void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
 {
     printf("TobyStandaloneFrame::onMenuOpen\n");
+    getTurtleSpace()->startingNewRun();  // !!! FIXME: shouldn't be here...
 } // TobyStandaloneFrame::onMenuOpen
 
 
