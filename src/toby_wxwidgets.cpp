@@ -191,8 +191,8 @@ TurtleSpace::~TurtleSpace()
 
 void TurtleSpace::scaleXY(int &x, int &y) const
 {
-    x = ((float) this->currentW) * (((float) x) / 1000.0f);
-    y = ((float) this->currentH) * (((float) y) / 1000.0f);
+    x = (int) (((float) this->currentW) * (((float) x) / 1000.0f));
+    y = (int) (((float) this->currentH) * (((float) y) / 1000.0f));
 } // TurtleSpace::scaleXY
 
 
