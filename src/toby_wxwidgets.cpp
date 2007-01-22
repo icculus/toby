@@ -3,6 +3,7 @@
 #endif
 
 #include <wx/wx.h>
+#include <wx/config.h>
 #include "toby_app.h"
 
 // !!! FIXME: Just building standalone for now...
@@ -51,20 +52,31 @@ enum TobyMenuCommands
 };
 
 // TobyWindow is a standard wxFrame, but adds an interface for getting
-//  the actual TurtleSpace canvas...there are two subclasses of this:
-//  one is a standalone window that only contains a turtlespace, and one
-//  is a full layout of controls for editing, debugging, etc.
+//  the actual TurtleSpace canvas and other highlevel wankery...there are two
+//  subclasses of this: one is a standalone window that only contains a
+//  turtlespace, and one is a full layout of controls for editing, debugging,
+//  etc.
 // So to get the TurtleSpace to draw on from any arbitrary place, you'd do
 //  this:  TurtleSpace *ts = wxGetApp().getTobyWindow()->getTurtleSpace();
 class TobyWindow : public wxFrame
 {
 public:
-    TobyWindow(const wxPoint &pos, const wxSize &size);
+    TobyWindow();
     TurtleSpace *getTurtleSpace() { return &this->turtleSpace; }
+    static const wxPoint getPreviousPos();
+    static const wxSize getPreviousSize();
+    void onClose(wxCloseEvent &evt);
 
 protected:
     TurtleSpace turtleSpace;
+
+private:
+    DECLARE_EVENT_TABLE()
 };
+
+BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
+    EVT_CLOSE(TobyWindow::onClose)
+END_EVENT_TABLE()
 
 
 // This is a TobyWindow that only provides a TurtleSpace and no other UI.
@@ -110,7 +122,10 @@ DECLARE_APP(TobyWxApp)
 
 int TOBY_pumpEvents()
 {
+    // !!! FIXME: which of these do I really need?
     wxGetApp().Yield();
+    while (wxGetApp().Pending())
+        wxGetApp().Dispatch();
 } // TOBY_pumpEvents
 
 
@@ -242,7 +257,6 @@ void TurtleSpace::startingNewRun()
         this->currentW = w;
         this->currentH = h;
         TOBY_cleanup(0, 0, 0);
-
         // !!! FIXME: test code, ditch this...
         TOBY_drawLine(10, 10, 990, 990, 255, 0, 0);
         TOBY_drawLine(990, 10, 10, 990, 0, 255, 0);
@@ -266,9 +280,8 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 
 
 
-TobyWindow::TobyWindow(const wxPoint &pos, const wxSize &size)
-    // !!! FIXME: lose default wxFrame params when we have resize support...
-    : wxFrame(NULL, -1, wxT("Toby"), pos, size)
+TobyWindow::TobyWindow()
+    : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(this)
 {
     // no-op ... but don't forget to resize turtleSpace!
@@ -276,12 +289,70 @@ TobyWindow::TobyWindow(const wxPoint &pos, const wxSize &size)
 } // TobyWindow::TobyWindow
 
 
+const wxPoint TobyWindow::getPreviousPos()
+{
+    int dpyw, dpyh;
+    ::wxDisplaySize(&dpyw, &dpyh);
+
+    long winx, winy, winw, winh;
+    wxConfigBase *cfg = wxConfig::Get();
+    if ( (!cfg->Read(wxT("LastWindowX"), &winx, -1)) ||
+         (!cfg->Read(wxT("LastWindowY"), &winy, -1)) ||
+         (!cfg->Read(wxT("LastWindowW"), &winw, -1)) ||
+         (!cfg->Read(wxT("LastWindowH"), &winh, -1)) )
+        return wxDefaultPosition;
+
+    if (winw > dpyw) { winw = dpyw; winx = 0; }
+    else if (winw < 50) winw = 50;
+    if (winh > dpyh) { winh = dpyh; winy = 0; }
+    else if (winh < 50) winh = 50;
+    if (winx+winw < 10) winx = 0;
+    else if (winx > dpyw-10) winx = dpyw-10;
+    if (winy < 0) winy = 0;
+    else if (winy > dpyh-10) winy = dpyh-10;
+    return wxPoint(winx, winy);
+} // TobyWindow::getPreviousPos
+
+
+const wxSize TobyWindow::getPreviousSize()
+{
+    int dpyw, dpyh;
+    ::wxDisplaySize(&dpyw, &dpyh);
+
+    long winw, winh;
+    wxConfigBase *cfg = wxConfig::Get();
+    if ( (!cfg->Read(wxT("LastWindowW"), &winw, -1)) ||
+         (!cfg->Read(wxT("LastWindowH"), &winh, -1)) )
+        return wxDefaultSize;
+
+    if (winw > dpyw) winw = dpyw;
+    else if (winw < 50) winw = 50;
+    if (winh > dpyh) winh = dpyh;
+    else if (winh < 50) winh = 50;
+    return wxSize(winw, winh);
+} // TobyWindow::getPreviousSize
+
+
+void TobyWindow::onClose(wxCloseEvent &evt)
+{
+    // !!! FIXME: this may not be the best place for this...
+    wxConfigBase *cfg = wxConfig::Get();
+    int winw, winh, winx, winy;
+    this->GetSize(&winw, &winh);
+    this->GetPosition(&winx, &winy);
+    cfg->Write(wxT("LastWindowW"), (long) winw);
+    cfg->Write(wxT("LastWindowH"), (long) winh);
+    cfg->Write(wxT("LastWindowX"), (long) winx);
+    cfg->Write(wxT("LastWindowY"), (long) winy);
+    this->Destroy();
+} // TobyWindow::onClose
+
+
 TobyStandaloneFrame::TobyStandaloneFrame()
-    : TobyWindow(wxPoint(200, 200), wxSize(400, 400))  // !!! FIXME
 {
     printf("TobyStandaloneFrame::TobyStandaloneFrame\n");
     wxMenu *file_menu = new wxMenu;
-    file_menu->Append(MENUCMD_Open, wxT("O&pen"), wxT("Open"));
+    file_menu->Append(MENUCMD_Open, wxT("&Open"), wxT("Open"));
     file_menu->AppendSeparator();
     file_menu->Append(MENUCMD_Quit, wxT("E&xit"), wxT("Exit"));
     wxMenuBar *menu_bar = new wxMenuBar;
@@ -331,10 +402,15 @@ bool TobyWxApp::OnInit()
     } // if
     #endif
 
+    wxConfigBase *cfg = new wxConfig(wxT("Toby"), wxT("icculus.org"));
+    wxConfig::Set(cfg);
+
     #if TOBY_STANDALONE
+        cfg->SetPath(wxT("/Standalone"));
         this->mainWindow = new TobyStandaloneFrame;
     #else
         #error Write me.
+        cfg->SetPath(wxT("/IDE"));
         this->mainWindow = new TobyWxGuiFrame;
     #endif
 
