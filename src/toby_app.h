@@ -1,6 +1,44 @@
 #ifndef _INCL_TOBY_APP_H_
 #define _INCL_TOBY_APP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
+/* Try to handle platforms where lua_Number isn't a double. Whenever
+ *  specifying a numeric constant, try to use whole numbers, and wrap them
+ *  in N(), so that we don't have the compiler do an unnecessary implicit cast:
+ *
+ *    if (myLuaNum < N(0)) {}
+ */
+#ifdef N
+#error N is defined somewhere.
+#endif
+#if defined(LUA_NUMBER_DOUBLE)
+#define N(x) x##.0
+#elif defined(LUA_NUMBER_FLOAT)
+#define N(x) x##.0f
+#else
+#define N(x) x
+#endif
+
+#define STATICARRAYLEN(x) ( (sizeof ((x))) / (sizeof ((x)[0])) )
+
+typedef struct Turtle
+{
+    lua_Number x;
+    lua_Number y;
+    lua_Number angle;
+    int r, g, b;
+    int penDown;
+    int visible;
+} Turtle;
+
+
 /*
  * This can block for a LONG time, but it will call back into your
  *  application with the following functions...
@@ -47,6 +85,12 @@ void TOBY_drawTurtle(int x, int y, int angle, int w, int h);
  * Clean up turtlespace. Blank it out to color r,g,b.
  */
 void TOBY_cleanup(int r, int g, int b);
+
+extern const char *GLuaLicense;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
