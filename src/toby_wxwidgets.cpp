@@ -175,9 +175,10 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
     } // if
 
     wxClientDC clientdc(tspace);
-    tspace->clipDC(clientdc);
+    // !!! FIXME: this appears to be broken.
+    //tspace->clipDC(clientdc);
     clientdc.SetPen(pen);
-    clientdc.DrawLine(x1, y1, x2, y2);
+    clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
 } // TOBY_drawLine
 
 
@@ -264,6 +265,11 @@ void TurtleSpace::startRun()
 {
     int w, h;
     this->GetClientSize(&w, &h);
+
+    if (w > h)
+        w = h;
+    else
+        h = w;
 
     // resized since last run?
     if ((w != this->currentW) || (h != this->currentH))
