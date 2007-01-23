@@ -126,6 +126,8 @@ int TOBY_pumpEvents()
     wxGetApp().Yield();
     while (wxGetApp().Pending())
         wxGetApp().Dispatch();
+
+    return 1;   // !!! FIXME: this needs to check if stop run was requested.
 } // TOBY_pumpEvents
 
 
