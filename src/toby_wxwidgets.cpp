@@ -233,6 +233,8 @@ void TurtleSpace::clipDC(wxDC &dc) const
 } // TurtleSpace::clipDC
 
 
+// !!! FIXME: This should really be done by toby_app and call into an
+// !!! FIXME:  entry point (TOBY_startingNewRun()).
 void TurtleSpace::startingNewRun()
 {
     int w, h;
@@ -257,10 +259,6 @@ void TurtleSpace::startingNewRun()
         this->currentW = w;
         this->currentH = h;
         TOBY_cleanup(0, 0, 0);
-        // !!! FIXME: test code, ditch this...
-        TOBY_drawLine(10, 10, 990, 990, 255, 0, 0);
-        TOBY_drawLine(990, 10, 10, 990, 0, 255, 0);
-        TOBY_drawLine(500, 10, 500, 990, 0, 0, 255);
     } // if
 } // TurtleSpace::startingNewRun
 
