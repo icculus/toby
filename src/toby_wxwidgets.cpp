@@ -21,7 +21,7 @@ class TurtleSpace : public wxWindow
 public:
     TurtleSpace(wxWindow *parent);
     virtual ~TurtleSpace();
-    void startingNewRun();
+    void startRun();
     void calcOffset(int &xoff, int &yoff) const;
     void clipDC(wxDC &dc) const;
     wxBitmap *getBacking() const { return this->backing; }
@@ -120,6 +120,11 @@ DECLARE_APP(TobyWxApp)
 
 
 // implementations of callbacks during execution of Toby programs...
+void TOBY_startRun()
+{
+    wxGetApp().getTobyWindow()->getTurtleSpace()->startRun();
+} // TOBY_startRun
+
 
 int TOBY_pumpEvents()
 {
@@ -234,9 +239,7 @@ void TurtleSpace::clipDC(wxDC &dc) const
 } // TurtleSpace::clipDC
 
 
-// !!! FIXME: This should really be done by toby_app and call into an
-// !!! FIXME:  entry point (TOBY_startingNewRun()).
-void TurtleSpace::startingNewRun()
+void TurtleSpace::startRun()
 {
     int w, h;
     this->GetClientSize(&w, &h);
@@ -261,7 +264,7 @@ void TurtleSpace::startingNewRun()
         this->currentH = h;
         TOBY_cleanup(0, 0, 0);
     } // if
-} // TurtleSpace::startingNewRun
+} // TurtleSpace::startRun
 
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
@@ -385,7 +388,6 @@ void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
                 TOBY_messageBox("Could not read file");
             else
             {
-                getTurtleSpace()->startingNewRun();  // !!! FIXME: shouldn't be here...
                 buf[len] = '\0';
                 TOBY_runProgram(buf);
             } // else

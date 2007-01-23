@@ -467,6 +467,7 @@ void TOBY_runProgram(const char *source_code)
         TOBY_messageBox("lua_loadstring() failed");
     else
     {
+        TOBY_startRun();
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
             TOBY_messageBox("lua_pcall() failed");

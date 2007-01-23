@@ -52,6 +52,9 @@ void TOBY_runProgram(const char *source_code);
  *  TOBY_runProgram() call...
  */
 
+/* Set up for a new program run. This lets you prepare a backbuffer, etc. */
+void TOBY_startRun(void);
+
 
 /*
  * Let UI pump its event queue. Return non-zero to keep going, zero to
