@@ -194,13 +194,11 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , backingDC(NULL)
 {
     // no-op
-    printf("TurtleSpace::TurtleSpace\n");
 } // TurtleSpace::TurtleSpace
 
 
 TurtleSpace::~TurtleSpace()
 {
-    printf("TurtleSpace::~TurtleSpace\n");
     delete this->backingDC;
     delete this->backing;
 } // TurtleSpace::~TurtleSpace
@@ -285,7 +283,6 @@ TobyWindow::TobyWindow()
     , turtleSpace(this)
 {
     // no-op ... but don't forget to resize turtleSpace!
-    printf("TobyWindow::TobyWindow\n");
 } // TobyWindow::TobyWindow
 
 
@@ -350,7 +347,6 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
-    printf("TobyStandaloneFrame::TobyStandaloneFrame\n");
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open"), wxT("Open"));
     file_menu->AppendSeparator();
@@ -369,14 +365,12 @@ void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
 
 void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
 {
-    printf("TobyStandaloneFrame::onMenuOpen\n");
     getTurtleSpace()->startingNewRun();  // !!! FIXME: shouldn't be here...
 } // TobyStandaloneFrame::onMenuOpen
 
 
 void TobyStandaloneFrame::onResize(wxSizeEvent &evt)
 {
-    printf("TobyStandaloneFrame::onResize\n");
     this->turtleSpace.SetSize(this->GetClientSize());
 } // TobyStandaloneFrame::onResize
 
@@ -387,8 +381,6 @@ IMPLEMENT_APP(TobyWxApp)
 
 bool TobyWxApp::OnInit()
 {
-    printf("TobyWxApp::OnInit\n");
-
     #ifdef __APPLE__
     // This lets a stdio app become a GUI app. Otherwise, you won't get
     //  GUI events from the system and other things will fail to work.
@@ -425,7 +417,6 @@ bool TobyWxApp::OnInit()
 
 int TobyWxApp::OnExit()
 {
-    printf("TobyWxApp::OnExit\n");
     mainWindow = NULL;  // this is probably deleted already.
     return wxApp::OnExit();
 } // TobyWxApp::OnExit
