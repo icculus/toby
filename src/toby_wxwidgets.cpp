@@ -120,6 +120,27 @@ DECLARE_APP(TobyWxApp)
 
 
 // implementations of callbacks during execution of Toby programs...
+
+int TOBY_delay(int ms)
+{
+    wxLongLong now = wxGetLocalTimeMillis();
+    const wxLongLong end = now + ((wxLongLong) ms);
+    while (now < end)
+    {
+        TOBY_pumpEvents();
+        now = wxGetLocalTimeMillis();
+        if (now < end)
+        {
+            const unsigned long ticks = (unsigned long) ((end-now).ToLong());
+            wxMilliSleep((ticks > 50) ? 50 : ticks);
+            now = wxGetLocalTimeMillis();
+        } // if
+    } // while
+
+    return 1;  // !!! FIXME: allow user to kill program.
+} // TOBY_delay
+
+
 void TOBY_startRun()
 {
     wxGetApp().getTobyWindow()->getTurtleSpace()->startRun();

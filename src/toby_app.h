@@ -89,6 +89,14 @@ void TOBY_drawTurtle(int x, int y, int angle, int w, int h);
  */
 void TOBY_cleanup(int r, int g, int b);
 
+/*
+ * Block for (ms) milliseconds, pumping event queue.
+ *  Return non-zero to keep going, zero to stop Toby program. You can return
+ *  before (ms) milliseconds if returning zero.
+ */
+int TOBY_delay(int ms);
+
+
 extern const char *GLuaLicense;
 
 #ifdef __cplusplus

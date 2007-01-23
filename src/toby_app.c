@@ -5,6 +5,13 @@
 #include <assert.h>
 #include "toby_app.h"
 
+
+/* TurtlesSpace state... */
+static Turtle *currentTurtle = NULL;
+static int fenceEnabled = 1;
+
+
+
 /*
  * All this math code had brilliant comments explaining it, but as proud as I
  *  was to figure it out in high school...really, it's fundamental
@@ -53,84 +60,11 @@ static inline int to8bit(lua_Number x)
 } /* to8bit */
 
 
-/* !!! FIXME: temporary hack. */
-#define LUAHOOK(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        printf("\t%s()\n", #sym); \
-        return 0; \
-    }
-
-#define LUAHOOK_RETNUM(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        printf("\t%s()\n", #sym); \
-        lua_pushnumber(L, 0.0f); \
-        return 1; \
-    }
-
-#define LUAHOOK_NUM(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        const lua_Number n1 = luaL_checknumber(L, 1); \
-        printf("\t%s(%f)\n", #sym, (float) n1); \
-        return 0; \
-    }
-
-#define LUAHOOK_STR(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        const char *s1 = luaL_checkstring(L, 1); \
-        printf("\t%s(\"%s\")\n", #sym, s1); \
-        return 0; \
-    }
-
-#define LUAHOOK_NUM_RETNUM(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        const lua_Number n1 = luaL_checknumber(L, 1); \
-        printf("\t%s(%f)\n", #sym, (float) n1); \
-        lua_pushnumber(L, 0.0f); \
-        return 1; \
-    }
-
-#define LUAHOOK_NUM_NUM(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        const lua_Number n1 = luaL_checknumber(L, 1); \
-        const lua_Number n2 = luaL_checknumber(L, 2); \
-        printf("\t%s(%f, %f)\n", #sym, (float) n1, (float) n2); \
-        return 0; \
-    }
-
-#define LUAHOOK_NUM_NUM_NUM(sym) \
-    static int luahook_##sym(lua_State *L) { \
-        const lua_Number n1 = luaL_checknumber(L, 1); \
-        const lua_Number n2 = luaL_checknumber(L, 2); \
-        const lua_Number n3 = luaL_checknumber(L, 3); \
-        printf("\t%s(%f, %f, %f)\n", #sym, (float) n1, (float) n2, (float) n3); \
-        return 0; \
-    }
-
-LUAHOOK(showturtle)
-LUAHOOK(hideturtle)
-LUAHOOK(hometurtle)
-LUAHOOK(enablefence)
-LUAHOOK(disablefence)
-LUAHOOK_STR(drawstring)
-LUAHOOK_RETNUM(random)
-LUAHOOK_RETNUM(getturtlex)
-LUAHOOK_RETNUM(getturtley)
-LUAHOOK_RETNUM(getturtlespacewidth)
-LUAHOOK_RETNUM(getturtlespaceheight)
-LUAHOOK(cleanupturtlespace)
-LUAHOOK(setpenup)
-LUAHOOK(setpendown)
-LUAHOOK(addturtle)
-LUAHOOK_NUM(useturtle)
-LUAHOOK_NUM_RETNUM(round)
-LUAHOOK_NUM_RETNUM(stringlength)
-LUAHOOK_NUM(pause)
-LUAHOOK_NUM(setangle)
-LUAHOOK_NUM_NUM(setturtlexy)
-
-
-static Turtle *currentTurtle = NULL;
-static int fenceEnabled = 1;
+static inline int secsToMs(lua_Number secs)
+{
+    /* !!! FIXME: fixed point... */
+    return (int) (secs * N(1000));
+} /* secsToMs */
 
 
 static inline int checkWholeNum(lua_State *L, int idx)
@@ -168,65 +102,6 @@ static inline Turtle *getTurtle(void)
 } /* getTurtle */
 
 
-static inline void verifyPointInsideFence(lua_Number x, lua_Number y)
-{
-    if (fenceEnabled)
-    {
-        if ((x < N(0)) || (x > N(1000)) || (y < N(0)) || (y > N(1000)))
-        {
-            /* !!! FIXME: throw error: turtle hit fence. */
-        } /* if */
-    } /* if */
-} /* verifyPointInsideFence */
-
-
-static void driveTurtle(lua_Number distance)
-{
-    Turtle *turtle = getTurtle();
-    if (distance != N(0))
-    {
-        lua_Number x, y;
-
-        calculateLine(turtle->angle, distance, turtle->x, turtle->y, &x, &y);
-
-// !!! FIXME: turtle rendering
-//        if (turtle->visible)
-//            TOBY_blankTurtle(t);
-
-        if (turtle->penDown)   /* draw the line covering path turtle took? */
-        {
-            TOBY_drawLine(turtle->x, turtle->y, x, y,
-                          turtle->r, turtle->g, turtle->b);
-        } /* if */
-
-        turtle->x = x;
-        turtle->y = y;
-
-// !!! FIXME: turtle rendering
-//        if (turtle->visible)
-//            TOBY_renderTurtle(t);
-
-//    turtleSync->release();
-
-        verifyPointInsideFence(x, y);
-    } /* if */
-} /* driveTurtle */
-
-
-static int luahook_goforward(lua_State *L)
-{
-    driveTurtle(luaL_checknumber(L, 1));
-    return 0;
-} /* luahook_goforward */
-
-
-static int luahook_gobackward(lua_State *L)
-{
-    driveTurtle(-luaL_checknumber(L, 1));
-    return 0;
-} /* luahook_gobackward */
-
-
 static void setTurtleAngle(lua_Number angle)
 {
     Turtle *turtle = getTurtle();
@@ -248,7 +123,14 @@ static void setTurtleAngle(lua_Number angle)
 } /* setTurtleAngle */
 
 
-static void turnTurtle(lua_Number degree)
+static int luahook_setangle(lua_State *L)
+{
+    setTurtleAngle(luaL_checknumber(L, 1));
+    return 0;
+} /* luahook_setangle */
+
+
+static inline void turnTurtle(lua_Number degree)
 {
     Turtle *turtle = getTurtle();
     if (degree != N(0))
@@ -268,6 +150,123 @@ static int luahook_turnleft(lua_State *L)
     turnTurtle(-luaL_checknumber(L, 1));
     return 0;
 } /* luahook_turnleft */
+
+
+static void setTurtleXY(lua_Number x, lua_Number y)
+{
+    Turtle *turtle = getTurtle();
+
+    if (fenceEnabled)
+    {
+        if ((x < N(0)) || (x > N(1000)) || (y < N(0)) || (y > N(1000)))
+        {
+            /* !!! FIXME: throw error: turtle hit fence. */
+        } /* if */
+    } /* if */
+
+// !!! FIXME: turtle rendering
+//    if (turtle->visible)
+//        TOBY_blankTurtle(t);
+
+    turtle->x = x;
+    turtle->y = y;
+
+// !!! FIXME: turtle rendering
+//    if (turtle->visible)
+//        TOBY_renderTurtle(t);
+} /* setTurtleXY */
+
+
+static int luahook_setturtlexy(lua_State *L)
+{
+    const lua_Number x = luaL_checknumber(L, 1);
+    const lua_Number y = luaL_checknumber(L, 2);
+    setTurtleXY(x, y);
+    return 0;
+} /* luahook_setturtlexy */
+
+
+static int luahook_hometurtle(lua_State *L)
+{
+    setTurtleXY(N(500), N(500));
+    return 0;
+} /* luahook_hometurtle */
+
+
+static void driveTurtle(lua_Number distance)
+{
+    Turtle *turtle = getTurtle();
+    if (distance != N(0))
+    {
+        lua_Number x, y;
+
+        calculateLine(turtle->angle, distance, turtle->x, turtle->y, &x, &y);
+
+        if (turtle->penDown)   /* draw the line covering path turtle took? */
+        {
+            TOBY_drawLine(turtle->x, turtle->y, x, y,
+                          turtle->r, turtle->g, turtle->b);
+        } /* if */
+
+        setTurtleXY(x, y);
+    } /* if */
+} /* driveTurtle */
+
+
+static int luahook_goforward(lua_State *L)
+{
+    driveTurtle(luaL_checknumber(L, 1));
+    return 0;
+} /* luahook_goforward */
+
+
+static int luahook_gobackward(lua_State *L)
+{
+    driveTurtle(-luaL_checknumber(L, 1));
+    return 0;
+} /* luahook_gobackward */
+
+
+static int luahook_getturtlex(lua_State *L)
+{
+    lua_pushnumber(L, getTurtle()->x);
+    return 1;
+} /* luahook_getturtlex */
+
+
+static int luahook_getturtley(lua_State *L)
+{
+    lua_pushnumber(L, getTurtle()->y);
+    return 1;
+} /* luahook_getturtley */
+
+
+static int luahook_getturtlespacewidth(lua_State *L)
+{
+    lua_pushnumber(L, N(1000));   // !!! FIXME: allow this to change?
+    return 1;
+} /* luahook_getturtlespacewidth */
+
+
+static int luahook_getturtlespaceheight(lua_State *L)
+{
+    lua_pushnumber(L, N(1000));   // !!! FIXME: allow this to change?
+    return 1;
+} /* luahook_getturtlespaceheight */
+
+
+static int luahook_setpenup(lua_State *L)
+{
+    getTurtle()->penDown = 0;
+    return 0;
+} /* luahook_setpenup */
+
+
+static int luahook_setpendown(lua_State *L)
+{
+    getTurtle()->penDown = 1;
+    return 0;
+} /* luahook_setpendown */
 
 
 static inline void setPenColorRGB(int r, int g, int b)
@@ -334,6 +333,107 @@ static int luahook_setpencolor(lua_State *L)
         setPenColorRGB(colors[color].r, colors[color].g, colors[color].b);
     return 0;
 } /* luahook_setpencolor */
+
+
+static int luahook_showturtle(lua_State *L)
+{
+    Turtle *turtle = getTurtle();
+    if (!turtle->visible)
+    {
+        turtle->visible = 1;
+        // !!! FIXME: render turtle
+        //TOBY_drawTurtle(turtle->x, turtle->y, turtle->angle, int w, int h);
+    } /* if */
+    return 0;
+} /* luahook_showturtle */
+
+
+static int luahook_hideturtle(lua_State *L)
+{
+    Turtle *turtle = getTurtle();
+    if (turtle->visible)
+    {
+        turtle->visible = 0;
+        // !!! FIXME: blank turtle
+        //TOBY_drawTurtle(turtle->x, turtle->y, turtle->angle, int w, int h);
+    } /* if */
+    return 0;
+} /* luahook_hideturtle */
+
+
+static int luahook_enablefence(lua_State *L)
+{
+    // !!! FIXME: check for turtles outside fence...
+    fenceEnabled = 1;
+    return 0;
+} /* luahook_enablefence */
+
+
+static int luahook_disablefence(lua_State *L)
+{
+    fenceEnabled = 0;
+    return 0;
+} /* luahook_disablefence */
+
+
+static int luahook_cleanupturtlespace(lua_State *L)
+{
+    TOBY_cleanup(0, 0, 0);  // !!! FIXME: let user choose color?
+    return 0;
+} /* luahook_getturtlespaceheight */
+
+
+static int luahook_stringlength(lua_State *L)
+{
+    // !!! FIXME: this is doing bytes, not chars...
+    lua_pushinteger(L, (lua_Integer) strlen(luaL_checklstring(L, 1, NULL)));
+    return 1;
+} /* luahook_stringlength */
+
+
+static int luahook_drawstring(lua_State *L)
+{
+    printf("drawstring() called...\n");  // !!! FIXME: write me.
+    return 0;
+} /* luahook_drawstring */
+
+
+static int luahook_random(lua_State *L)
+{
+    lua_pushnumber(L, random());  // !!! FIXME: seed this.
+    return 1;
+} /* luahook_random */
+
+
+static int luahook_round(lua_State *L)
+{
+    // !!! FIXME: fixed point.
+    lua_pushnumber(L, round(luaL_checknumber(L, 1)));
+    return 1;
+} /* luahook_setpendown */
+
+
+static int luahook_pause(lua_State *L)
+{
+    const lua_Number secs = luaL_checknumber(L, 1);
+    const int ms = secsToMs(secs);
+    TOBY_delay(ms);  /* !!! FIXME: stop execution if this returns zero. */
+    return 0;
+} /* luahook_pause */
+
+
+static int luahook_addturtle(lua_State *L)
+{
+    printf("addturtle() called\n");  // !!! FIXME: implement this.
+    return 0;
+} /* luahook_addturtle */
+
+
+static int luahook_useturtle(lua_State *L)
+{
+    printf("useturtle() called\n");  // !!! FIXME: implement this.
+    return 0;
+} /* luahook_useturtle */
 
 
 static void add_toby_functions(lua_State *L)
@@ -452,6 +552,7 @@ void TOBY_runProgram(const char *source_code)
 
     TOBY_cleanup(0, 0, 0);
     currentTurtle = newTurtle();
+    fenceEnabled = 1;
 
     L = luaL_newstate();
     if (L == NULL)
