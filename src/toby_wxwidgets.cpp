@@ -4,6 +4,7 @@
 
 #include <wx/wx.h>
 #include <wx/config.h>
+#include <wx/wfstream.h>
 #include "toby_app.h"
 
 // !!! FIXME: Just building standalone for now...
@@ -365,7 +366,32 @@ void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
 
 void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
 {
-    getTurtleSpace()->startingNewRun();  // !!! FIXME: shouldn't be here...
+    // !!! FIXME: localization.
+    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
+                     wxT("Toby Programs (*.toby)|*.toby"),
+                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        wxString path(dlg.GetPath());
+        wxFileInputStream strm(path);
+        if (!strm.IsOk())
+            TOBY_messageBox("Could not open file");
+        else
+        {
+            size_t len = strm.GetLength();
+            char *buf = new char[len + 1];
+            if (!strm.Read(buf, len).IsOk())
+                TOBY_messageBox("Could not read file");
+            else
+            {
+                getTurtleSpace()->startingNewRun();  // !!! FIXME: shouldn't be here...
+                buf[len] = '\0';
+                TOBY_runProgram(buf);
+            } // else
+            delete[] buf;
+        } // else
+    } // if
 } // TobyStandaloneFrame::onMenuOpen
 
 
