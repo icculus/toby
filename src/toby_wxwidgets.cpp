@@ -174,11 +174,14 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
         backDC->DrawLine(x1, y1, x2, y2);
     } // if
 
-    wxClientDC clientdc(tspace);
-    // !!! FIXME: this appears to be broken.
-    //tspace->clipDC(clientdc);
-    clientdc.SetPen(pen);
-    clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
+    // wrapped in brackets so wxClientDC destructs before pumpEvents...
+    {
+        wxClientDC clientdc(tspace);
+        tspace->clipDC(clientdc);
+        clientdc.SetPen(pen);
+        clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
+    }
+    TOBY_pumpEvents();  // Mac OS X won't draw without the pumpevents...
 } // TOBY_drawLine
 
 
