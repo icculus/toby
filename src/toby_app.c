@@ -9,7 +9,7 @@
 /* TurtlesSpace state... */
 static Turtle *currentTurtle = NULL;
 static int fenceEnabled = 1;
-
+static int halted = 0;
 
 
 /*
@@ -408,7 +408,7 @@ static int luahook_random(lua_State *L)
 static int luahook_round(lua_State *L)
 {
     // !!! FIXME: fixed point.
-    lua_pushnumber(L, round(luaL_checknumber(L, 1)));
+    lua_pushinteger(L, (lua_Integer) (luaL_checknumber(L, 1) + 0.5));
     return 1;
 } /* luahook_setpendown */
 
@@ -546,13 +546,26 @@ static int luahook_stackwalk(lua_State *L)
 } // luahook_stackwalk
 
 
+static void luaDebugHook(lua_State *L, lua_Debug *ar)
+{
+    if (!TOBY_pumpEvents())
+    {
+        halted = 1;
+        lua_pushstring(L, "program halted");
+        lua_error(L);
+    } /* if */
+} /* luaDebugHook */
+
+
 void TOBY_runProgram(const char *source_code)
 {
+    const int mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT;
     lua_State *L;
 
     TOBY_cleanup(0, 0, 0);
     currentTurtle = newTurtle();
     fenceEnabled = 1;
+    halted = 0;
 
     L = luaL_newstate();
     if (L == NULL)
@@ -560,19 +573,28 @@ void TOBY_runProgram(const char *source_code)
 
 // !!! FIXME
 //    lua_atpanic(L, luahook_fatal);
-
+    lua_sethook(L, luaDebugHook, mask, 100);
     add_toby_functions(L);
 
     lua_pushcfunction(L, luahook_stackwalk);
     if (luaL_loadstring(L, source_code) != 0)
+    {
         TOBY_messageBox("lua_loadstring() failed");
+        /* !!! FIXME: lua_pop error message */
+    } /* if */
     else
     {
         TOBY_startRun();
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
-            TOBY_messageBox("lua_pcall() failed");
-        /* if this didn't panic, we succeeded. */
+        {
+            if (!halted)  /* (halted) means stop requested, not error. */
+            {
+                TOBY_messageBox("lua_pcall() failed");
+            } /* if */
+            /* !!! FIXME: lua_pop error message */
+        } /* if */
+        TOBY_stopRun();
     } /* if */
     lua_pop(L, 1);   // dump stackwalker.
 

@@ -56,6 +56,10 @@ void TOBY_runProgram(const char *source_code);
 void TOBY_startRun(void);
 
 
+/* Notify app that the program run has finished. */
+void TOBY_stopRun(void);
+
+
 /*
  * Let UI pump its event queue. Return non-zero to keep going, zero to
  *  stop program execution, making TOBY_runProgram() return.

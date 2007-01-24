@@ -21,17 +21,27 @@ class TurtleSpace : public wxWindow
 public:
     TurtleSpace(wxWindow *parent);
     virtual ~TurtleSpace();
-    void startRun();
+    void startRun();  // hook to TOBY_startRun() from toby_app
+    void stopRun();   // hook to TOBY_stopRun() from toby_app
     void calcOffset(int &xoff, int &yoff) const;
     void clipDC(wxDC &dc) const;
     wxBitmap *getBacking() const { return this->backing; }
     wxDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(int &x, int &y) const;
+    void runProgram(char *program);  // hook to GUI.
+    void halt();  // hook to GUI.
+    bool isRunning() const { return this->running; }
+    bool stopRequested() const { return (this->stopping) || (!this->running); }
+
     void onPaint(wxPaintEvent &evt);
+    void onIdle(wxIdleEvent &evt);
 
     enum { windowFlags=wxFULL_REPAINT_ON_RESIZE };
 
 private:
+    char *program;
+    bool stopping;
+    bool running;
     int currentW;  // width for current run.
     int currentH;  // height for current run.
     wxBitmap *backing;
@@ -41,6 +51,7 @@ private:
 
 BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
     EVT_PAINT(TurtleSpace::onPaint)
+    EVT_IDLE(TurtleSpace::onIdle)
 END_EVENT_TABLE()
 
 
@@ -123,21 +134,22 @@ DECLARE_APP(TobyWxApp)
 
 int TOBY_delay(int ms)
 {
-    wxLongLong now = wxGetLocalTimeMillis();
+    wxLongLong now = ::wxGetLocalTimeMillis();
     const wxLongLong end = now + ((wxLongLong) ms);
     while (now < end)
     {
-        TOBY_pumpEvents();
-        now = wxGetLocalTimeMillis();
+        if (!TOBY_pumpEvents())
+            return 0;
+        now = ::wxGetLocalTimeMillis();
         if (now < end)
         {
             const unsigned long ticks = (unsigned long) ((end-now).ToLong());
-            wxMilliSleep((ticks > 50) ? 50 : ticks);
-            now = wxGetLocalTimeMillis();
+            ::wxMilliSleep((ticks > 50) ? 50 : ticks);
+            now = ::wxGetLocalTimeMillis();
         } // if
     } // while
 
-    return 1;  // !!! FIXME: allow user to kill program.
+    return TOBY_pumpEvents();
 } // TOBY_delay
 
 
@@ -147,14 +159,18 @@ void TOBY_startRun()
 } // TOBY_startRun
 
 
+void TOBY_stopRun()
+{
+    wxGetApp().getTobyWindow()->getTurtleSpace()->stopRun();
+} // TOBY_stopRun
+
+
 int TOBY_pumpEvents()
 {
-    // !!! FIXME: which of these do I really need?
-    wxGetApp().Yield();
-    while (wxGetApp().Pending())
+    const TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    while ((!tspace->stopRequested()) && (wxGetApp().Pending()))
         wxGetApp().Dispatch();
-
-    return 1;   // !!! FIXME: this needs to check if stop run was requested.
+    return !tspace->stopRequested();
 } // TOBY_pumpEvents
 
 
@@ -174,14 +190,10 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
         backDC->DrawLine(x1, y1, x2, y2);
     } // if
 
-    // wrapped in brackets so wxClientDC destructs before pumpEvents...
-    {
-        wxClientDC clientdc(tspace);
-        tspace->clipDC(clientdc);
-        clientdc.SetPen(pen);
-        clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
-    }
-    TOBY_pumpEvents();  // Mac OS X won't draw without the pumpevents...
+    wxClientDC clientdc(tspace);
+    tspace->clipDC(clientdc);
+    clientdc.SetPen(pen);
+    clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
 } // TOBY_drawLine
 
 
@@ -221,6 +233,9 @@ void TOBY_messageBox(const char *msg)
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
     : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, windowFlags)
+    , program(NULL)
+    , stopping(false)
+    , running(false)
     , currentW(1)
     , currentH(1)
     , backing(NULL)
@@ -234,6 +249,7 @@ TurtleSpace::~TurtleSpace()
 {
     delete this->backingDC;
     delete this->backing;
+    delete this->program;
 } // TurtleSpace::~TurtleSpace
 
 
@@ -266,6 +282,8 @@ void TurtleSpace::clipDC(wxDC &dc) const
 
 void TurtleSpace::startRun()
 {
+    wxASSERT(!this->running);
+
     int w, h;
     this->GetClientSize(&w, &h);
 
@@ -294,7 +312,45 @@ void TurtleSpace::startRun()
         this->currentH = h;
         TOBY_cleanup(0, 0, 0);
     } // if
+
+    this->running = true;
+    this->stopping = false;
 } // TurtleSpace::startRun
+
+
+void TurtleSpace::stopRun()
+{
+    wxASSERT(this->running);
+    this->running = this->stopping = false;
+} // TurtleSpace::stopRun
+
+
+void TurtleSpace::halt()
+{
+    if (this->running)
+        this->stopping = true;
+} // TurtleSpace::halt
+
+
+void TurtleSpace::runProgram(char *_program)
+{
+    // This gets kicked off in the next idle event.
+    //  TurtleSpace will delete[] _program sometime later!
+    delete[] this->program;
+    this->program = _program;
+} // TurtleSpace::runProgram
+
+
+void TurtleSpace::onIdle(wxIdleEvent &evt)
+{
+    if (this->program != NULL)
+    {
+        char *prog = this->program;
+        this->program = NULL;
+        TOBY_runProgram(prog);
+        delete[] prog;
+    } // if
+} // TurtleSpace::onIdle
 
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
@@ -366,16 +422,27 @@ const wxSize TobyWindow::getPreviousSize()
 
 void TobyWindow::onClose(wxCloseEvent &evt)
 {
-    // !!! FIXME: this may not be the best place for this...
-    wxConfigBase *cfg = wxConfig::Get();
-    int winw, winh, winx, winy;
-    this->GetSize(&winw, &winh);
-    this->GetPosition(&winx, &winy);
-    cfg->Write(wxT("LastWindowW"), (long) winw);
-    cfg->Write(wxT("LastWindowH"), (long) winh);
-    cfg->Write(wxT("LastWindowX"), (long) winx);
-    cfg->Write(wxT("LastWindowY"), (long) winy);
-    this->Destroy();
+    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    if (tspace->isRunning())
+    {
+        tspace->halt();
+        this->AddPendingEvent(evt);  // try it again later so tspace can halt.
+        evt.Veto();  // this time, though, no deal.
+    } // if
+
+    else  // really closing this time.
+    {
+        // !!! FIXME: this may not be the best place for this...
+        wxConfigBase *cfg = wxConfig::Get();
+        int winw, winh, winx, winy;
+        this->GetSize(&winw, &winh);
+        this->GetPosition(&winx, &winy);
+        cfg->Write(wxT("LastWindowW"), (long) winw);
+        cfg->Write(wxT("LastWindowH"), (long) winh);
+        cfg->Write(wxT("LastWindowX"), (long) winx);
+        cfg->Write(wxT("LastWindowY"), (long) winy);
+        this->Destroy();
+    } // else
 } // TobyWindow::onClose
 
 
@@ -415,13 +482,16 @@ void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
             size_t len = strm.GetLength();
             char *buf = new char[len + 1];
             if (!strm.Read(buf, len).IsOk())
+            {
                 TOBY_messageBox("Could not read file");
+                delete[] buf;
+            } // if
             else
             {
                 buf[len] = '\0';
-                TOBY_runProgram(buf);
+                // Will kick off in next idle event.
+                this->turtleSpace.runProgram(buf);
             } // else
-            delete[] buf;
         } // else
     } // if
 } // TobyStandaloneFrame::onMenuOpen
