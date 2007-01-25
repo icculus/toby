@@ -30,7 +30,7 @@ public:
     inline void stopRun();   // hook to TOBY_stopRun() from toby_app
     inline int pumpEvents();  // hook to TOBY_pumpEvents() from toby_app
     inline void calcOffset(int &xoff, int &yoff) const;
-    inline void clipDC(wxDC &dc) const;
+    inline void clipDC(wxDC &dc, int xoff, int yoff) const;
     inline wxBitmap *getBacking() const { return this->backing; }
     inline wxDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(int &x, int &y) const;
@@ -208,7 +208,7 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
     } // if
 
     wxClientDC clientdc(tspace);
-    tspace->clipDC(clientdc);
+    tspace->clipDC(clientdc, xoff, yoff);
     clientdc.SetPen(pen);
     clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
 } // TOBY_drawLine
@@ -286,10 +286,8 @@ void TurtleSpace::calcOffset(int &xoff, int &yoff) const
 } // TurtleSpace::calcOffset
 
 
-void TurtleSpace::clipDC(wxDC &dc) const
+void TurtleSpace::clipDC(wxDC &dc, int xoff, int yoff) const
 {
-    int xoff, yoff;
-    this->calcOffset(xoff, yoff);
     if ((xoff != 0) || (yoff != 0))
     {
         dc.SetClippingRegion(xoff, yoff, this->currentW, this->currentH);
