@@ -26,15 +26,16 @@ class TurtleSpace : public wxWindow
 public:
     TurtleSpace(wxWindow *parent);
     virtual ~TurtleSpace();
-    void startRun();  // hook to TOBY_startRun() from toby_app
-    void stopRun();   // hook to TOBY_stopRun() from toby_app
-    void calcOffset(int &xoff, int &yoff) const;
-    void clipDC(wxDC &dc) const;
-    wxBitmap *getBacking() const { return this->backing; }
-    wxDC *getBackingDC() const { return this->backingDC; }
+    inline void startRun();  // hook to TOBY_startRun() from toby_app
+    inline void stopRun();   // hook to TOBY_stopRun() from toby_app
+    inline int pumpEvents();  // hook to TOBY_pumpEvents() from toby_app
+    inline void calcOffset(int &xoff, int &yoff) const;
+    inline void clipDC(wxDC &dc) const;
+    inline wxBitmap *getBacking() const { return this->backing; }
+    inline wxDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(int &x, int &y) const;
-    void runProgram(char *program);  // hook to GUI.
-    void halt();  // hook to GUI.
+    inline void runProgram(char *program);  // hook to GUI.
+    inline void halt();  // hook to GUI.
     bool isRunning() const { return this->running; }
     bool stopRequested() const { return (this->stopping) || (!this->running); }
 
