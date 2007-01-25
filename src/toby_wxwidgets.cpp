@@ -192,11 +192,10 @@ int TOBY_pumpEvents()
 void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    int xoff, yoff;
-    tspace->calcOffset(xoff, yoff);
+    wxPen pen(wxColour(r, g, b));
+
     tspace->scaleXY(x1, y1);
     tspace->scaleXY(x2, y2);
-    wxPen pen(wxColour(r, g, b));
 
     wxDC *backDC = tspace->getBackingDC();
     if (backDC != NULL)
@@ -205,6 +204,8 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
         backDC->DrawLine(x1, y1, x2, y2);
     } // if
 
+    int xoff, yoff;
+    tspace->calcOffset(xoff, yoff);
     wxClientDC clientdc(tspace);
     tspace->clipDC(clientdc, xoff, yoff);
     clientdc.SetPen(pen);
