@@ -212,17 +212,25 @@ static void driveTurtle(lua_Number distance)
     Turtle *turtle = getTurtle();
     if (distance != N(0))
     {
-        lua_Number x, y;
-
-        calculateLine(turtle->angle, distance, turtle->x, turtle->y, &x, &y);
-
+        lua_Number x1 = turtle->x;
+        lua_Number y1 = turtle->y;
+        lua_Number x2, y2;
+ 
+        calculateLine(turtle->angle, distance, x1, y1, &x2, &y2);
+ 
         if (turtle->penDown)   /* draw the line covering path turtle took? */
         {
-            TOBY_drawLine(turtle->x, turtle->y, x, y,
-                          turtle->r, turtle->g, turtle->b);
+            /* only draw if SOMETHING is inside TurtleSpace... */
+            if ( ((x1 >= N(0)) && (x1 <= N(1000))) ||
+                 ((y1 >= N(0)) && (y1 <= N(1000))) ||
+                 ((x2 >= N(0)) && (x2 <= N(1000))) ||
+                 ((y2 >= N(0)) && (y2 <= N(1000))) )
+            {
+                TOBY_drawLine(x1, y1, x2, y2, turtle->r, turtle->g, turtle->b);
+            } /* if */
         } /* if */
-
-        setTurtleXY(x, y);
+ 
+        setTurtleXY(x2, y2);
     } /* if */
 } /* driveTurtle */
 
