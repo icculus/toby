@@ -436,6 +436,13 @@ static int luahook_useturtle(lua_State *L)
 } /* luahook_useturtle */
 
 
+static int luahook_print(lua_State *L)
+{
+    printf("%s\n", luaL_checklstring(L, 1, NULL));
+    return 0;
+} /* luahook_print */
+
+
 static void add_toby_functions(lua_State *L)
 {
     #define SET_LUAHOOK(sym) \
@@ -468,6 +475,7 @@ static void add_toby_functions(lua_State *L)
     SET_LUAHOOK(turnleft);
     SET_LUAHOOK(setpencolor);
     SET_LUAHOOK(setturtlexy);
+    SET_LUAHOOK(print);
     #undef SET_LUAHOOK
 }
 
