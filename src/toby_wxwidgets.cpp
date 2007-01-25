@@ -52,6 +52,7 @@ private:
     int currentH;  // height for current run.
     wxBitmap *backing;
     wxMemoryDC *backingDC;
+    wxStopWatch stopwatch;
     DECLARE_EVENT_TABLE()
 };
 
@@ -184,10 +185,7 @@ void TOBY_stopRun()
 
 int TOBY_pumpEvents()
 {
-    const TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    while ((!tspace->stopRequested()) && (wxGetApp().Pending()))
-        wxGetApp().Dispatch();
-    return !tspace->stopRequested();
+    return wxGetApp().getTobyWindow()->getTurtleSpace()->pumpEvents();
 } // TOBY_pumpEvents
 
 
@@ -338,6 +336,19 @@ void TurtleSpace::stopRun()
     wxASSERT(this->running);
     this->running = this->stopping = false;
 } // TurtleSpace::stopRun
+
+
+int TurtleSpace::pumpEvents()
+{
+    if (this->stopwatch.Time() > 50)
+    {
+        while ((!this->stopRequested()) && (wxGetApp().Pending()))
+            wxGetApp().Dispatch();
+        this->stopwatch.Start(0);  // reset this for next call.
+    } /* if */
+
+    return !this->stopRequested();
+} // TurtleSpace::pumpEvents
 
 
 void TurtleSpace::halt()
