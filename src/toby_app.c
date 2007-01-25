@@ -603,7 +603,7 @@ void TOBY_runProgram(const char *source_code)
 
 // !!! FIXME
 //    lua_atpanic(L, luahook_fatal);
-    lua_sethook(L, luaDebugHook, mask, 100);
+    lua_sethook(L, luaDebugHook, mask, 1000);
     add_toby_functions(L);
 
     lua_pushcfunction(L, luahook_stackwalk);
