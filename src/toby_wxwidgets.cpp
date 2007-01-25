@@ -171,14 +171,29 @@ int TOBY_delay(int ms)
 } // TOBY_delay
 
 
+#define TOBY_PROFILE 1
+#if TOBY_PROFILE
+static wxStopWatch *stopWatch = NULL;
+#endif
+
 void TOBY_startRun()
 {
     wxGetApp().getTobyWindow()->getTurtleSpace()->startRun();
+
+    #if TOBY_PROFILE
+    stopWatch = new wxStopWatch;
+    #endif
 } // TOBY_startRun
 
 
 void TOBY_stopRun()
 {
+    #if TOBY_PROFILE
+    printf("time to execute: %ld\n", stopWatch->Time());
+    delete stopWatch;
+    stopWatch = NULL;
+    #endif
+
     wxGetApp().getTobyWindow()->getTurtleSpace()->stopRun();
 } // TOBY_stopRun
 
