@@ -31,6 +31,16 @@ static inline lua_Number radiansToDegrees(lua_Number radians)
 } /* degreesToRadians */
 
 
+/* This can be optimized into one FPU operation on x86 chips. */
+static inline void sinAndCos(lua_Number x, lua_Number *sval, lua_Number *cval)
+{
+    // !!! FIXME: x86 version
+    // !!! FIXME: fixed point?
+    *sval = sin(x);
+    *cval = cos(x);
+} /* sinAndCos */
+
+
 static inline void calculateLine(lua_Number heading, lua_Number distance,
                                  lua_Number startX, lua_Number startY,
                                  lua_Number *endX, lua_Number *endY)
@@ -40,8 +50,10 @@ static inline void calculateLine(lua_Number heading, lua_Number distance,
     assert(endY != NULL);
 
     lua_Number rad = degreesToRadians(heading);
-    *endX = (cos(rad) * (lua_Number) distance) + startX;
-    *endY = (sin(rad) * (lua_Number) distance) + startY;
+    lua_Number sinrad, cosrad;
+    sinAndCos(rad, &sinrad, &cosrad);
+    *endY = (sinrad * distance) + startY;
+    *endX = (cosrad * distance) + startX;
 } /* calculateLine */
 
 
