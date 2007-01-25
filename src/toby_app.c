@@ -45,11 +45,13 @@ static inline void calculateLine(lua_Number heading, lua_Number distance,
 } /* calculateLine */
 
 
+#if 0   /* not used, yet. */
 static inline lua_Number pythagorian(lua_Number s1, lua_Number hypotenuse)
 {
     /* !!! FIXME: fixed point... */
     return(sqrt((hypotenuse * hypotenuse) - (s1 * s1)));
 } /* pythagorian */
+#endif
 
 
 /* convert a lua_Number between 0.0 and 1.0 to 0 to 255. */
