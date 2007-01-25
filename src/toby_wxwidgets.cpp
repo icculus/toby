@@ -39,6 +39,7 @@ public:
     bool isRunning() const { return this->running; }
     bool stopRequested() const { return (this->stopping) || (!this->running); }
 
+    void onResize(wxSizeEvent &evt);
     void onPaint(wxPaintEvent &evt);
     void onIdle(wxIdleEvent &evt);
 
@@ -48,8 +49,10 @@ private:
     char *program;
     bool stopping;
     bool running;
-    int currentW;  // width for current run.
-    int currentH;  // height for current run.
+    int clientW;  // width of physical window (changes on resize event).
+    int clientH;  // height of physical window (changes on resize event).
+    int backingW;  // width of backing store (changes on startRun()).
+    int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
     wxStopWatch stopwatch;
@@ -57,6 +60,7 @@ private:
 };
 
 BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
+    EVT_SIZE(TurtleSpace::onResize)
     EVT_PAINT(TurtleSpace::onPaint)
     EVT_IDLE(TurtleSpace::onIdle)
 END_EVENT_TABLE()
@@ -267,8 +271,10 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , program(NULL)
     , stopping(false)
     , running(false)
-    , currentW(1)
-    , currentH(1)
+    , clientW(1)
+    , clientH(1)
+    , backingW(1)
+    , backingH(1)
     , backing(NULL)
     , backingDC(NULL)
 {
@@ -286,17 +292,15 @@ TurtleSpace::~TurtleSpace()
 
 void TurtleSpace::scaleXY(int &x, int &y) const
 {
-    x = (int) (((float) this->currentW) * (((float) x) / 1000.0f));
-    y = (int) (((float) this->currentH) * (((float) y) / 1000.0f));
+    x = (int) (((float) this->backingW) * (((float) x) / 1000.0f));
+    y = (int) (((float) this->backingH) * (((float) y) / 1000.0f));
 } // TurtleSpace::scaleXY
 
 
 void TurtleSpace::calcOffset(int &xoff, int &yoff) const
 {
-    int w, h;
-    this->GetClientSize(&w, &h);
-    xoff = (w - this->currentW) / 2;
-    yoff = (h - this->currentH) / 2;
+    xoff = (this->clientW - this->backingW) / 2;
+    yoff = (this->clientH - this->backingH) / 2;
 } // TurtleSpace::calcOffset
 
 
@@ -304,7 +308,7 @@ void TurtleSpace::clipDC(wxDC &dc, int xoff, int yoff) const
 {
     if ((xoff != 0) || (yoff != 0))
     {
-        dc.SetClippingRegion(xoff, yoff, this->currentW, this->currentH);
+        dc.SetClippingRegion(xoff, yoff, this->backingW, this->backingH);
     } // if
 } // TurtleSpace::clipDC
 
@@ -313,16 +317,15 @@ void TurtleSpace::startRun()
 {
     wxASSERT(!this->running);
 
-    int w, h;
-    this->GetClientSize(&w, &h);
-
+    int w = this->clientW;
+    int h = this->clientH;
     if (w > h)
         w = h;
     else
         h = w;
 
     // resized since last run?
-    if ((w != this->currentW) || (h != this->currentH))
+    if ((w != this->backingW) || (h != this->backingH))
     {
         // (these may be NULL already, that's okay.)
         delete this->backingDC;
@@ -337,8 +340,8 @@ void TurtleSpace::startRun()
         wxASSERT(this->backingDC == NULL);
         this->backing = new wxBitmap(w, h);
         this->backingDC = new wxMemoryDC(*this->backing);
-        this->currentW = w;
-        this->currentH = h;
+        this->backingW = w;
+        this->backingH = h;
         TOBY_cleanup(0, 0, 0);
     } // if
 
@@ -403,6 +406,16 @@ void TurtleSpace::onIdle(wxIdleEvent &evt)
         delete[] prog;
     } // else if
 } // TurtleSpace::onIdle
+
+
+void TurtleSpace::onResize(wxSizeEvent &evt)
+{
+    // Just cache the dimensions, since we're spending an enormous amount of
+    //  time looking them up over and over during program execution.
+    wxSize size(this->GetClientSize());
+    this->clientW = size.GetWidth();
+    this->clientH = size.GetHeight();
+} // TurtleSpace::onResize
 
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
