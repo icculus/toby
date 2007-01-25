@@ -10,6 +10,8 @@
 // !!! FIXME: Just building standalone for now...
 #define TOBY_STANDALONE 1
 
+static bool GQuitProgramRequested = false;
+
 
 // Interfaces ...
 
@@ -343,13 +345,23 @@ void TurtleSpace::runProgram(char *_program)
 
 void TurtleSpace::onIdle(wxIdleEvent &evt)
 {
-    if (this->program != NULL)
+    if (GQuitProgramRequested)
+    {
+        if (this->isRunning())
+            this->halt();
+        else
+        {
+            GQuitProgramRequested = false;
+            GetParent()->Close(false);
+        } // else
+    } // if
+    else if (this->program != NULL)
     {
         char *prog = this->program;
         this->program = NULL;
         TOBY_runProgram(prog);
         delete[] prog;
-    } // if
+    } // else if
 } // TurtleSpace::onIdle
 
 
@@ -426,7 +438,7 @@ void TobyWindow::onClose(wxCloseEvent &evt)
     if (tspace->isRunning())
     {
         tspace->halt();
-        this->AddPendingEvent(evt);  // try it again later so tspace can halt.
+        GQuitProgramRequested = true; // try it again later so tspace can halt.
         evt.Veto();  // this time, though, no deal.
     } // if
 
