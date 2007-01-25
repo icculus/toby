@@ -5,7 +5,10 @@
 #include <wx/wx.h>
 #include <wx/config.h>
 #include <wx/wfstream.h>
+#include <wx/aboutdlg.h>
+
 #include "toby_app.h"
+
 
 // !!! FIXME: Just building standalone for now...
 #define TOBY_STANDALONE 1
@@ -59,10 +62,15 @@ END_EVENT_TABLE()
 
 enum TobyMenuCommands
 {
-    MENUCMD_Quit = 1,
-    MENUCMD_Open,
+    MENUCMD_About = wxID_ABOUT,
+    MENUCMD_Quit = wxID_EXIT,
+    MENUCMD_Open = wxID_HIGHEST,
     MENUCMD_New,
-    MENUCMD_About,
+    MENUCMD_Run,
+    MENUCMD_Stop,
+    MENUCMD_Cleanup,
+    MENUCMD_Website,
+    MENUCMD_License,
 };
 
 // TobyWindow is a standard wxFrame, but adds an interface for getting
@@ -80,6 +88,9 @@ public:
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
     void onClose(wxCloseEvent &evt);
+    void onAbout(wxCommandEvent &evt);
+    void onWebsite(wxCommandEvent &evt);
+    void onLicense(wxCommandEvent &evt);
 
 protected:
     TurtleSpace turtleSpace;
@@ -90,6 +101,9 @@ private:
 
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
+    EVT_MENU(MENUCMD_About, TobyWindow::onAbout)
+    EVT_MENU(MENUCMD_Website, TobyWindow::onWebsite)
+    EVT_MENU(MENUCMD_License, TobyWindow::onLicense)
 END_EVENT_TABLE()
 
 
@@ -432,6 +446,31 @@ const wxSize TobyWindow::getPreviousSize()
 } // TobyWindow::getPreviousSize
 
 
+void TobyWindow::onAbout(wxCommandEvent &evt)
+{
+    wxAboutDialogInfo info;
+    info.SetName(wxT("Toby"));
+    info.SetVersion(wxT("0.1"));
+    info.SetDescription(wxT("A programming language for learning."));
+    info.SetCopyright(wxT("(C) 2007 Ryan C. Gordon <icculus@icculus.org>"));
+    ::wxAboutBox(info);
+} // TobyWindow::onAbout
+
+
+void TobyWindow::onLicense(wxCommandEvent &evt)
+{
+    // !!! FIXME: this isn't right.
+    wxMessageDialog dlg(NULL, wxString(GLuaLicense, wxConvUTF8), wxT("License"), wxOK);
+    dlg.ShowModal();
+} // TobyWindow::onLicense
+
+
+void TobyWindow::onWebsite(wxCommandEvent &evt)
+{
+    wxLaunchDefaultBrowser(wxT("http://icculus.org/toby/"));
+} // TobyWindow::onWebsite
+
+
 void TobyWindow::onClose(wxCloseEvent &evt)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
@@ -464,8 +503,21 @@ TobyStandaloneFrame::TobyStandaloneFrame()
     file_menu->Append(MENUCMD_Open, wxT("&Open"), wxT("Open"));
     file_menu->AppendSeparator();
     file_menu->Append(MENUCMD_Quit, wxT("E&xit"), wxT("Exit"));
+
+    wxMenu *run_menu = new wxMenu;
+    run_menu->Append(MENUCMD_Run, wxT("&Run Program"));
+    run_menu->Append(MENUCMD_Stop, wxT("&Stop Program"));
+    run_menu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"));
+
+    wxMenu *help_menu = new wxMenu;
+    help_menu->Append(MENUCMD_About, wxT("&About"));
+    help_menu->Append(MENUCMD_License, wxT("&License"));
+    help_menu->Append(MENUCMD_Website, wxT("Toby on the &Web"));
+
     wxMenuBar *menu_bar = new wxMenuBar;
     menu_bar->Append(file_menu, wxT("&File"));
+    menu_bar->Append(run_menu, wxT("&Run"));
+    menu_bar->Append(help_menu, wxT("&Help"));
     this->SetMenuBar(menu_bar);
 } // TobyStandaloneFrame::TobyStandaloneFrame
 
