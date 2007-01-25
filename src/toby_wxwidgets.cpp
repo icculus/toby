@@ -306,10 +306,10 @@ void TurtleSpace::calcOffset(int &xoff, int &yoff) const
 
 void TurtleSpace::clipDC(wxDC &dc, int xoff, int yoff) const
 {
-    if ((xoff != 0) || (yoff != 0))
-    {
-        dc.SetClippingRegion(xoff, yoff, this->backingW, this->backingH);
-    } // if
+    const int w = this->backingW;
+    const int h = this->backingH;
+    if ((w < this->clientW) || (h < this->clientH))
+        dc.SetClippingRegion(xoff, yoff, w, h);
 } // TurtleSpace::clipDC
 
 
