@@ -7,6 +7,7 @@
 #include <wx/wfstream.h>
 #include <wx/aboutdlg.h>
 #include <wx/print.h>
+#include <wx/printdlg.h>
 
 #include "toby_app.h"
 
@@ -84,6 +85,7 @@ enum TobyMenuCommands
     MENUCMD_Quit = wxID_EXIT,
     MENUCMD_Open = wxID_HIGHEST,
     MENUCMD_New,
+    MENUCMD_PageSetup,
     MENUCMD_PrintPreview,
     MENUCMD_Print,
     MENUCMD_Run,
@@ -110,6 +112,7 @@ public:
     void openFile(const wxString &path);
     virtual void openedProgram(char *buf) = 0;
     void onClose(wxCloseEvent &evt);
+    void onPageSetup(wxCommandEvent &evt);
     void onPrintPreview(wxCommandEvent &evt);
     void onPrint(wxCommandEvent &evt);
     void onAbout(wxCommandEvent &evt);
@@ -127,6 +130,7 @@ private:
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
     EVT_MENU(MENUCMD_Open, TobyWindow::onMenuOpen)
+    EVT_MENU(MENUCMD_PageSetup, TobyWindow::onPageSetup)
     EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onPrintPreview)
     EVT_MENU(MENUCMD_Print, TobyWindow::onPrint)
     EVT_MENU(MENUCMD_About, TobyWindow::onAbout)
@@ -587,6 +591,16 @@ void TobyWindow::onMenuOpen(wxCommandEvent& evt)
 } // TobyWindow::onMenuOpen
 
 
+void TobyWindow::onPageSetup(wxCommandEvent &event)
+{
+    wxPrintData *printData = wxGetApp().getPrintData();
+    wxPageSetupDialogData pageSetupData(*printData);
+    wxPageSetupDialog pageSetupDialog(this, &pageSetupData);
+    pageSetupDialog.ShowModal();
+    *printData = pageSetupDialog.GetPageSetupDialogData().GetPrintData();
+} // TobyWindow::onPageSetup
+
+
 void TobyWindow::onPrintPreview(wxCommandEvent &event)
 {
     wxPrintData *printData = wxGetApp().getPrintData();
@@ -683,7 +697,8 @@ TobyStandaloneFrame::TobyStandaloneFrame()
 {
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
-    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview\tCtrl-R"));
+    file_menu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
+    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"));
     file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"));
     file_menu->AppendSeparator();
     file_menu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
