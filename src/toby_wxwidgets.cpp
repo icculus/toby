@@ -637,11 +637,11 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
     wxMenu *file_menu = new wxMenu;
-    file_menu->Append(MENUCMD_Open, wxT("&Open"), wxT("Open"));
-    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"), wxT("Print Preview"));
-    file_menu->Append(MENUCMD_Print, wxT("&Print"), wxT("Print"));
+    file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
+    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview\tCtrl-R"));
+    file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"));
     file_menu->AppendSeparator();
-    file_menu->Append(MENUCMD_Quit, wxT("E&xit"), wxT("Exit"));
+    file_menu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
     wxMenu *run_menu = new wxMenu;
     run_menu->Append(MENUCMD_Run, wxT("&Run Program"));
