@@ -81,14 +81,19 @@ public:
 
 enum TobyMenuCommands
 {
+    // start with standard menu items, since using the wxIDs will map them
+    //  to sane things in the platform's UI (gnome icons in GTK+, moves the
+    //  about and quit items to the Apple menu on Mac OS X, etc).
     MENUCMD_About = wxID_ABOUT,
     MENUCMD_Quit = wxID_EXIT,
-    MENUCMD_Open = wxID_HIGHEST,
-    MENUCMD_New,
-    MENUCMD_PageSetup,
-    MENUCMD_PrintPreview,
-    MENUCMD_Print,
-    MENUCMD_Run,
+    MENUCMD_Open = wxID_OPEN,
+    MENUCMD_New = wxID_NEW,
+    MENUCMD_PageSetup = wxID_PAGE_SETUP,
+    MENUCMD_PrintPreview = wxID_PRINT_SETUP,
+    MENUCMD_Print = wxID_PRINT,
+    MENUCMD_Run = wxID_HIGHEST,
+
+    // non-standard menu items go here.
     MENUCMD_Stop,
     MENUCMD_Cleanup,
     MENUCMD_Website,
@@ -112,12 +117,12 @@ public:
     void openFile(const wxString &path);
     virtual void openedProgram(char *buf) = 0;
     void onClose(wxCloseEvent &evt);
-    void onPageSetup(wxCommandEvent &evt);
-    void onPrintPreview(wxCommandEvent &evt);
-    void onPrint(wxCommandEvent &evt);
-    void onAbout(wxCommandEvent &evt);
-    void onWebsite(wxCommandEvent &evt);
-    void onLicense(wxCommandEvent &evt);
+    void onMenuPageSetup(wxCommandEvent &evt);
+    void onMenuPrintPreview(wxCommandEvent &evt);
+    void onMenuPrint(wxCommandEvent &evt);
+    void onMenuAbout(wxCommandEvent &evt);
+    void onMenuWebsite(wxCommandEvent &evt);
+    void onMenuLicense(wxCommandEvent &evt);
     void onMenuOpen(wxCommandEvent &evt);
 
 protected:
@@ -130,12 +135,12 @@ private:
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
     EVT_MENU(MENUCMD_Open, TobyWindow::onMenuOpen)
-    EVT_MENU(MENUCMD_PageSetup, TobyWindow::onPageSetup)
-    EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onPrintPreview)
-    EVT_MENU(MENUCMD_Print, TobyWindow::onPrint)
-    EVT_MENU(MENUCMD_About, TobyWindow::onAbout)
-    EVT_MENU(MENUCMD_Website, TobyWindow::onWebsite)
-    EVT_MENU(MENUCMD_License, TobyWindow::onLicense)
+    EVT_MENU(MENUCMD_PageSetup, TobyWindow::onMenuPageSetup)
+    EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onMenuPrintPreview)
+    EVT_MENU(MENUCMD_Print, TobyWindow::onMenuPrint)
+    EVT_MENU(MENUCMD_About, TobyWindow::onMenuAbout)
+    EVT_MENU(MENUCMD_Website, TobyWindow::onMenuWebsite)
+    EVT_MENU(MENUCMD_License, TobyWindow::onMenuLicense)
 END_EVENT_TABLE()
 
 
@@ -591,17 +596,17 @@ void TobyWindow::onMenuOpen(wxCommandEvent& evt)
 } // TobyWindow::onMenuOpen
 
 
-void TobyWindow::onPageSetup(wxCommandEvent &event)
+void TobyWindow::onMenuPageSetup(wxCommandEvent &event)
 {
     wxPrintData *printData = wxGetApp().getPrintData();
     wxPageSetupDialogData pageSetupData(*printData);
     wxPageSetupDialog pageSetupDialog(this, &pageSetupData);
     pageSetupDialog.ShowModal();
     *printData = pageSetupDialog.GetPageSetupDialogData().GetPrintData();
-} // TobyWindow::onPageSetup
+} // TobyWindow::onMenuPageSetup
 
 
-void TobyWindow::onPrintPreview(wxCommandEvent &event)
+void TobyWindow::onMenuPrintPreview(wxCommandEvent &event)
 {
     wxPrintData *printData = wxGetApp().getPrintData();
     wxPrintDialogData printDialogData(*printData);
@@ -625,10 +630,10 @@ void TobyWindow::onPrintPreview(wxCommandEvent &event)
     frame->Centre(wxBOTH);
     frame->Initialize();
     frame->Show();
-} // TobyWindow::onPrintPreview
+} // TobyWindow::onMenuPrintPreview
 
 
-void TobyWindow::onPrint(wxCommandEvent &event)
+void TobyWindow::onMenuPrint(wxCommandEvent &event)
 {
     wxPrintData *printData = wxGetApp().getPrintData();
     wxPrintDialogData printDialogData(*printData);
@@ -639,10 +644,10 @@ void TobyWindow::onPrint(wxCommandEvent &event)
         if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
             wxMessageBox(wxT("There was a problem printing.\nPerhaps your current printer is not set correctly?"), wxT("Printing"), wxOK);
     } // if
-} // TobyWindow::onPrint
+} // TobyWindow::onMenuPrint
 
 
-void TobyWindow::onAbout(wxCommandEvent &evt)
+void TobyWindow::onMenuAbout(wxCommandEvent &evt)
 {
     wxAboutDialogInfo info;
     info.SetName(wxT("Toby"));
@@ -650,21 +655,21 @@ void TobyWindow::onAbout(wxCommandEvent &evt)
     info.SetDescription(wxT("A programming language for learning."));
     info.SetCopyright(wxT("(C) 2007 Ryan C. Gordon <icculus@icculus.org>"));
     ::wxAboutBox(info);
-} // TobyWindow::onAbout
+} // TobyWindow::onMenuAbout
 
 
-void TobyWindow::onLicense(wxCommandEvent &evt)
+void TobyWindow::onMenuLicense(wxCommandEvent &evt)
 {
     // !!! FIXME: this isn't right.
     wxMessageDialog dlg(NULL, wxString(GLuaLicense, wxConvUTF8), wxT("License"), wxOK);
     dlg.ShowModal();
-} // TobyWindow::onLicense
+} // TobyWindow::onMenuLicense
 
 
-void TobyWindow::onWebsite(wxCommandEvent &evt)
+void TobyWindow::onMenuWebsite(wxCommandEvent &evt)
 {
     wxLaunchDefaultBrowser(wxT("http://icculus.org/toby/"));
-} // TobyWindow::onWebsite
+} // TobyWindow::onMenuWebsite
 
 
 void TobyWindow::onClose(wxCloseEvent &evt)
