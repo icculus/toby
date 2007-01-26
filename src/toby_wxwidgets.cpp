@@ -6,6 +6,7 @@
 #include <wx/config.h>
 #include <wx/wfstream.h>
 #include <wx/aboutdlg.h>
+#include <wx/print.h>
 
 #include "toby_app.h"
 
@@ -66,12 +67,25 @@ BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
 END_EVENT_TABLE()
 
 
+// Printing support class...
+class TobyPrintout: public wxPrintout
+{
+public:
+    TobyPrintout(const wxChar *title = _T("Toby")) : wxPrintout(title) {}
+    virtual bool OnPrintPage(int page);
+    virtual bool HasPage(int page);
+    virtual void GetPageInfo(int *minPg, int *maxPg, int *selFrom, int *selTo);
+};
+
+
 enum TobyMenuCommands
 {
     MENUCMD_About = wxID_ABOUT,
     MENUCMD_Quit = wxID_EXIT,
     MENUCMD_Open = wxID_HIGHEST,
     MENUCMD_New,
+    MENUCMD_PrintPreview,
+    MENUCMD_Print,
     MENUCMD_Run,
     MENUCMD_Stop,
     MENUCMD_Cleanup,
@@ -94,6 +108,8 @@ public:
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
     void onClose(wxCloseEvent &evt);
+    void onPrintPreview(wxCommandEvent &evt);
+    void onPrint(wxCommandEvent &evt);
     void onAbout(wxCommandEvent &evt);
     void onWebsite(wxCommandEvent &evt);
     void onLicense(wxCommandEvent &evt);
@@ -107,6 +123,8 @@ private:
 
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
+    EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onPrintPreview)
+    EVT_MENU(MENUCMD_Print, TobyWindow::onPrint)
     EVT_MENU(MENUCMD_About, TobyWindow::onAbout)
     EVT_MENU(MENUCMD_Website, TobyWindow::onWebsite)
     EVT_MENU(MENUCMD_License, TobyWindow::onLicense)
@@ -138,13 +156,15 @@ END_EVENT_TABLE()
 class TobyWxApp : public wxApp
 {
 public:
-    TobyWxApp() : mainWindow(NULL) { /* no-op */ }
+    TobyWxApp() : mainWindow(NULL), printData(NULL) { /* no-op. */ }
     virtual bool OnInit();
     virtual int OnExit();
     TobyWindow *getTobyWindow() const { return this->mainWindow; }
+    inline wxPrintData *getPrintData();
 
 private:
     TobyWindow *mainWindow;
+    wxPrintData *printData;
 };
 
 DECLARE_APP(TobyWxApp)
@@ -342,7 +362,6 @@ void TurtleSpace::startRun()
         this->backingDC = new wxMemoryDC(*this->backing);
         this->backingW = w;
         this->backingH = h;
-        TOBY_cleanup(0, 0, 0);
     } // if
 
     this->running = true;
@@ -432,6 +451,44 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 } // TurtleSpace::onPaint
 
 
+bool TobyPrintout::OnPrintPage(int page)
+{
+    wxBitmap *bmp = wxGetApp().getTobyWindow()->getTurtleSpace()->getBacking();
+    if (bmp != NULL)
+    {
+        wxDC *dc = this->GetDC();
+        if (dc != NULL)
+        {
+            wxCoord dcw, dch;
+            dc->GetSize(&dcw, &dch);
+
+            int w = dcw;
+            int h = dch;
+            if (w > h) w = h; else h = w;  // keep it square.
+            wxImage img(bmp->ConvertToImage());
+            img.Rescale(w, h, wxIMAGE_QUALITY_HIGH);
+            dc->DrawBitmap(wxBitmap(img), (dcw-w)/2, (dch-h)/2, false);
+            return true;
+        } // if
+    } // if
+
+    return false;
+} // TobyPrintout::OnPrintPage
+
+
+void TobyPrintout::GetPageInfo(int *minPage, int *maxPage,
+                               int *selPageFrom, int *selPageTo)
+{
+    *minPage = *maxPage = *selPageFrom = *selPageTo = 1;
+} // TobyPrintout::GetPageInfo
+
+
+bool TobyPrintout::HasPage(int pageNum)
+{
+    return (pageNum == 1);
+} // TobyPrintout::HasPage
+
+
 
 TobyWindow::TobyWindow()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
@@ -483,6 +540,47 @@ const wxSize TobyWindow::getPreviousSize()
     else if (winh < 50) winh = 50;
     return wxSize(winw, winh);
 } // TobyWindow::getPreviousSize
+
+
+void TobyWindow::onPrintPreview(wxCommandEvent &event)
+{
+    wxPrintData *printData = wxGetApp().getPrintData();
+    wxPrintDialogData printDialogData(*printData);
+    wxPrintPreview *preview = new wxPrintPreview(new TobyPrintout,
+                                                 new TobyPrintout,
+                                                 &printDialogData);
+
+    if (!preview->Ok())
+    {
+        delete preview;
+        ::wxMessageBox(wxT("There was a problem previewing.\nPerhaps your current printer is not set correctly?"),
+                       wxT("Previewing"), wxOK);
+        return;
+    } // if
+
+    wxPreviewFrame *frame = new wxPreviewFrame(preview, this,
+                                               wxT("Toby Preview"),
+                                               wxPoint(100, 100),
+                                               wxSize(600, 650));
+
+    frame->Centre(wxBOTH);
+    frame->Initialize();
+    frame->Show();
+} // TobyWindow::onPrintPreview
+
+
+void TobyWindow::onPrint(wxCommandEvent &event)
+{
+    wxPrintData *printData = wxGetApp().getPrintData();
+    wxPrintDialogData printDialogData(*printData);
+    wxPrinter printer(&printDialogData);
+    TobyPrintout printout(wxT("Toby"));
+    if (!printer.Print(this, &printout))
+    {
+        if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
+            wxMessageBox(wxT("There was a problem printing.\nPerhaps your current printer is not set correctly?"), wxT("Printing"), wxOK);
+    } // if
+} // TobyWindow::onPrint
 
 
 void TobyWindow::onAbout(wxCommandEvent &evt)
@@ -540,6 +638,8 @@ TobyStandaloneFrame::TobyStandaloneFrame()
 {
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open"), wxT("Open"));
+    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"), wxT("Print Preview"));
+    file_menu->Append(MENUCMD_Print, wxT("&Print"), wxT("Print"));
     file_menu->AppendSeparator();
     file_menu->Append(MENUCMD_Quit, wxT("E&xit"), wxT("Exit"));
 
@@ -610,6 +710,14 @@ void TobyStandaloneFrame::onResize(wxSizeEvent &evt)
 
 IMPLEMENT_APP(TobyWxApp)
 
+wxPrintData *TobyWxApp::getPrintData()
+{
+    if (this->printData == NULL)
+        this->printData = new wxPrintData;
+    return this->printData;
+} // TobyWxApp::getPrintData
+
+
 bool TobyWxApp::OnInit()
 {
     #ifdef __APPLE__
@@ -649,6 +757,8 @@ bool TobyWxApp::OnInit()
 int TobyWxApp::OnExit()
 {
     mainWindow = NULL;  // this is probably deleted already.
+    delete this->printData;
+    this->printData = NULL;
     return wxApp::OnExit();
 } // TobyWxApp::OnExit
 
