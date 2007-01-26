@@ -107,12 +107,15 @@ public:
     TurtleSpace *getTurtleSpace() { return &this->turtleSpace; }
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
+    void openFile(const wxString &path);
+    virtual void openedProgram(char *buf) = 0;
     void onClose(wxCloseEvent &evt);
     void onPrintPreview(wxCommandEvent &evt);
     void onPrint(wxCommandEvent &evt);
     void onAbout(wxCommandEvent &evt);
     void onWebsite(wxCommandEvent &evt);
     void onLicense(wxCommandEvent &evt);
+    void onMenuOpen(wxCommandEvent &evt);
 
 protected:
     TurtleSpace turtleSpace;
@@ -123,6 +126,7 @@ private:
 
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
+    EVT_MENU(MENUCMD_Open, TobyWindow::onMenuOpen)
     EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onPrintPreview)
     EVT_MENU(MENUCMD_Print, TobyWindow::onPrint)
     EVT_MENU(MENUCMD_About, TobyWindow::onAbout)
@@ -138,7 +142,7 @@ public:
     TobyStandaloneFrame();
     void onResize(wxSizeEvent &evt);
     void onMenuQuit(wxCommandEvent &evt);
-    void onMenuOpen(wxCommandEvent &evt);
+    virtual void openedProgram(char *prog);
 
 private:
     DECLARE_EVENT_TABLE()
@@ -398,6 +402,7 @@ void TurtleSpace::halt()
 
 void TurtleSpace::runProgram(char *_program)
 {
+    this->halt();  // stop the current run as soon as possible.
     // This gets kicked off in the next idle event.
     //  TurtleSpace will delete[] _program sometime later!
     delete[] this->program;
@@ -419,10 +424,15 @@ void TurtleSpace::onIdle(wxIdleEvent &evt)
     } // if
     else if (this->program != NULL)
     {
-        char *prog = this->program;
-        this->program = NULL;
-        TOBY_runProgram(prog);
-        delete[] prog;
+        if (this->isRunning())
+            this->halt();
+        else
+        {
+            char *prog = this->program;
+            this->program = NULL;
+            TOBY_runProgram(prog);
+            delete[] prog;
+        } // else
     } // else if
 } // TurtleSpace::onIdle
 
@@ -540,6 +550,41 @@ const wxSize TobyWindow::getPreviousSize()
     else if (winh < 50) winh = 50;
     return wxSize(winw, winh);
 } // TobyWindow::getPreviousSize
+
+
+void TobyWindow::openFile(const wxString &path)
+{
+    wxFileInputStream strm(path);
+    if (!strm.IsOk())
+        TOBY_messageBox("Could not open file");
+    else
+    {
+        size_t len = strm.GetLength();
+        char *buf = new char[len + 1];
+        if (!strm.Read(buf, len).IsOk())
+        {
+            TOBY_messageBox("Could not read file");
+            delete[] buf;
+        } // if
+        else
+        {
+            buf[len] = '\0';
+            this->openedProgram(buf);  // openedProgram will delete[]!
+        } // else
+    } // else
+} // TobyWindow::openFile
+
+
+void TobyWindow::onMenuOpen(wxCommandEvent& evt)
+{
+    // !!! FIXME: localization.
+    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
+                     wxT("Toby Programs (*.toby)|*.toby"),
+                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    
+    if (dlg.ShowModal() == wxID_OK)
+        openFile(dlg.GetPath());
+} // TobyWindow::onMenuOpen
 
 
 void TobyWindow::onPrintPreview(wxCommandEvent &event)
@@ -667,37 +712,12 @@ void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
 } // TobyStandaloneFrame::onMenuQuit
 
 
-void TobyStandaloneFrame::onMenuOpen(wxCommandEvent& evt)
+void TobyStandaloneFrame::openedProgram(char *prog)
 {
-    // !!! FIXME: localization.
-    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
-                     wxT("Toby Programs (*.toby)|*.toby"),
-                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-    
-    if (dlg.ShowModal() == wxID_OK)
-    {
-        wxString path(dlg.GetPath());
-        wxFileInputStream strm(path);
-        if (!strm.IsOk())
-            TOBY_messageBox("Could not open file");
-        else
-        {
-            size_t len = strm.GetLength();
-            char *buf = new char[len + 1];
-            if (!strm.Read(buf, len).IsOk())
-            {
-                TOBY_messageBox("Could not read file");
-                delete[] buf;
-            } // if
-            else
-            {
-                buf[len] = '\0';
-                // Will kick off in next idle event.
-                this->turtleSpace.runProgram(buf);
-            } // else
-        } // else
-    } // if
-} // TobyStandaloneFrame::onMenuOpen
+    // Will kick off in next idle event...turtlespace stores pointer and
+    //  delete[]s it later.
+    turtleSpace.runProgram(prog);
+} // TobyStandaloneFrame::openedProgram
 
 
 void TobyStandaloneFrame::onResize(wxSizeEvent &evt)
