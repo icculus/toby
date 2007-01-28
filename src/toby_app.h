@@ -43,7 +43,7 @@ typedef struct Turtle
  * This can block for a LONG time, but it will call back into your
  *  application with the following functions...
  */
-void TOBY_runProgram(const char *source_code);
+void TOBY_runProgram(const char *source_code, int run_for_printing);
 
 
 

@@ -5,12 +5,19 @@
 #include <assert.h>
 #include "toby_app.h"
 
+typedef struct TobyRGB
+{
+    int r;
+    int g;
+    int b;
+} TobyRGB;
+
 
 /* TurtlesSpace state... */
 static Turtle *currentTurtle = NULL;
 static int fenceEnabled = 1;
 static int halted = 0;
-
+static TobyRGB background = { 0, 0, 0 };
 
 /*
  * All this math code had brilliant comments explaining it, but as proud as I
@@ -328,7 +335,7 @@ static int luahook_setpencolor(lua_State *L)
      *   dark green, etc...Then I used the GIMP color tool
      *   (http://www.gimp.org/), to find the equivalents in RGB format.
      */
-    static const struct { int r; int g; int b; } colors[] =
+    static const TobyRGB colors[] =
     {
         { 0, 0, 0 },       // black
         { 0, 26, 196 },    // dark blue
@@ -400,7 +407,8 @@ static int luahook_disablefence(lua_State *L)
 
 static int luahook_cleanupturtlespace(lua_State *L)
 {
-    TOBY_cleanup(0, 0, 0);  // !!! FIXME: let user choose color?
+    // !!! FIXME: let user choose color?
+    TOBY_cleanup(background.r, background.g, background.b);
     return 0;
 } /* luahook_getturtlespaceheight */
 
@@ -587,15 +595,21 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
 } /* luaDebugHook */
 
 
-void TOBY_runProgram(const char *source_code)
+void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
     const int mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT;
     lua_State *L;
 
-    TOBY_cleanup(0, 0, 0);
     currentTurtle = newTurtle();
     fenceEnabled = 1;
     halted = 0;
+
+    if (run_for_printing)
+        background.r = background.g = background.b = 255;  // white.
+    else
+        background.r = background.g = background.b = 0;  // black.
+
+    TOBY_cleanup(background.r, background.g, background.b);
 
     L = luaL_newstate();
     if (L == NULL)
