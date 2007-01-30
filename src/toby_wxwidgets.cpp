@@ -96,6 +96,7 @@ enum TobyMenuCommands
 
     // non-standard menu items go here.
     MENUCMD_RunForPrinting,
+    MENUCMD_SaveAsImage,
     MENUCMD_Stop,
     MENUCMD_Cleanup,
     MENUCMD_Website,
@@ -130,6 +131,7 @@ public:
     void onMenuWebsite(wxCommandEvent &evt);
     void onMenuLicense(wxCommandEvent &evt);
     void onMenuOpen(wxCommandEvent &evt);
+    void onMenuSaveAsImage(wxCommandEvent &evt);
     void onMenuCleanup(wxCommandEvent &evt);
 
 protected:
@@ -142,6 +144,7 @@ private:
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
     EVT_MENU(MENUCMD_Open, TobyWindow::onMenuOpen)
+    EVT_MENU(MENUCMD_SaveAsImage, TobyWindow::onMenuSaveAsImage)
     EVT_MENU(MENUCMD_PageSetup, TobyWindow::onMenuPageSetup)
     EVT_MENU(MENUCMD_PrintPreview, TobyWindow::onMenuPrintPreview)
     EVT_MENU(MENUCMD_Print, TobyWindow::onMenuPrint)
@@ -625,6 +628,48 @@ void TobyWindow::onMenuOpen(wxCommandEvent& evt)
 } // TobyWindow::onMenuOpen
 
 
+void TobyWindow::onMenuSaveAsImage(wxCommandEvent &evt)
+{
+    wxString exts;
+    wxList &handlers = wxImage::GetHandlers();
+    for (wxNode *node = handlers.GetFirst(); node; node = node->GetNext())
+    {
+        wxImageHandler *handler = (wxImageHandler *) node->GetData();
+        exts.Append(handler->GetName());
+        exts.Append(wxT(" (*."));
+        exts.Append(handler->GetExtension());
+        exts.Append(wxT(")|*."));
+        exts.Append(handler->GetExtension());
+        if (node->GetNext() != NULL)
+            exts.Append(wxT("|"));
+    } // for
+
+    // !!! FIXME: localization.
+    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
+                     exts, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        wxImage img(getTurtleSpace()->getBacking()->ConvertToImage());
+        // Force alpha to opaque so background shows up.
+        unsigned char *alpha = img.GetAlpha();
+        if (alpha != NULL)
+            memset(alpha, 0xFF, img.GetWidth() * img.GetHeight());
+        wxString fname(dlg.GetPath());
+        if (fname.Find('.') == -1)
+        {
+            const int idx = dlg.GetFilterIndex();
+            const wxNode *node = handlers.Item(idx);
+            const wxImageHandler *handler = (wxImageHandler *) node->GetData();
+            const wxString ext(handler->GetExtension());
+            fname.Append(wxT("."));
+            fname.Append(ext);
+        } // if
+        img.SaveFile(fname);  // if problem, does error message on destruction.
+    } // if
+} // TobyWindow::onMenuSaveAsImage
+
+
 void TobyWindow::onMenuPageSetup(wxCommandEvent &event)
 {
     wxPrintData *printData = wxGetApp().getPrintData();
@@ -739,6 +784,7 @@ TobyStandaloneFrame::TobyStandaloneFrame()
 
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
+    file_menu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image"));
     file_menu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
     file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"));
     file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"));
@@ -859,6 +905,8 @@ bool TobyWxApp::OnInit()
 
     wxConfigBase *cfg = new wxConfig(wxT("Toby"), wxT("icculus.org"));
     wxConfig::Set(cfg);
+
+    ::wxInitAllImageHandlers();
 
     #if TOBY_STANDALONE
         cfg->SetPath(wxT("/Standalone"));
