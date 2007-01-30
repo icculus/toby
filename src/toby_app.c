@@ -19,6 +19,14 @@ static int fenceEnabled = 1;
 static int halted = 0;
 static TobyRGB background = { 0, 0, 0 };
 
+void TOBY_background(int *r, int *g, int *b)
+{
+    *r = background.r;
+    *g = background.g;
+    *b = background.b;
+} /* TOBY_background */
+
+
 /*
  * All this math code had brilliant comments explaining it, but as proud as I
  *  was to figure it out in high school...really, it's fundamental

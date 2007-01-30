@@ -39,6 +39,9 @@ typedef struct Turtle
 } Turtle;
 
 
+void TOBY_background(int *r, int *g, int *b);
+
+
 /*
  * This can block for a LONG time, but it will call back into your
  *  application with the following functions...

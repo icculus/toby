@@ -486,7 +486,9 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
 void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
     wxPaintDC dc(this);
-    dc.SetBackground(wxBrush(wxColour(0, 0, 0)));
+    int r, g, b;
+    TOBY_background(&r, &g, &b);
+    dc.SetBackground(wxBrush(wxColour(r, g, b)));
     dc.Clear();
     if (this->backing != NULL)
     {
