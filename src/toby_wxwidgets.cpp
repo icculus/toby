@@ -778,27 +778,28 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 } // TobyWindow::onClose
 
 
+// !!! FIXME: overflowing 80 chars here...
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
     this->program = NULL;
 
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
-    file_menu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image"));
+    file_menu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image\tCtrl-S"))->Enable(false);
     file_menu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
-    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"));
-    file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"));
+    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"))->Enable(false);
+    file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"))->Enable(false);
     file_menu->AppendSeparator();
     file_menu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
     wxMenu *run_menu = new wxMenu;
-    run_menu->Append(MENUCMD_Run, wxT("&Run Program"))->Enable(false);
+    run_menu->Append(MENUCMD_Run, wxT("&Run Program\tF5"))->Enable(false);
     run_menu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
-    run_menu->Append(MENUCMD_Stop, wxT("&Stop Program"))->Enable(false);
-    run_menu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"));
+    run_menu->Append(MENUCMD_Stop, wxT("&Stop Program\tESC"))->Enable(false);
+    run_menu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
 
     wxMenu *help_menu = new wxMenu;
-    help_menu->Append(MENUCMD_About, wxT("&About"));
+    help_menu->Append(MENUCMD_About, wxT("&About\tF1"));
     help_menu->Append(MENUCMD_License, wxT("&License"));
     help_menu->Append(MENUCMD_Website, wxT("Toby on the &Web"));
 
@@ -858,6 +859,10 @@ void TobyStandaloneFrame::startRunImpl()
     mb->FindItem(MENUCMD_Run)->Enable(false);
     mb->FindItem(MENUCMD_RunForPrinting)->Enable(false);
     mb->FindItem(MENUCMD_Stop)->Enable(true);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(false);
+    mb->FindItem(MENUCMD_Print)->Enable(false);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(false);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(false);
 } // TobyStandaloneFrame::startRunImpl
 
 
@@ -867,6 +872,10 @@ void TobyStandaloneFrame::stopRunImpl()
     mb->FindItem(MENUCMD_Run)->Enable(true);
     mb->FindItem(MENUCMD_RunForPrinting)->Enable(true);
     mb->FindItem(MENUCMD_Stop)->Enable(false);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(true);
+    mb->FindItem(MENUCMD_Print)->Enable(true);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(true);
 } // TobyStandaloneFrame::stopRunImpl
 
 
