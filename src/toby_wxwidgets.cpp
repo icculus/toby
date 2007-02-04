@@ -374,13 +374,16 @@ void TurtleSpace::startRun()
     int w = this->clientW;
     int h = this->clientH;
 
-#if 0 // !!! FIXME
     if (this->runForPrinting)
     {
-        w = this->printerW;
-        h = this->printerH;
+        // !!! FIXME
+        // Run with a target of 300dpi on 8x11 paper. This isn't really
+        //  right, but it's easy for now. Ideally we throw up a printer
+        //  dialog and get the exact dimensions from the DC, but that adds
+        //  all sorts of event queue tapdancing...
+        w = (8 * 300);
+        h = (11 * 300);
     } // if
-#endif
 
     if (w > h)
         w = h;
