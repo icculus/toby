@@ -70,6 +70,7 @@ ELSE(wxWidgets_FOUND)
 ENDIF(wxWidgets_FOUND)
 
 SET(TOBY_SRCS
+    buildver.c
     toby_app.c
     toby_wxwidgets.cpp
     lua-5.1.1/src/lapi.c

@@ -751,12 +751,16 @@ void TobyWindow::onMenuCleanup(wxCommandEvent &evt)
 
 void TobyWindow::onMenuAbout(wxCommandEvent &evt)
 {
+    #define TOBY_VERSION_STRING2(x) wxT(#x)
+    #define TOBY_VERSION_STRING(x) TOBY_VERSION_STRING2(x)
     wxAboutDialogInfo info;
     info.SetName(wxT("Toby"));
-    info.SetVersion(wxT("0.1"));
+    info.SetVersion(TOBY_VERSION_STRING(APPREV));
     info.SetDescription(wxT("A programming language for learning."));
     info.SetCopyright(wxT("(C) 2007 Ryan C. Gordon <icculus@icculus.org>"));
     ::wxAboutBox(info);
+    #undef TOBY_VERSION_STRING2
+    #undef TOBY_VERSION_STRING
 } // TobyWindow::onMenuAbout
 
 
@@ -952,6 +956,21 @@ static void tobyInitAllImageHandlers()
 
 bool TobyWxApp::OnInit()
 {
+    // See if there are any interesting command line options to get started.
+    for (int i = 1; i < this->argc; i++)
+    {
+        const wxChar *arg = this->argv[i];
+        if (*arg == '-')
+        {
+            while (*(++arg) == '-') { /* no-op. */ }
+            if (wxString(arg) == wxT("buildver"))
+            {
+                printf("%s\n", GBuildVer);
+                return false;
+            } // if
+        } // if
+    } // for
+
     #ifdef __APPLE__
     // This lets a stdio app become a GUI app. Otherwise, you won't get
     //  GUI events from the system and other things will fail to work.

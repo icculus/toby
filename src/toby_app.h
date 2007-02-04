@@ -105,6 +105,7 @@ int TOBY_delay(int ms);
 
 
 extern const char *GLuaLicense;
+extern const char *GBuildVer;
 
 #ifdef __cplusplus
 }
