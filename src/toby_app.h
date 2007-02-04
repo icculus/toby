@@ -104,7 +104,7 @@ void TOBY_cleanup(int r, int g, int b);
 int TOBY_delay(int ms);
 
 
-extern const char *GLuaLicense;
+extern const char *GLicense;
 extern const char *GBuildVer;
 
 #ifdef __cplusplus

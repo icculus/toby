@@ -190,6 +190,28 @@ BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyWindow)
 END_EVENT_TABLE()
 
 
+class TobyLicenseDialog : public wxDialog
+{
+public:
+    TobyLicenseDialog(wxWindow *parent);
+    virtual ~TobyLicenseDialog() { delete this->textCtrl; }
+    void onOK(wxCommandEvent &evt);
+
+    enum
+    {
+        dlgFlags = wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX |
+                   wxMAXIMIZE_BOX | wxMINIMIZE_BOX | wxCAPTION
+    };
+
+private:
+    wxTextCtrl *textCtrl;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(TobyLicenseDialog, wxDialog)
+    EVT_BUTTON(wxID_OK, TobyLicenseDialog::onOK)
+END_EVENT_TABLE()
+
 
 // This is the the Application itself.
 class TobyWxApp : public wxApp
@@ -761,10 +783,54 @@ void TobyWindow::onMenuAbout(wxCommandEvent &evt)
 } // TobyWindow::onMenuAbout
 
 
+TobyLicenseDialog::TobyLicenseDialog(wxWindow *parent)
+    : wxDialog(parent, -1, wxT("License"), wxDefaultPosition, wxDefaultSize, dlgFlags)
+    , textCtrl(NULL)
+{
+    ::wxBeginBusyCursor();
+
+    wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
+
+    wxSizerFlags flagsBorder2;
+    flagsBorder2.DoubleBorder();
+
+    int dpyw, dpyh;
+    ::wxDisplaySize(&dpyw, &dpyh);
+
+    this->textCtrl = new wxTextCtrl(this, wxID_ANY,
+                                    wxString(GLicense, wxConvUTF8),
+                                    wxDefaultPosition, wxSize(dpyw/2, dpyh/2),
+                                    wxTE_READONLY | wxTE_MULTILINE);
+
+    topsizer->Add(textCtrl,
+                  wxSizerFlags(1).Expand().TripleBorder(wxLEFT | wxRIGHT));
+
+    wxSizer *buttonSizer = CreateSeparatedButtonSizer(wxOK);
+    if (buttonSizer != NULL)
+        topsizer->Add(buttonSizer, wxSizerFlags(flagsBorder2).Expand());
+
+    this->SetAutoLayout(true);
+    this->SetSizer(topsizer);
+
+    topsizer->SetSizeHints(this);
+    topsizer->Fit(this);
+
+    this->Centre(wxBOTH);
+    this->textCtrl->SetFocus();
+
+    ::wxEndBusyCursor();
+} // TobyLicenseDialog::TobyLicenseDialog
+
+
+void TobyLicenseDialog::onOK(wxCommandEvent &evt)
+{
+    this->EndModal(wxID_OK);
+} // TobyLicenseDialog::onOK
+
+
 void TobyWindow::onMenuLicense(wxCommandEvent &evt)
 {
-    // !!! FIXME: this isn't right.
-    wxMessageDialog dlg(NULL, wxString(GLuaLicense, wxConvUTF8), wxT("License"), wxOK);
+    TobyLicenseDialog dlg(this);
     dlg.ShowModal();
 } // TobyWindow::onMenuLicense
 
