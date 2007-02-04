@@ -121,9 +121,12 @@ public:
     void startRun() { this->startRunImpl(); this->turtleSpace.startRun(); }
     void stopRun() { this->stopRunImpl(); this->turtleSpace.stopRun(); }
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
+    virtual void resizeImpl(wxSizeEvent &evt) = 0;
     virtual void startRunImpl() = 0;
     virtual void stopRunImpl() = 0;
     void onClose(wxCloseEvent &evt);
+    void onResize(wxSizeEvent &evt);
+    void onMove(wxMoveEvent &evt);
     void onMenuPageSetup(wxCommandEvent &evt);
     void onMenuPrintPreview(wxCommandEvent &evt);
     void onMenuPrint(wxCommandEvent &evt);
@@ -136,6 +139,10 @@ public:
 
 protected:
     TurtleSpace turtleSpace;
+    int nonMaximizedX;
+    int nonMaximizedY;
+    int nonMaximizedWidth;
+    int nonMaximizedHeight;
 
 private:
     DECLARE_EVENT_TABLE()
@@ -143,6 +150,8 @@ private:
 
 BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_CLOSE(TobyWindow::onClose)
+    EVT_SIZE(TobyWindow::onResize)
+    EVT_MOVE(TobyWindow::onMove)
     EVT_MENU(MENUCMD_Open, TobyWindow::onMenuOpen)
     EVT_MENU(MENUCMD_SaveAsImage, TobyWindow::onMenuSaveAsImage)
     EVT_MENU(MENUCMD_PageSetup, TobyWindow::onMenuPageSetup)
@@ -161,11 +170,11 @@ class TobyStandaloneFrame : public TobyWindow
 public:
     TobyStandaloneFrame();
     virtual ~TobyStandaloneFrame();
-    void onResize(wxSizeEvent &evt);
     void onMenuQuit(wxCommandEvent &evt);
     void onMenuRun(wxCommandEvent &evt);
     void onMenuStop(wxCommandEvent &evt);
     void onMenuRunForPrinting(wxCommandEvent &evt);
+    virtual void resizeImpl(wxSizeEvent &evt);
     virtual void openFileImpl(const wxString &fname, char *prog);
     virtual void startRunImpl();
     virtual void stopRunImpl();
@@ -176,7 +185,6 @@ private:
 };
 
 BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyWindow)
-    EVT_SIZE(TobyStandaloneFrame::onResize)
     EVT_MENU(MENUCMD_Quit, TobyStandaloneFrame::onMenuQuit)
     EVT_MENU(MENUCMD_Run, TobyStandaloneFrame::onMenuRun)
     EVT_MENU(MENUCMD_RunForPrinting, TobyStandaloneFrame::onMenuRunForPrinting)
@@ -548,7 +556,9 @@ TobyWindow::TobyWindow()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(this)
 {
-    // no-op ... but don't forget to resize turtleSpace!
+    this->GetPosition(&this->nonMaximizedX, &this->nonMaximizedY);
+    this->GetSize(&this->nonMaximizedWidth, &this->nonMaximizedHeight);
+    // ...don't forget to resize turtleSpace somewhere in your subclass!
 } // TobyWindow::TobyWindow
 
 
@@ -755,6 +765,21 @@ void TobyWindow::onMenuWebsite(wxCommandEvent &evt)
 } // TobyWindow::onMenuWebsite
 
 
+void TobyWindow::onResize(wxSizeEvent &evt)
+{
+    if (!this->IsMaximized())
+        this->GetSize(&this->nonMaximizedWidth, &this->nonMaximizedHeight);
+    this->resizeImpl(evt);
+} // TobyWindow::onResize
+
+
+void TobyWindow::onMove(wxMoveEvent &evt)
+{
+    if (!this->IsMaximized())
+        this->GetPosition(&this->nonMaximizedX, &this->nonMaximizedY);
+} // TobyWindow::onMove
+
+
 void TobyWindow::onClose(wxCloseEvent &evt)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
@@ -769,13 +794,11 @@ void TobyWindow::onClose(wxCloseEvent &evt)
     {
         // !!! FIXME: this may not be the best place for this...
         wxConfigBase *cfg = wxConfig::Get();
-        int winw, winh, winx, winy;
-        this->GetSize(&winw, &winh);
-        this->GetPosition(&winx, &winy);
-        cfg->Write(wxT("LastWindowW"), (long) winw);
-        cfg->Write(wxT("LastWindowH"), (long) winh);
-        cfg->Write(wxT("LastWindowX"), (long) winx);
-        cfg->Write(wxT("LastWindowY"), (long) winy);
+        cfg->Write(wxT("LastWindowW"), (long) this->nonMaximizedWidth);
+        cfg->Write(wxT("LastWindowH"), (long) this->nonMaximizedHeight);
+        cfg->Write(wxT("LastWindowX"), (long) this->nonMaximizedX);
+        cfg->Write(wxT("LastWindowY"), (long) this->nonMaximizedY);
+        cfg->Write(wxT("Maximized"), (long) this->IsMaximized() ? 1 : 0);
         this->Destroy();
     } // else
 } // TobyWindow::onClose
@@ -882,11 +905,10 @@ void TobyStandaloneFrame::stopRunImpl()
 } // TobyStandaloneFrame::stopRunImpl
 
 
-void TobyStandaloneFrame::onResize(wxSizeEvent &evt)
+void TobyStandaloneFrame::resizeImpl(wxSizeEvent &evt)
 {
     this->turtleSpace.SetSize(this->GetClientSize());
-} // TobyStandaloneFrame::onResize
-
+} // TobyStandaloneFrame::resizeImpl
 
 
 
@@ -951,6 +973,10 @@ bool TobyWxApp::OnInit()
 
     if (this->mainWindow == NULL)
         return false;
+
+    long mx = 0;
+    if ((wxConfig::Get()->Read(wxT("Maximized"), &mx, -1)) && (mx))
+        this->mainWindow->Maximize();
 
     this->mainWindow->Show(true);
     SetTopWindow(this->mainWindow);
