@@ -15,8 +15,6 @@
 // !!! FIXME: Just building standalone for now...
 #define TOBY_STANDALONE 1
 
-static bool GQuitProgramRequested = false;
-
 
 // Interfaces ...
 
@@ -31,6 +29,7 @@ public:
     inline void startRun();
     inline void stopRun();
     inline int pumpEvents();
+    inline void requestQuit();
     inline void calcOffset(int &xoff, int &yoff) const;
     inline void clipDC(wxDC &dc, int xoff, int yoff) const;
     inline wxBitmap *getBacking() const { return this->backing; }
@@ -40,6 +39,7 @@ public:
     inline void halt();  // hook to GUI.
     bool isRunning() const { return this->running; }
     bool stopRequested() const { return (this->stopping) || (!this->running); }
+    bool quitRequested() const { return this->quitting; }
 
     void onResize(wxSizeEvent &evt);
     void onPaint(wxPaintEvent &evt);
@@ -49,6 +49,7 @@ public:
 
 private:
     char *program;
+    bool quitting;
     bool stopping;
     bool running;
     bool runForPrinting;
@@ -330,6 +331,7 @@ void TOBY_messageBox(const char *msg)
 TurtleSpace::TurtleSpace(wxWindow *parent)
     : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, windowFlags)
     , program(NULL)
+    , quitting(false)
     , stopping(false)
     , running(false)
     , runForPrinting(false)
@@ -430,6 +432,13 @@ void TurtleSpace::stopRun()
 } // TurtleSpace::stopRun
 
 
+void TurtleSpace::requestQuit()
+{
+    this->halt();
+    this->quitting = true;
+} // TurtleSpace::requestQuit
+
+
 int TurtleSpace::pumpEvents()
 {
     if (this->stopwatch.Time() > 50)
@@ -463,13 +472,13 @@ void TurtleSpace::runProgram(char *_program, bool _runForPrinting)
 
 void TurtleSpace::onIdle(wxIdleEvent &evt)
 {
-    if (GQuitProgramRequested)
+    if (this->quitRequested())
     {
         if (this->isRunning())
             this->halt();
         else
         {
-            GQuitProgramRequested = false;
+            this->quitting = false;
             GetParent()->Close(false);
         } // else
     } // if
@@ -785,9 +794,8 @@ void TobyWindow::onClose(wxCloseEvent &evt)
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     if (tspace->isRunning())
     {
-        tspace->halt();
-        GQuitProgramRequested = true; // try it again later so tspace can halt.
-        evt.Veto();  // this time, though, no deal.
+        tspace->requestQuit();  // try it again later so tspace can halt...
+        evt.Veto();  // ...this time, though, no deal.
     } // if
 
     else  // really closing this time.
