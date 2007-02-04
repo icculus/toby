@@ -57,7 +57,7 @@ IF(CMAKE_COMPILER_IS_GNUCC)
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 # We need wxWidgets for the GUI stuff right now...
-SET(wxWidgets_USE_LIBS base core)
+SET(wxWidgets_USE_LIBS base core adv)
 SET(wxWidgets_INCLUDE_DIRS_NO_SYSTEM 1)
 FIND_PACKAGE(wxWidgets)
 IF(wxWidgets_FOUND)
