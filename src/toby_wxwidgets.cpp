@@ -897,6 +897,26 @@ wxPrintData *TobyWxApp::getPrintData()
 } // TobyWxApp::getPrintData
 
 
+// Like ::wxInitAllImageHandlers(), but we don't want ALL of them...
+static void tobyInitAllImageHandlers()
+{
+    wxImage::AddHandler( new wxBMPHandler );
+
+    #if wxUSE_LIBPNG
+    wxImage::AddHandler( new wxPNGHandler );
+    #endif
+    #if wxUSE_LIBJPEG
+    wxImage::AddHandler( new wxJPEGHandler );
+    #endif
+    #if wxUSE_LIBTIFF
+    wxImage::AddHandler( new wxTIFFHandler );
+    #endif
+    #if wxUSE_TGA
+    wxImage::AddHandler( new wxTGAHandler );
+    #endif
+} // tobyInitAllImageHandlers
+
+
 bool TobyWxApp::OnInit()
 {
     #ifdef __APPLE__
@@ -915,7 +935,7 @@ bool TobyWxApp::OnInit()
     wxConfigBase *cfg = new wxConfig(wxT("Toby"), wxT("icculus.org"));
     wxConfig::Set(cfg);
 
-    ::wxInitAllImageHandlers();
+    tobyInitAllImageHandlers();
 
     #if TOBY_STANDALONE
         cfg->SetPath(wxT("/Standalone"));
