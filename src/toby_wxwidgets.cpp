@@ -93,12 +93,11 @@ enum TobyMenuCommands
     MENUCMD_PageSetup = wxID_PAGE_SETUP,
     MENUCMD_PrintPreview = wxID_PRINT_SETUP,
     MENUCMD_Print = wxID_PRINT,
-    MENUCMD_Run = wxID_HIGHEST,
+    MENUCMD_RunOrStop = wxID_HIGHEST,
 
     // non-standard menu items go here.
     MENUCMD_RunForPrinting,
     MENUCMD_SaveAsImage,
-    MENUCMD_Stop,
     MENUCMD_Cleanup,
     MENUCMD_Website,
     MENUCMD_License,
@@ -172,8 +171,7 @@ public:
     TobyStandaloneFrame();
     virtual ~TobyStandaloneFrame();
     void onMenuQuit(wxCommandEvent &evt);
-    void onMenuRun(wxCommandEvent &evt);
-    void onMenuStop(wxCommandEvent &evt);
+    void onMenuRunOrStop(wxCommandEvent &evt);
     void onMenuRunForPrinting(wxCommandEvent &evt);
     virtual void resizeImpl(wxSizeEvent &evt);
     virtual void openFileImpl(const wxString &fname, char *prog);
@@ -187,9 +185,8 @@ private:
 
 BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyWindow)
     EVT_MENU(MENUCMD_Quit, TobyStandaloneFrame::onMenuQuit)
-    EVT_MENU(MENUCMD_Run, TobyStandaloneFrame::onMenuRun)
+    EVT_MENU(MENUCMD_RunOrStop, TobyStandaloneFrame::onMenuRunOrStop)
     EVT_MENU(MENUCMD_RunForPrinting, TobyStandaloneFrame::onMenuRunForPrinting)
-    EVT_MENU(MENUCMD_Stop, TobyStandaloneFrame::onMenuStop)
 END_EVENT_TABLE()
 
 
@@ -831,9 +828,8 @@ TobyStandaloneFrame::TobyStandaloneFrame()
     file_menu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
     wxMenu *run_menu = new wxMenu;
-    run_menu->Append(MENUCMD_Run, wxT("&Run Program\tF5"))->Enable(false);
+    run_menu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
     run_menu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
-    run_menu->Append(MENUCMD_Stop, wxT("&Stop Program\tESC"))->Enable(false);
     run_menu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
 
     wxMenu *help_menu = new wxMenu;
@@ -869,34 +865,34 @@ void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
 } // TobyStandaloneFrame::openFileImpl
 
 
-void TobyStandaloneFrame::onMenuRun(wxCommandEvent &evt)
+void TobyStandaloneFrame::onMenuRunOrStop(wxCommandEvent &evt)
 {
     // Run will kick off in next idle event.
-    wxASSERT(this->program != NULL);
-    turtleSpace.runProgram(this->program, false);
-} // TobyStandaloneFrame::onMenuRun
+    if (turtleSpace.isRunning())
+        this->turtleSpace.halt();
+    else
+    {
+        wxASSERT(this->program != NULL);
+        this->turtleSpace.runProgram(this->program, false);
+    } // else
+} // TobyStandaloneFrame::onMenuRunOrStop
 
 
 void TobyStandaloneFrame::onMenuRunForPrinting(wxCommandEvent &evt)
 {
     // Run will kick off in next idle event.
+    wxASSERT(!this->turtleSpace.isRunning());
     wxASSERT(this->program != NULL);
-    turtleSpace.runProgram(this->program, true);
+    this->turtleSpace.runProgram(this->program, true);
 } // TobyStandaloneFrame::onMenuRunForPrinting
-
-
-void TobyStandaloneFrame::onMenuStop(wxCommandEvent &evt)
-{
-    turtleSpace.halt();
-} // TobyStandaloneFrame::onMenuStop
 
 
 void TobyStandaloneFrame::startRunImpl()
 {
     wxMenuBar *mb = this->GetMenuBar();
-    mb->FindItem(MENUCMD_Run)->Enable(false);
+    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
+    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
     mb->FindItem(MENUCMD_RunForPrinting)->Enable(false);
-    mb->FindItem(MENUCMD_Stop)->Enable(true);
     mb->FindItem(MENUCMD_SaveAsImage)->Enable(false);
     mb->FindItem(MENUCMD_Print)->Enable(false);
     mb->FindItem(MENUCMD_PrintPreview)->Enable(false);
@@ -907,9 +903,9 @@ void TobyStandaloneFrame::startRunImpl()
 void TobyStandaloneFrame::stopRunImpl()
 {
     wxMenuBar *mb = this->GetMenuBar();
-    mb->FindItem(MENUCMD_Run)->Enable(true);
+    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
+    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
     mb->FindItem(MENUCMD_RunForPrinting)->Enable(true);
-    mb->FindItem(MENUCMD_Stop)->Enable(false);
     mb->FindItem(MENUCMD_SaveAsImage)->Enable(true);
     mb->FindItem(MENUCMD_Print)->Enable(true);
     mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
