@@ -6,6 +6,15 @@ At this point, TOBY has been entirely written, and maintained by
 
 ...Ryan would like to give a shout out to the following:
 
+- The crew at PUC-Rio for Lua, which is basically what I would have created
+  for the Toby rewrite if I were to sit down a "do it right."  Thanks for
+  saving me more than a few years. Probably about 75% of the problems I needed
+  to solve were solved by Lua.
+- The crew at wxWidgets.org, who solved probably the other 25%.
+
+
+(Thanks from older versions...)
+
 - Gregory S. Read, for testing Toby's limits, breaking the ELSEIF statement,
   and being a bizarre sort of soul mate. Get yer slack on.
 - Sabrina Blanks, April Andrews, and Nicki Publick for being unwitting test
