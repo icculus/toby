@@ -419,13 +419,13 @@ void TurtleSpace::startRun()
     else
         h = w;
 
+    delete this->backingDC;  // (this may be NULL already, that's okay.)
+    this->backingDC = NULL;
+
     // resized since last run?
     if ((w != this->backingW) || (h != this->backingH))
     {
-        // (these may be NULL already, that's okay.)
-        delete this->backingDC;
-        delete this->backing;
-        this->backingDC = NULL;
+        delete this->backing;  // (this may be NULL already, that's okay.)
         this->backing = NULL;
     } // if
 
@@ -434,11 +434,11 @@ void TurtleSpace::startRun()
     {
         wxASSERT(this->backingDC == NULL);
         this->backing = new wxBitmap(w, h);
-        this->backingDC = new wxMemoryDC(*this->backing);
         this->backingW = w;
         this->backingH = h;
     } // if
 
+    this->backingDC = new wxMemoryDC(*this->backing);
     this->running = true;
     this->stopping = false;
 } // TurtleSpace::startRun
