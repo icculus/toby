@@ -1,4 +1,4 @@
-#ifdef __APPLE__
+#if PLATFORM_MACOSX
 #include <Carbon/Carbon.h>
 #endif
 
@@ -1040,7 +1040,7 @@ bool TobyWxApp::OnInit()
         } // if
     } // for
 
-    #ifdef __APPLE__
+    #if PLATFORM_MACOSX
     // This lets a stdio app become a GUI app. Otherwise, you won't get
     //  GUI events from the system and other things will fail to work.
     // Putting the app in an application bundle does the same thing.
