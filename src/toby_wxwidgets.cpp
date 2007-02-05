@@ -448,6 +448,8 @@ void TurtleSpace::stopRun()
 {
     wxASSERT(this->running);
     this->running = this->stopping = false;
+    delete this->backingDC;  // flush to bitmap.
+    this->backingDC = NULL;
 } // TurtleSpace::stopRun
 
 
@@ -534,9 +536,14 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
     dc.Clear();
     if (this->backing != NULL)
     {
+        // delete in-progress backingDC to force flush of rendered data...
+        const bool hasBackingDC = (this->backingDC != NULL);
+        delete this->backingDC;
         int xoff, yoff;
         this->calcOffset(xoff, yoff);
         dc.DrawBitmap(*this->backing, xoff, yoff, false);
+        if (hasBackingDC)
+            this->backingDC = new wxMemoryDC(*this->backing);
     } // if
 } // TurtleSpace::onPaint
 
