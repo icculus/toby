@@ -116,6 +116,7 @@ static Turtle *newTurtle(void)
     {
         retval->x = retval->y = N(500);   /* center of turtlespace. */
         retval->r = retval->g = retval->b = N(255);  /* pure white. */
+        retval->angle = 270;  /* due north. */
         retval->penDown = 1;
         retval->visible = 1;
     } /* if */
