@@ -308,7 +308,7 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
     if (dc != NULL)
     {
         dc->SetPen(pen);
-        dc->DrawLine(x1, y1, x2, y2);
+        dc->DrawLine((wxCoord) x1, (wxCoord) y1, (wxCoord) x2, (wxCoord) y2);
     } // if
 
     dc = tspace->getClientDC();
@@ -318,7 +318,10 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
         tspace->calcOffset(xoff, yoff);
         tspace->clipDC(dc, xoff, yoff);
         dc->SetPen(pen);
-        dc->DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
+        dc->DrawLine( ((wxCoord)x1) + ((wxCoord)xoff),
+                      ((wxCoord)y1) + ((wxCoord)yoff),
+                      ((wxCoord)x2) + ((wxCoord)xoff),
+                      ((wxCoord)y2) + ((wxCoord)yoff) );
     } // if
 } // TOBY_drawLine
 
@@ -330,10 +333,11 @@ void TOBY_blankTurtle(const Turtle *turtle)
     wxDC *dc = tspace->getClientDC();
     if (dc != NULL)
     {
-        lua_Number tx = turtle->pos.x;
-        lua_Number ty = turtle->pos.y;
-        lua_Number tw = turtle->width;
-        lua_Number th = turtle->height;
+        // !!! FIXME: this area is a little wide...
+        lua_Number tx = turtle->pos.x - turtle->width;
+        lua_Number ty = turtle->pos.y - turtle->height;
+        lua_Number tw = turtle->width * 2;
+        lua_Number th = turtle->height * 2;
 
         tspace->scaleXY(tx, ty);
         tspace->scaleXY(tw, th);
@@ -342,22 +346,30 @@ void TOBY_blankTurtle(const Turtle *turtle)
         tspace->calcOffset(xoff, yoff);
         // hopefully the clipping code really saves us here...you can't blit
         //  a portion of a bitmap...
-        dc->SetClippingRegion(tx+xoff, ty+yoff, tw, th);
+        dc->SetClippingRegion( ((wxCoord)tx) + ((wxCoord)xoff),
+                               ((wxCoord)ty) + ((wxCoord)yoff),
+                               ((wxCoord)tw), ((wxCoord)th) );
         dc->DrawBitmap(*tspace->getBacking(), xoff, yoff, false);
+        dc->DestroyClippingRegion();
     } // if
 } // TOBY_blankTurtle
 
 
-void TOBY_drawTurtle(const Turtle *turtle)
+void TOBY_drawTurtle(const Turtle *turtle, int intoBacking)
 {
     // never draw the turtle into the backing store.
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    wxDC *dc = tspace->getClientDC();
+    wxDC *dc = intoBacking ? tspace->getBackingDC() : tspace->getClientDC();
     if (dc != NULL)
     {
-        int xoff, yoff;
-        tspace->calcOffset(xoff, yoff);
-        tspace->clipDC(dc, xoff, yoff);
+        int xoff = 0;
+        int yoff = 0;
+
+        if (!intoBacking)
+        {
+            tspace->calcOffset(xoff, yoff);
+            tspace->clipDC(dc, xoff, yoff);
+        } // if
 
         TurtlePoint tpts[4];
         const lua_Number tx = turtle->pos.x;
@@ -378,18 +390,20 @@ void TOBY_drawTurtle(const Turtle *turtle)
 
         wxPoint points[3] =
         {
-            wxPoint(tpts[0].x, tpts[0].y),
-            wxPoint(tpts[1].x, tpts[1].y),
-            wxPoint(tpts[2].x, tpts[2].y),
+            wxPoint((wxCoord) tpts[0].x, (wxCoord) tpts[0].y),
+            wxPoint((wxCoord) tpts[1].x, (wxCoord) tpts[1].y),
+            wxPoint((wxCoord) tpts[2].x, (wxCoord) tpts[2].y),
         };
 
         const wxColor color(0, 255, 0);  // full green.
         dc->SetPen(wxPen(color));
         dc->SetBrush(wxBrush(color));
         dc->DrawPolygon(3, points, xoff, yoff);
-        dc->SetPen(wxPen(wxColor(0, 0, 255)));
-        dc->DrawLine(tpts[0].x+xoff, tpts[0].y+yoff,
-                     tpts[3].x+xoff, tpts[3].y+yoff);
+        dc->SetPen(wxPen(wxColor(0, 0, 255)));  // full blue.
+        dc->DrawLine( ((wxCoord)tpts[0].x) + ((wxCoord)xoff),
+                      ((wxCoord)tpts[0].y) + ((wxCoord)yoff),
+                      ((wxCoord)tpts[3].x) + ((wxCoord)xoff),
+                      ((wxCoord)tpts[3].y) + ((wxCoord)yoff) );
     } // if
 } // TOBY_drawTurtle
 
@@ -554,7 +568,7 @@ int TurtleSpace::pumpEvents()
         const bool hasBackingDC = (this->backingDC != NULL);
         this->nukeDC(&this->backingDC);
 
-        TOBY_renderAllTurtles();
+        TOBY_renderAllTurtles(false, false);
 
         // force client DC to flush here...this can mean that most platforms
         //  will be clamped to 20fps, but the overall execution of the
@@ -641,24 +655,28 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
     // delete in-progress clientDC so we don't have competing states...
     const bool hasClientDC = (this->clientDC != NULL);
+    const bool hasBackingDC = (this->backingDC != NULL);
     this->nukeDC(&this->clientDC);
 
-    wxPaintDC dc(this);
-    int r, g, b;
-    TOBY_background(&r, &g, &b);
-    dc.SetBackground(wxBrush(wxColour(r, g, b)));
-    dc.Clear();
-    if (this->backing != NULL)
+    if (true)   // scope to allow wxPaintDC to destruct.
     {
-        // delete in-progress backingDC to force flush of rendered data...
-        const bool hasBackingDC = (this->backingDC != NULL);
-        this->nukeDC(&this->backingDC);
-        int xoff, yoff;
-        this->calcOffset(xoff, yoff);
-        dc.DrawBitmap(*this->backing, xoff, yoff, false);
-        if (hasBackingDC)
-            this->backingDC = new wxMemoryDC(*this->backing);
+        wxPaintDC dc(this);
+        int r, g, b;
+        TOBY_background(&r, &g, &b);
+        dc.SetBackground(wxBrush(wxColour(r, g, b)));
+        dc.Clear();
+        if (this->backing != NULL)
+        {
+            // delete in-progress backingDC to force flush of rendered data...
+            this->nukeDC(&this->backingDC);
+            int xoff, yoff;
+            this->calcOffset(xoff, yoff);
+            dc.DrawBitmap(*this->backing, xoff, yoff, false);
+        } // if
     } // if
+
+    if (hasBackingDC)
+        this->backingDC = new wxMemoryDC(*this->backing);
 
     if (hasClientDC)
         this->clientDC = new wxClientDC(this);

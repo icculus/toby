@@ -139,6 +139,7 @@ static int allocateTurtle(void)
     current->pen.r = current->pen.g = current->pen.b = N(255);  /* white. */
     current->angle = 270;  /* due north. */
     current->penDown = 1;
+    current->recalcPoints = 1;
     current->visible = 1;
     current->dirty = 1;
 
@@ -186,21 +187,25 @@ static inline void calculateTurtleTriangle(Turtle *turtle)
  *  in TurtleSpace, blanking the old ("shadowed") state and rendering the
  *  current state.
  */
-void TOBY_renderAllTurtles(void)
+void TOBY_renderAllTurtles(int allDirty, int intoBackingStore)
 {
     int i;
     for (i = 0; i < totalTurtles; i++)
     {
         Turtle *current = &turtles[i].current;
         Turtle *shadowed = &turtles[i].shadowed;
-        if (current->dirty)
+        if ((allDirty) || (current->dirty))
         {
             calculateTurtleTriangle(current);
             current->dirty = 0;
             if (shadowed->visible)
                 TOBY_blankTurtle(shadowed);
             if (current->visible)
-                TOBY_drawTurtle(current);
+            {
+                if (intoBackingStore)
+                    TOBY_drawTurtle(current, 1);
+                TOBY_drawTurtle(current, 0);
+            } // if
             memcpy(shadowed, current, sizeof (Turtle));
         } /* if */
     } /* for */
@@ -654,16 +659,23 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
 } /* luaDebugHook */
 
 
+static inline void resetProgramState(void)
+{
+    free(turtles);
+    turtles = NULL;
+    currentTurtleIndex = -1;
+    totalTurtles = 0;
+    fenceEnabled = 1;
+    halted = 0;
+} /* resetProgramState */
+
+
 void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
     const int mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT;
     lua_State *L;
 
-    currentTurtleIndex = -1;
-    totalTurtles = 0;
-    turtles = NULL;
-    fenceEnabled = 1;
-    halted = 0;
+    resetProgramState();
 
     if (run_for_printing)
         background.r = background.g = background.b = 255;  // white.
@@ -700,20 +712,15 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
             } /* if */
             /* !!! FIXME: lua_pop error message */
         } /* if */
-        TOBY_renderAllTurtles();
+        TOBY_renderAllTurtles(1, 1);
         TOBY_stopRun();
     } /* if */
     lua_pop(L, 1);   // dump stackwalker.
 
-    free(turtles);
-    turtles = NULL;
-    currentTurtleIndex = -1;
-    totalTurtles = 0;
-    fenceEnabled = 1;
-    halted = 0;
-
+    resetProgramState();
     lua_close(L);
 } /* TOBY_runProgram */
+
 
 
 const char *GLicense =

@@ -62,7 +62,7 @@ void TOBY_background(int *r, int *g, int *b);
 
 
 /* !!! FIXME: comment this */
-void TOBY_renderAllTurtles(void);
+void TOBY_renderAllTurtles(int allDirty, int intoBackingStore);
 
 
 /*
@@ -113,7 +113,7 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
  *  Angle is between 0 and 360, coordinates and sizes are in the same system
  *  as TOBY_drawLine().
  */
-void TOBY_drawTurtle(const Turtle *turtle);
+void TOBY_drawTurtle(const Turtle *turtle, int intoBackingStore);
 
 /* !!! FIXME: comment me. */
 void TOBY_blankTurtle(const Turtle *turtle);
