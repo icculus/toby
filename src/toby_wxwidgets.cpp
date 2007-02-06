@@ -37,7 +37,7 @@ public:
     inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
     inline wxDC *getBackingDC() const { return this->backingDC; }
     inline wxDC *getClientDC() const { return this->clientDC; }
-    inline void scaleXY(int &x, int &y) const;
+    inline void scaleXY(lua_Number &x, lua_Number &y) const;
     inline void runProgram(char *program, bool printing);  // hook to GUI.
     inline void halt();  // hook to GUI.
     bool isRunning() const { return this->running; }
@@ -293,7 +293,8 @@ int TOBY_pumpEvents()
 } // TOBY_pumpEvents
 
 
-void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
+void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
+                   int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     wxDC *dc = NULL;
@@ -322,10 +323,77 @@ void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
 } // TOBY_drawLine
 
 
-void TOBY_drawTurtle(int x, int y, int angle, int w, int h)
+void TOBY_blankTurtle(const Turtle *turtle)
 {
-    // !!! FIXME: write me.
+    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    wxASSERT(tspace->getBackingDC() == NULL);  // should have just flushed it!
+    wxDC *dc = tspace->getClientDC();
+    if (dc != NULL)
+    {
+        lua_Number tx = turtle->pos.x;
+        lua_Number ty = turtle->pos.y;
+        lua_Number tw = turtle->width;
+        lua_Number th = turtle->height;
+
+        tspace->scaleXY(tx, ty);
+        tspace->scaleXY(tw, th);
+
+        int xoff, yoff;
+        tspace->calcOffset(xoff, yoff);
+        // hopefully the clipping code really saves us here...you can't blit
+        //  a portion of a bitmap...
+        dc->SetClippingRegion(tx+xoff, ty+yoff, tw, th);
+        dc->DrawBitmap(*tspace->getBacking(), xoff, yoff, false);
+    } // if
+} // TOBY_blankTurtle
+
+
+void TOBY_drawTurtle(const Turtle *turtle)
+{
+    // never draw the turtle into the backing store.
+    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    wxDC *dc = tspace->getClientDC();
+    if (dc != NULL)
+    {
+        int xoff, yoff;
+        tspace->calcOffset(xoff, yoff);
+        tspace->clipDC(dc, xoff, yoff);
+
+        TurtlePoint tpts[4];
+        const lua_Number tx = turtle->pos.x;
+        const lua_Number ty = turtle->pos.y;
+        tpts[0].x = turtle->points[0].x + tx;
+        tpts[0].y = turtle->points[0].y + ty;
+        tpts[1].x = turtle->points[1].x + tx;
+        tpts[1].y = turtle->points[1].y + ty;
+        tpts[2].x = turtle->points[2].x + tx;
+        tpts[2].y = turtle->points[2].y + ty;
+        tpts[3].x = turtle->points[3].x + tx;
+        tpts[3].y = turtle->points[3].y + ty;
+
+        tspace->scaleXY(tpts[0].x, tpts[0].y);
+        tspace->scaleXY(tpts[1].x, tpts[1].y);
+        tspace->scaleXY(tpts[2].x, tpts[2].y);
+        tspace->scaleXY(tpts[3].x, tpts[3].y);
+
+        wxPoint points[3] =
+        {
+            wxPoint(tpts[0].x, tpts[0].y),
+            wxPoint(tpts[1].x, tpts[1].y),
+            wxPoint(tpts[2].x, tpts[2].y),
+        };
+
+        const wxColor color(0, 255, 0);  // full green.
+        dc->SetPen(wxPen(color));
+        dc->SetBrush(wxBrush(color));
+        dc->DrawPolygon(3, points, xoff, yoff);
+        dc->SetPen(wxPen(wxColor(0, 0, 255)));
+        dc->DrawLine(tpts[0].x+xoff, tpts[0].y+yoff,
+                     tpts[3].x+xoff, tpts[3].y+yoff);
+    } // if
 } // TOBY_drawTurtle
+
+
 
 
 void TOBY_cleanup(int r, int g, int b)
@@ -388,10 +456,11 @@ TurtleSpace::~TurtleSpace()
 } // TurtleSpace::~TurtleSpace
 
 
-void TurtleSpace::scaleXY(int &x, int &y) const
+void TurtleSpace::scaleXY(lua_Number &x, lua_Number &y) const
 {
-    x = (int) (((float) this->backingW) * (((float) x) / 1000.0f));
-    y = (int) (((float) this->backingH) * (((float) y) / 1000.0f));
+    // !!! FIXME: Fixed point?
+    x = (((lua_Number) this->backingW) * (x / N(1000)));
+    y = (((lua_Number) this->backingH) * (y / N(1000)));
 } // TurtleSpace::scaleXY
 
 
@@ -480,7 +549,14 @@ int TurtleSpace::pumpEvents()
 {
     if (this->stopwatch.Time() > 50)
     {
-        // force client DC to flush here...this can mean that some platforms
+        // Flush the backingDC so renderAllTurtles has the right data for
+        //  blanking turtles...
+        const bool hasBackingDC = (this->backingDC != NULL);
+        this->nukeDC(&this->backingDC);
+
+        TOBY_renderAllTurtles();
+
+        // force client DC to flush here...this can mean that most platforms
         //  will be clamped to 20fps, but the overall execution of the
         //  program will be much faster, as rendering primitives will batch.
         // The backing DC isn't flushed until the end of the program or an
@@ -488,11 +564,17 @@ int TurtleSpace::pumpEvents()
         const bool hasClientDC = (this->clientDC != NULL);
         this->nukeDC(&this->clientDC);
 
+        // Pump the system event queue if we aren't requesting a program halt.
         while ((!this->stopRequested()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
+        // Rebuild DCs we might have nuked to force a flush...
+
         if (hasClientDC)
             this->clientDC = new wxClientDC(this);
+
+        if (hasBackingDC)
+            this->backingDC = new wxMemoryDC(*this->backing);
 
         this->stopwatch.Start(0);  // reset this for next call.
     } /* if */

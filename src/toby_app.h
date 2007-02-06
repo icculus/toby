@@ -28,18 +28,41 @@ extern "C" {
 
 #define STATICARRAYLEN(x) ( (sizeof ((x))) / (sizeof ((x)[0])) )
 
-typedef struct Turtle
+
+typedef struct TurtlePoint
 {
     lua_Number x;
     lua_Number y;
+} TurtlePoint;
+
+typedef struct TurtleRGB
+{
+    int r;
+    int g;
+    int b;
+} TurtleRGB;
+
+typedef struct Turtle
+{
+    TurtlePoint pos;
+    lua_Number width;
+    lua_Number height;
     lua_Number angle;
-    int r, g, b;
+    TurtlePoint points[4];
+    TurtleRGB pen;
     int penDown;
     int visible;
+    int recalcPoints;  /* non-zero if (points) needs to be recalculated. */
+    int dirty;  /* non-zero if turtle needs redrawing in TurtleSpace. */
 } Turtle;
 
 
+/* !!! FIXME: comment this */
 void TOBY_background(int *r, int *g, int *b);
+
+
+/* !!! FIXME: comment this */
+void TOBY_renderAllTurtles(void);
 
 
 /*
@@ -82,17 +105,22 @@ void TOBY_messageBox(const char *msg);
  *  ...(1000, 1000) being to bottom right. You need to scale to the correct
  *  coordinates for your display.
  */
-void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b);
+void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
+                   int r, int g, int b);
 
 /*
  * Render a turtle of size (w,h) with the center at (x,y), facing (angle).
  *  Angle is between 0 and 360, coordinates and sizes are in the same system
  *  as TOBY_drawLine().
  */
-void TOBY_drawTurtle(int x, int y, int angle, int w, int h);
+void TOBY_drawTurtle(const Turtle *turtle);
+
+/* !!! FIXME: comment me. */
+void TOBY_blankTurtle(const Turtle *turtle);
+
 
 /*
- * Clean up turtlespace. Blank it out to color r,g,b.
+ * Clean up turtlespace. Blank it out to color r,g,b (0 to 255 each).
  */
 void TOBY_cleanup(int r, int g, int b);
 
