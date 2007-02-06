@@ -617,8 +617,6 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
     else
         background.r = background.g = background.b = 0;  // black.
 
-    TOBY_cleanup(background.r, background.g, background.b);
-
     L = luaL_newstate();
     if (L == NULL)
         return;
@@ -637,6 +635,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
     else
     {
         TOBY_startRun();
+        TOBY_cleanup(background.r, background.g, background.b);
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
         {

@@ -31,9 +31,12 @@ public:
     inline int pumpEvents();
     inline void requestQuit();
     inline void calcOffset(int &xoff, int &yoff) const;
-    inline void clipDC(wxDC &dc, int xoff, int yoff) const;
+    inline void clipDC(wxDC *dc, int xoff, int yoff) const;
     inline wxBitmap *getBacking() const { return this->backing; }
+    inline void nukeDC(wxClientDC **dc) { delete *dc; *dc = NULL; }
+    inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
     inline wxDC *getBackingDC() const { return this->backingDC; }
+    inline wxDC *getClientDC() const { return this->clientDC; }
     inline void scaleXY(int &x, int &y) const;
     inline void runProgram(char *program, bool printing);  // hook to GUI.
     inline void halt();  // hook to GUI.
@@ -59,6 +62,7 @@ private:
     int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
+    wxClientDC *clientDC;
     wxStopWatch stopwatch;
     DECLARE_EVENT_TABLE()
 };
@@ -292,24 +296,29 @@ int TOBY_pumpEvents()
 void TOBY_drawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    wxDC *dc = NULL;
+
     wxPen pen(wxColour(r, g, b));
 
     tspace->scaleXY(x1, y1);
     tspace->scaleXY(x2, y2);
 
-    wxDC *backDC = tspace->getBackingDC();
-    if (backDC != NULL)
+    dc = tspace->getBackingDC();
+    if (dc != NULL)
     {
-        backDC->SetPen(pen);
-        backDC->DrawLine(x1, y1, x2, y2);
+        dc->SetPen(pen);
+        dc->DrawLine(x1, y1, x2, y2);
     } // if
 
-    int xoff, yoff;
-    tspace->calcOffset(xoff, yoff);
-    wxClientDC clientdc(tspace);
-    tspace->clipDC(clientdc, xoff, yoff);
-    clientdc.SetPen(pen);
-    clientdc.DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
+    dc = tspace->getClientDC();
+    if (dc != NULL)
+    {
+        int xoff, yoff;
+        tspace->calcOffset(xoff, yoff);
+        tspace->clipDC(dc, xoff, yoff);
+        dc->SetPen(pen);
+        dc->DrawLine(x1+xoff, y1+yoff, x2+xoff, y2+yoff);
+    } // if
 } // TOBY_drawLine
 
 
@@ -323,17 +332,21 @@ void TOBY_cleanup(int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     wxBrush brush(wxColour(r, g, b));
+    wxDC *dc = NULL;
 
-    wxDC *backDC = tspace->getBackingDC();
-    if (backDC != NULL)
+    dc = tspace->getBackingDC();
+    if (dc != NULL)
     {
-        backDC->SetBackground(brush);
-        backDC->Clear();
+        dc->SetBackground(brush);
+        dc->Clear();
     } // if
 
-    wxClientDC clientdc(tspace);
-    clientdc.SetBackground(brush);
-    clientdc.Clear();
+    dc = tspace->getClientDC();
+    if (dc != NULL)
+    {
+        dc->SetBackground(brush);
+        dc->Clear();
+    } // if
 } // TOBY_cleanup
 
 
@@ -360,6 +373,7 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , backingH(1)
     , backing(NULL)
     , backingDC(NULL)
+    , clientDC(NULL)
 {
     // no-op
 } // TurtleSpace::TurtleSpace
@@ -367,6 +381,7 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
 
 TurtleSpace::~TurtleSpace()
 {
+    delete this->clientDC;
     delete this->backingDC;
     delete this->backing;
     delete this->program;
@@ -387,12 +402,12 @@ void TurtleSpace::calcOffset(int &xoff, int &yoff) const
 } // TurtleSpace::calcOffset
 
 
-void TurtleSpace::clipDC(wxDC &dc, int xoff, int yoff) const
+void TurtleSpace::clipDC(wxDC *dc, int xoff, int yoff) const
 {
     const int w = this->backingW;
     const int h = this->backingH;
     if ((w < this->clientW) || (h < this->clientH))
-        dc.SetClippingRegion(xoff, yoff, w, h);
+        dc->SetClippingRegion(xoff, yoff, w, h);
 } // TurtleSpace::clipDC
 
 
@@ -419,8 +434,9 @@ void TurtleSpace::startRun()
     else
         h = w;
 
-    delete this->backingDC;  // (this may be NULL already, that's okay.)
-    this->backingDC = NULL;
+    // (these may be NULL already, that's okay.)
+    this->nukeDC(&this->clientDC);
+    this->nukeDC(&this->backingDC);
 
     // resized since last run?
     if ((w != this->backingW) || (h != this->backingH))
@@ -432,13 +448,13 @@ void TurtleSpace::startRun()
     // Build new backing store if necessary...
     if (this->backing == NULL)
     {
-        wxASSERT(this->backingDC == NULL);
         this->backing = new wxBitmap(w, h);
         this->backingW = w;
         this->backingH = h;
     } // if
 
     this->backingDC = new wxMemoryDC(*this->backing);
+    this->clientDC = new wxClientDC(this);
     this->running = true;
     this->stopping = false;
 } // TurtleSpace::startRun
@@ -448,8 +464,8 @@ void TurtleSpace::stopRun()
 {
     wxASSERT(this->running);
     this->running = this->stopping = false;
-    delete this->backingDC;  // flush to bitmap.
-    this->backingDC = NULL;
+    this->nukeDC(&this->clientDC);  // flush to screen.
+    this->nukeDC(&this->backingDC);  // flush to bitmap.
 } // TurtleSpace::stopRun
 
 
@@ -464,8 +480,20 @@ int TurtleSpace::pumpEvents()
 {
     if (this->stopwatch.Time() > 50)
     {
+        // force client DC to flush here...this can mean that some platforms
+        //  will be clamped to 20fps, but the overall execution of the
+        //  program will be much faster, as rendering primitives will batch.
+        // The backing DC isn't flushed until the end of the program or an
+        //  explicit need to repaint the TurtleSpace window.
+        const bool hasClientDC = (this->clientDC != NULL);
+        this->nukeDC(&this->clientDC);
+
         while ((!this->stopRequested()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
+
+        if (hasClientDC)
+            this->clientDC = new wxClientDC(this);
+
         this->stopwatch.Start(0);  // reset this for next call.
     } /* if */
 
@@ -529,6 +557,10 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
+    // delete in-progress clientDC so we don't have competing states...
+    const bool hasClientDC = (this->clientDC != NULL);
+    this->nukeDC(&this->clientDC);
+
     wxPaintDC dc(this);
     int r, g, b;
     TOBY_background(&r, &g, &b);
@@ -538,19 +570,28 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
     {
         // delete in-progress backingDC to force flush of rendered data...
         const bool hasBackingDC = (this->backingDC != NULL);
-        delete this->backingDC;
+        this->nukeDC(&this->backingDC);
         int xoff, yoff;
         this->calcOffset(xoff, yoff);
         dc.DrawBitmap(*this->backing, xoff, yoff, false);
         if (hasBackingDC)
             this->backingDC = new wxMemoryDC(*this->backing);
     } // if
+
+    if (hasClientDC)
+        this->clientDC = new wxClientDC(this);
 } // TurtleSpace::onPaint
 
 
 bool TobyPrintout::OnPrintPage(int page)
 {
-    wxBitmap *bmp = wxGetApp().getTobyWindow()->getTurtleSpace()->getBacking();
+    const TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+
+    wxASSERT(!tspace->isRunning());
+    wxASSERT(tspace->getClientDC() == NULL);
+    wxASSERT(tspace->getBackingDC() == NULL);
+
+    wxBitmap *bmp = tspace->getBacking();
     if (bmp != NULL)
     {
         wxDC *dc = this->GetDC();
