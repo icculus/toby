@@ -109,6 +109,14 @@ static inline int checkWholeNum(lua_State *L, int idx)
 } /* checkWholeNum */
 
 
+static inline void haltProgram(lua_State *L)
+{
+    halted = 1;
+    lua_pushstring(L, "program halted");
+    lua_error(L);
+} /* haltProgram */
+
+
 static Turtle *newTurtle(void)
 {
     Turtle *retval = (Turtle *) calloc(1, sizeof (Turtle));
@@ -456,7 +464,8 @@ static int luahook_pause(lua_State *L)
 {
     const lua_Number secs = luaL_checknumber(L, 1);
     const int ms = secsToMs(secs);
-    TOBY_delay(ms);  /* !!! FIXME: stop execution if this returns zero. */
+    if (!TOBY_delay(ms))
+        haltProgram(L);
     return 0;
 } /* luahook_pause */
 
@@ -596,11 +605,7 @@ static int luahook_stackwalk(lua_State *L)
 static void luaDebugHook(lua_State *L, lua_Debug *ar)
 {
     if (!TOBY_pumpEvents())
-    {
-        halted = 1;
-        lua_pushstring(L, "program halted");
-        lua_error(L);
-    } /* if */
+        haltProgram(L);
 } /* luaDebugHook */
 
 
