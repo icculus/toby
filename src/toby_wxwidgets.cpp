@@ -357,7 +357,6 @@ void TOBY_blankTurtle(const Turtle *turtle)
 
 void TOBY_drawTurtle(const Turtle *turtle, int intoBacking)
 {
-    // never draw the turtle into the backing store.
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     wxDC *dc = intoBacking ? tspace->getBackingDC() : tspace->getClientDC();
     if (dc != NULL)
