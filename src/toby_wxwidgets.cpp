@@ -241,8 +241,8 @@ DECLARE_APP(TobyWxApp)
 
 int TOBY_delay(int ms)
 {
-    wxLongLong now = ::wxGetLocalTimeMillis();
-    const wxLongLong end = now + ((wxLongLong) ms);
+    wxLongLong now(::wxGetLocalTimeMillis());
+    const wxLongLong end = now + wxLongLong(ms);
     while (now < end)
     {
         if (!TOBY_pumpEvents())
