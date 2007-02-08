@@ -464,8 +464,13 @@ static int luahook_hideturtle(lua_State *L)
 
 static int luahook_enablefence(lua_State *L)
 {
-    // !!! FIXME: check for turtles outside fence...
+    int i;
+
     fenceEnabled = 1;
+
+    for (i = 0; i < totalTurtles; i++)
+        testFence(L, &turtles[i].current);
+
     return 0;
 } /* luahook_enablefence */
 
