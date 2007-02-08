@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <ctype.h>  // !!! FIXME: lose this with tolower/toupper...
 #include "toby_app.h"
 
 typedef struct TurtleStates
@@ -490,6 +491,8 @@ static int luahook_cleanupturtlespace(lua_State *L)
 } /* luahook_getturtlespaceheight */
 
 
+// !!! FIXME: all must handle utf8....
+
 static int luahook_stringlength(lua_State *L)
 {
     // !!! FIXME: this is doing bytes, not chars...
@@ -498,9 +501,119 @@ static int luahook_stringlength(lua_State *L)
 } /* luahook_stringlength */
 
 
+static int luahook_leftstring(lua_State *L)
+{
+    const char *str = luaL_checklstring(L, 1, NULL);
+    const size_t origLen = strlen(str);
+    char *buf = NULL;
+    int charCount = checkWholeNum(L, 2);
+    if (charCount < 0)
+        throwError(L, "Negative string length");
+    else if (charCount > origLen)
+        charCount = origLen;
+
+    // !!! FIXME: can we push a string without null terminating it to save the copy?
+    buf = (char *) alloca(charCount + 1);
+    memcpy(buf, str, charCount);
+    buf[charCount] = '\0';
+
+    lua_pushstring(L, buf);
+    return 1;
+} /* luahook_leftstring */
+
+
+static int luahook_rightstring(lua_State *L)
+{
+    const char *str = luaL_checklstring(L, 1, NULL);
+    const size_t origLen = strlen(str);
+    int charCount = checkWholeNum(L, 2);
+    if (charCount < 0)
+        throwError(L, "Negative string length");
+    else if (charCount > origLen)
+        charCount = origLen;
+
+    lua_pushstring(L, str + (origLen - charCount));
+    return 1;
+} /* luahook_rightstring */
+
+
+static int luahook_joinstrings(lua_State *L)
+{
+    // !!! FIXME: this code sucks.
+    const char *str1 = luaL_checklstring(L, 1, NULL);
+    const char *str2 = luaL_checklstring(L, 2, NULL);
+    char *buf = (char *) malloc(strlen(str1) + strlen(str2) + 1);
+    if (buf == NULL)
+        throwError(L, "Out of memory");
+    strcpy(buf, str1);
+    strcat(buf, str1);
+    lua_pushstring(L, buf);
+    free(buf);
+    return 1;
+} /* luahook_joinstrings */
+
+
+static int luahook_substring(lua_State *L)
+{
+    const char *str = luaL_checklstring(L, 1, NULL);
+    size_t origLen = strlen(str);
+    char *buf = NULL;
+    const int pos = checkWholeNum(L, 2);
+    int charCount = checkWholeNum(L, 3);
+
+    if (charCount < 0)
+        throwError(L, "Negative string length");
+
+    if (pos < 0)
+        throwError(L, "Negative string position");  // !!! FIXME: just clamp instead?
+
+    origLen -= pos;
+    if (origLen <= 0)
+        lua_pushstring(L, "");
+    else
+    {
+        if (charCount > origLen)
+            charCount = origLen;
+        buf = (char *) alloca(charCount + 1);
+        memcpy(buf, str+pos, charCount);
+        buf[charCount] = '\0';
+        lua_pushstring(L, buf);
+    } /* else */
+
+    return 1;
+} /* luahook_substring */
+
+
+static int luahook_uppercasestring(lua_State *L)
+{
+    const char *str = luaL_checklstring(L, 1, NULL);
+    char *buf = (char *) alloca(strlen(str) + 1);
+    while (*str)
+        *(buf++) = toupper(*(str++));
+    *buf = '\0';
+    lua_pushstring(L, buf);
+    return 1;
+} /* luahook_uppercasestring */
+
+
+static int luahook_lowercasestring(lua_State *L)
+{
+    const char *str = luaL_checklstring(L, 1, NULL);
+    char *buf = (char *) alloca(strlen(str) + 1);
+    while (*str)
+        *(buf++) = tolower(*(str++));
+    *buf = '\0';
+    lua_pushstring(L, buf);
+    return 1;
+} /* luahook_lowercasestring */
+
+
 static int luahook_drawstring(lua_State *L)
 {
-    printf("drawstring() called...\n");  // !!! FIXME: write me.
+    const Turtle *turtle = getTurtle(L);
+    const char *utf8str = luaL_checklstring(L, 1, NULL);
+    TOBY_drawString(turtle->pos.x, turtle->pos.y, utf8str, turtle->angle,
+                    turtle->pen.r, turtle->pen.g, turtle->pen.b);
     return 0;
 } /* luahook_drawstring */
 
@@ -579,6 +692,12 @@ static void add_toby_functions(lua_State *L)
     SET_LUAHOOK(useturtle);
     SET_LUAHOOK(round);
     SET_LUAHOOK(stringlength);
+    SET_LUAHOOK(rightstring);
+    SET_LUAHOOK(leftstring);
+    SET_LUAHOOK(substring);
+    SET_LUAHOOK(uppercasestring);
+    SET_LUAHOOK(lowercasestring);
+    SET_LUAHOOK(joinstrings);
     SET_LUAHOOK(pause);
     SET_LUAHOOK(setangle);
     SET_LUAHOOK(goforward);

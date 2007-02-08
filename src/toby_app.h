@@ -108,6 +108,12 @@ void TOBY_messageBox(const char *msg);
 void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                    int r, int g, int b);
 
+
+/* !!! FIXME: comment me. */
+void TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
+                     lua_Number angle, int r, int g, int b);
+
+
 /*
  * Render a turtle of size (w,h) with the center at (x,y), facing (angle).
  *  Angle is between 0 and 360, coordinates and sizes are in the same system

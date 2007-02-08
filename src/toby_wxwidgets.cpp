@@ -293,6 +293,36 @@ int TOBY_pumpEvents()
 } // TOBY_pumpEvents
 
 
+void TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
+                     lua_Number angle, int r, int g, int b)
+{
+    const wxString wxstr(utf8str, wxConvUTF8);
+    const wxColour color(r, g, b);
+    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    wxDC *dc = NULL;
+
+    tspace->scaleXY(x, y);
+
+    dc = tspace->getBackingDC();
+    if (dc != NULL)
+    {
+        dc->SetTextForeground(color);
+        dc->DrawRotatedText(wxstr, (wxCoord) x, (wxCoord) y, angle);
+    } // if
+
+    dc = tspace->getClientDC();
+    if (dc != NULL)
+    {
+        int xoff, yoff;
+        tspace->calcOffset(xoff, yoff);
+        tspace->clipDC(dc, xoff, yoff);
+        dc->SetTextForeground(color);
+        dc->DrawRotatedText(wxstr, ((wxCoord)x) + ((wxCoord)xoff),
+                            ((wxCoord)y) + ((wxCoord)yoff), angle);
+    } // if
+} // TOBY_drawString
+
+
 void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                    int r, int g, int b)
 {
