@@ -32,6 +32,7 @@ public:
     inline void requestQuit();
     inline void calcOffset(int &xoff, int &yoff) const;
     inline void clipDC(wxDC *dc, int xoff, int yoff) const;
+    inline const wxFont *getFont() const { return &this->font; }
     inline wxBitmap *getBacking() const { return this->backing; }
     inline void nukeDC(wxClientDC **dc) { delete *dc; *dc = NULL; }
     inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
@@ -40,6 +41,8 @@ public:
     inline void scaleXY(lua_Number &x, lua_Number &y) const;
     inline void runProgram(char *program, bool printing);  // hook to GUI.
     inline void halt();  // hook to GUI.
+    inline void constructBackingDC();
+    inline void constructClientDC();
     bool isRunning() const { return this->running; }
     bool stopRequested() const { return (this->stopping) || (!this->running); }
     bool quitRequested() const { return this->quitting; }
@@ -51,6 +54,7 @@ public:
     enum { windowFlags=wxFULL_REPAINT_ON_RESIZE };
 
 private:
+    const wxFont font;
     char *program;
     bool quitting;
     bool stopping;
@@ -293,12 +297,15 @@ int TOBY_pumpEvents()
 } // TOBY_pumpEvents
 
 
-void TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
+int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
                      lua_Number angle, int r, int g, int b)
 {
+    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
+    if (!tspace->getFont()->IsOk())
+        return false;
+
     const wxString wxstr(utf8str, wxConvUTF8);
     const wxColour color(r, g, b);
-    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
     wxDC *dc = NULL;
 
     tspace->scaleXY(x, y);
@@ -320,6 +327,8 @@ void TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
         dc->DrawRotatedText(wxstr, ((wxCoord)x) + ((wxCoord)xoff),
                             ((wxCoord)y) + ((wxCoord)yoff), angle);
     } // if
+
+    return true;
 } // TOBY_drawString
 
 
@@ -473,6 +482,7 @@ void TOBY_messageBox(const char *msg)
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
     : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, windowFlags)
+    , font(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL)
     , program(NULL)
     , quitting(false)
     , stopping(false)
@@ -497,6 +507,22 @@ TurtleSpace::~TurtleSpace()
     delete this->backing;
     delete this->program;
 } // TurtleSpace::~TurtleSpace
+
+
+void TurtleSpace::constructBackingDC()
+{
+    wxASSERT(this->backingDC == NULL);
+    this->backingDC = new wxMemoryDC(*this->backing);
+    this->backingDC->SetFont(this->font);
+} // TurtleSpace::constructBackingDC
+
+
+void TurtleSpace::constructClientDC()
+{
+    wxASSERT(this->clientDC == NULL);
+    this->clientDC = new wxClientDC(this);
+    this->clientDC->SetFont(this->font);
+} // TurtleSpace::constructClientDC
 
 
 void TurtleSpace::scaleXY(lua_Number &x, lua_Number &y) const
@@ -565,8 +591,8 @@ void TurtleSpace::startRun()
         this->backingH = h;
     } // if
 
-    this->backingDC = new wxMemoryDC(*this->backing);
-    this->clientDC = new wxClientDC(this);
+    this->constructBackingDC();
+    this->constructClientDC();
     this->running = true;
     this->stopping = false;
 } // TurtleSpace::startRun
@@ -614,10 +640,10 @@ int TurtleSpace::pumpEvents()
         // Rebuild DCs we might have nuked to force a flush...
 
         if (hasClientDC)
-            this->clientDC = new wxClientDC(this);
+            this->constructClientDC();
 
         if (hasBackingDC)
-            this->backingDC = new wxMemoryDC(*this->backing);
+            this->constructBackingDC();
 
         this->stopwatch.Start(0);  // reset this for next call.
     } /* if */
@@ -705,10 +731,10 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
     } // if
 
     if (hasBackingDC)
-        this->backingDC = new wxMemoryDC(*this->backing);
+        this->constructBackingDC();
 
     if (hasClientDC)
-        this->clientDC = new wxClientDC(this);
+        this->constructClientDC();
 } // TurtleSpace::onPaint
 
 

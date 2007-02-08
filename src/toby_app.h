@@ -110,8 +110,8 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
 
 /* !!! FIXME: comment me. */
-void TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
-                     lua_Number angle, int r, int g, int b);
+int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
+                    lua_Number angle, int r, int g, int b);
 
 
 /*

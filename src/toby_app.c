@@ -612,8 +612,12 @@ static int luahook_drawstring(lua_State *L)
 {
     const Turtle *turtle = getTurtle(L);
     const char *utf8str = luaL_checklstring(L, 1, NULL);
-    TOBY_drawString(turtle->pos.x, turtle->pos.y, utf8str, turtle->angle,
-                    turtle->pen.r, turtle->pen.g, turtle->pen.b);
+    if (!TOBY_drawString(turtle->pos.x, turtle->pos.y, utf8str, turtle->angle,
+                         turtle->pen.r, turtle->pen.g, turtle->pen.b))
+    {
+        throwError(L, "Platform doesn't support string drawing");
+    } /* if */
+
     return 0;
 } /* luahook_drawstring */
 
