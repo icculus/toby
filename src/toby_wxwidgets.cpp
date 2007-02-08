@@ -1280,6 +1280,10 @@ bool TobyWxApp::OnInit()
 
     this->mainWindow->Show(true);
     SetTopWindow(this->mainWindow);
+
+    if (this->argc > 1)
+        this->mainWindow->openFile(wxString(this->argv[1]));
+
     return true;
 } // TobyWxApp::OnInit
 
