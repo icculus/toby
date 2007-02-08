@@ -13,7 +13,10 @@ function flower() returns nothing
 
 	bob = 0
 
-	for i = 100 downto 10 step -5
+    // Original code before TurtleSpace was a scaled 1000x1000 area...
+	//for i = 100 downto 10 step -5
+
+	for i = 350 downto 35 step -17.5
 		bob = bob + direction
 	
 		if (bob >= 12)
