@@ -28,6 +28,20 @@ void TOBY_background(int *r, int *g, int *b)
 } /* TOBY_background */
 
 
+static inline void throwError(lua_State *L, const char *err)
+{
+    lua_pushstring(L, err);
+    lua_error(L);
+} /* throwError */
+
+
+static inline void haltProgram(lua_State *L)
+{
+    halted = 1;
+    throwError(L, "program halted");
+} /* haltProgram */
+
+
 /*
  * All this math code had brilliant comments explaining it, but as proud as I
  *  was to figure it out in high school...really, it's fundamental
@@ -101,33 +115,20 @@ static inline int checkWholeNum(lua_State *L, int idx)
 {
     const lua_Number num = luaL_checknumber(L, idx);
     const int intnum = (int) num;
-    if ((lua_Number) intnum != num)
-    {
-        /* !!! FIXME: fail if not whole number. */
-    } /* if */
+    if ( ((lua_Number) intnum) != num )
+        throwError(L, "Expected whole number");
 
     return intnum;
 } /* checkWholeNum */
 
 
-static inline void haltProgram(lua_State *L)
-{
-    halted = 1;
-    lua_pushstring(L, "program halted");
-    lua_error(L);
-} /* haltProgram */
-
-
-static int allocateTurtle(void)
+static int allocateTurtle(lua_State *L)
 {
     Turtle *current = NULL;
     TurtleStates *ptr = (TurtleStates *) realloc(turtles,
                         sizeof (TurtleStates) * (totalTurtles + 1));
     if (ptr == NULL)
-    {
-        // !!! FIXME: throw error.
-    } /* if */
-
+        throwError(L, "Out of memory");
 
     turtles = ptr;
     ptr = &turtles[totalTurtles];
@@ -147,10 +148,10 @@ static int allocateTurtle(void)
 } /* allocateTurtle */
 
 
-static inline Turtle *getTurtle(void)
+static inline Turtle *getTurtle(lua_State *L)
 {
     if (currentTurtleIndex < 0)
-        return NULL;  /* !!! FIXME: throw no-current-turtle error. */
+        throwError(L, "No current turtle");
     return &turtles[currentTurtleIndex].current;
 } /* getTurtle */
 
@@ -212,9 +213,9 @@ void TOBY_renderAllTurtles(int allDirty, int intoBackingStore)
 } /* TOBY_renderAllTurtles */
 
 
-static void setTurtleAngle(lua_Number angle)
+static void setTurtleAngle(lua_State *L, lua_Number angle)
 {
-    Turtle *turtle = getTurtle();
+    Turtle *turtle = getTurtle(L);
     if (angle != turtle->angle)
     {
         // !!! FIXME: ugh, use modulus...
@@ -228,47 +229,51 @@ static void setTurtleAngle(lua_Number angle)
 
 static int luahook_setangle(lua_State *L)
 {
-    setTurtleAngle(luaL_checknumber(L, 1));
+    setTurtleAngle(L, luaL_checknumber(L, 1));
     return 0;
 } /* luahook_setangle */
 
 
-static inline void turnTurtle(lua_Number degree)
+static inline void turnTurtle(lua_State *L, lua_Number degree)
 {
-    Turtle *turtle = getTurtle();
+    Turtle *turtle = getTurtle(L);
     if (degree != N(0))
-        setTurtleAngle(turtle->angle + degree);
+        setTurtleAngle(L, turtle->angle + degree);
 } /* turnTurtle */
 
 
 static int luahook_turnright(lua_State *L)
 {
-    turnTurtle(luaL_checknumber(L, 1));
+    turnTurtle(L, luaL_checknumber(L, 1));
     return 0;
 } /* luahook_turnright */
 
 
 static int luahook_turnleft(lua_State *L)
 {
-    turnTurtle(-luaL_checknumber(L, 1));
+    turnTurtle(L, -luaL_checknumber(L, 1));
     return 0;
 } /* luahook_turnleft */
 
 
-static void setTurtleXY(lua_Number x, lua_Number y)
+static inline void testFence(lua_State *L, const Turtle *turtle)
 {
-    Turtle *turtle = getTurtle();
+    const lua_Number x = turtle->pos.x;
+    const lua_Number y = turtle->pos.y;
+    if ( (x < N(0)) || (x > N(1000)) || (y < N(0)) || (y > N(1000)) )
+        throwError(L, "Turtle outside fence");
+} /* testFence */
+
+
+static void setTurtleXY(lua_State *L, lua_Number x, lua_Number y)
+{
+    Turtle *turtle = getTurtle(L);
     turtle->pos.x = x;
     turtle->pos.y = y;
     turtle->dirty = 1;
 
     if (fenceEnabled)
-    {
-        if ((x < N(0)) || (x > N(1000)) || (y < N(0)) || (y > N(1000)))
-        {
-            /* !!! FIXME: throw error: turtle hit fence. */
-        } /* if */
-    } /* if */
+        testFence(L, turtle);
 } /* setTurtleXY */
 
 
@@ -276,21 +281,21 @@ static int luahook_setturtlexy(lua_State *L)
 {
     const lua_Number x = luaL_checknumber(L, 1);
     const lua_Number y = luaL_checknumber(L, 2);
-    setTurtleXY(x, y);
+    setTurtleXY(L, x, y);
     return 0;
 } /* luahook_setturtlexy */
 
 
 static int luahook_hometurtle(lua_State *L)
 {
-    setTurtleXY(N(500), N(500));
+    setTurtleXY(L, N(500), N(500));
     return 0;
 } /* luahook_hometurtle */
 
 
-static void driveTurtle(lua_Number distance)
+static void driveTurtle(lua_State *L, lua_Number distance)
 {
-    Turtle *turtle = getTurtle();
+    Turtle *turtle = getTurtle(L);
     if (distance != N(0))
     {
         lua_Number x1 = turtle->pos.x;
@@ -312,35 +317,35 @@ static void driveTurtle(lua_Number distance)
             } /* if */
         } /* if */
  
-        setTurtleXY(x2, y2);
+        setTurtleXY(L, x2, y2);
     } /* if */
 } /* driveTurtle */
 
 
 static int luahook_goforward(lua_State *L)
 {
-    driveTurtle(luaL_checknumber(L, 1));
+    driveTurtle(L, luaL_checknumber(L, 1));
     return 0;
 } /* luahook_goforward */
 
 
 static int luahook_gobackward(lua_State *L)
 {
-    driveTurtle(-luaL_checknumber(L, 1));
+    driveTurtle(L, -luaL_checknumber(L, 1));
     return 0;
 } /* luahook_gobackward */
 
 
 static int luahook_getturtlex(lua_State *L)
 {
-    lua_pushnumber(L, getTurtle()->pos.x);
+    lua_pushnumber(L, getTurtle(L)->pos.x);
     return 1;
 } /* luahook_getturtlex */
 
 
 static int luahook_getturtley(lua_State *L)
 {
-    lua_pushnumber(L, getTurtle()->pos.y);
+    lua_pushnumber(L, getTurtle(L)->pos.y);
     return 1;
 } /* luahook_getturtley */
 
@@ -361,21 +366,21 @@ static int luahook_getturtlespaceheight(lua_State *L)
 
 static int luahook_setpenup(lua_State *L)
 {
-    getTurtle()->penDown = 0;
+    getTurtle(L)->penDown = 0;
     return 0;
 } /* luahook_setpenup */
 
 
 static int luahook_setpendown(lua_State *L)
 {
-    getTurtle()->penDown = 1;
+    getTurtle(L)->penDown = 1;
     return 0;
 } /* luahook_setpendown */
 
 
-static inline void setPenColorRGB(int r, int g, int b)
+static inline void setPenColorRGB(lua_State *L, int r, int g, int b)
 {
-    TurtleRGB *pen = &(getTurtle()->pen);
+    TurtleRGB *pen = &(getTurtle(L)->pen);
     pen->r = r;
     pen->g = g;
     pen->b = b;
@@ -389,13 +394,13 @@ static int luahook_setpencolorrgb(lua_State *L)
     const lua_Number b = luaL_checknumber(L, 3);
 
     if ( (r < N(0)) || (r > N(1)) )
-        ; /* !!! FIXME: throw error. */
+        throwError(L, "Red value is not between 0.0 and 1.0");
     else if ( (g < N(0)) || (g > N(1)) )
-        ; /* !!! FIXME: throw error. */
+        throwError(L, "Green value is not between 0.0 and 1.0");
     else if ( (b < N(0)) || (b > N(1)) )
-        ; /* !!! FIXME: throw error. */
+        throwError(L, "Blue value is not between 0.0 and 1.0");
     else
-        setPenColorRGB(to8bit(r), to8bit(g), to8bit(b));
+        setPenColorRGB(L, to8bit(r), to8bit(g), to8bit(b));
 
     return 0;
 } /* luahook_setpencolorrgb */
@@ -432,16 +437,16 @@ static int luahook_setpencolor(lua_State *L)
 
     const int color = checkWholeNum(L, 1);
     if ( (color < 0) || (color >= (STATICARRAYLEN(colors))) )
-        ; /* !!! FIXME: throw error. */
+        throwError(L, "Color value is not between 0 and 15");
     else
-        setPenColorRGB(colors[color].r, colors[color].g, colors[color].b);
+        setPenColorRGB(L, colors[color].r, colors[color].g, colors[color].b);
     return 0;
 } /* luahook_setpencolor */
 
 
 static int luahook_showturtle(lua_State *L)
 {
-    Turtle *turtle = getTurtle();
+    Turtle *turtle = getTurtle(L);
     turtle->visible = 1;
     turtle->dirty = 1;
     return 0;
@@ -450,7 +455,7 @@ static int luahook_showturtle(lua_State *L)
 
 static int luahook_hideturtle(lua_State *L)
 {
-    Turtle *turtle = getTurtle();
+    Turtle *turtle = getTurtle(L);
     turtle->visible = 0;
     turtle->dirty = 1;
     return 0;
@@ -701,7 +706,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
     {
         TOBY_startRun();
         TOBY_cleanup(background.r, background.g, background.b);
-        currentTurtleIndex = allocateTurtle();
+        currentTurtleIndex = allocateTurtle(L);
 
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
