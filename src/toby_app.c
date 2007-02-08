@@ -218,7 +218,7 @@ static void setTurtleAngle(lua_Number angle)
     if (angle != turtle->angle)
     {
         // !!! FIXME: ugh, use modulus...
-        while (angle > N(360)) angle -= N(360);
+        while (angle >= N(360)) angle -= N(360);
         while (angle < N(0)) angle += N(360);
         turtle->angle = angle;
         turtle->dirty = turtle->recalcPoints = 1;
