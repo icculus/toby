@@ -532,14 +532,18 @@ static int luahook_pause(lua_State *L)
 
 static int luahook_addturtle(lua_State *L)
 {
-    printf("addturtle() called\n");  // !!! FIXME: implement this.
+    allocateTurtle(L);
     return 0;
 } /* luahook_addturtle */
 
 
 static int luahook_useturtle(lua_State *L)
 {
-    printf("useturtle() called\n");  // !!! FIXME: implement this.
+    const int newidx = checkWholeNum(L, 1);
+    if ((newidx < 0) || (newidx >= totalTurtles))
+        throwError(L, "Not a valid turtle");
+
+    currentTurtleIndex = newidx;
     return 0;
 } /* luahook_useturtle */
 
