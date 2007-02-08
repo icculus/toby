@@ -1,3 +1,11 @@
+/*
+ * Toby -- A programming language for learning.
+ * Copyright (C) 2007  Ryan C. Gordon.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
 #ifndef _INCL_TOBY_APP_H_
 #define _INCL_TOBY_APP_H_
 

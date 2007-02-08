@@ -1,4 +1,12 @@
 /*
+ * Toby -- A programming language for learning.
+ * Copyright (C) 2007  Ryan C. Gordon.
+ *
+ * Please refer to LICENSE.txt in the root directory of the source
+ *  distribution for licensing details.
+ */
+
+/*
  * This is in a separate file so that we can recompile it every time
  *  without it forcing a recompile on something ccache would otherwise not
  *  have to rebuild...this file's checksum changes every time you build it
