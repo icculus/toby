@@ -815,6 +815,14 @@ static inline void resetProgramState(void)
 } /* resetProgramState */
 
 
+static void luaErrorMsgBox(lua_State *L)
+{
+    const char *errstr = lua_tostring(L, -1);
+    TOBY_messageBox(errstr);
+    lua_pop(L, 1);  /* dump error string. */
+} /* luaErrorMsgBox */
+
+
 void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
     const int mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT;
@@ -838,10 +846,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
 
     lua_pushcfunction(L, luahook_stackwalk);
     if (luaL_loadstring(L, source_code) != 0)
-    {
-        TOBY_messageBox("lua_loadstring() failed");
-        /* !!! FIXME: lua_pop error message */
-    } /* if */
+        luaErrorMsgBox(L);
     else
     {
         TOBY_startRun();
@@ -852,10 +857,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
         {
             if (!halted)  /* (halted) means stop requested, not error. */
-            {
-                TOBY_messageBox("lua_pcall() failed");
-            } /* if */
-            /* !!! FIXME: lua_pop error message */
+                luaErrorMsgBox(L);
         } /* if */
         TOBY_renderAllTurtles(1, 1);
         TOBY_stopRun();
