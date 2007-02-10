@@ -324,8 +324,8 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
 int main(int argc, char **argv)
 {
     /* !!! FIXME: allow user to change dimensions. */
-    const int w = 1024;
-    const int h = 768;
+    const int w = 800;
+    const int h = 600;
     char *program = NULL;
     Uint32 sdlflags = 0;
     int retval = 0;
