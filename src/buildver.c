@@ -49,7 +49,7 @@
   #endif
 #endif
 
-// macro mess so we can turn APPID and APPREV into a string literal...
+/* macro mess so we can turn APPID and APPREV into a string literal... */
 #define MAKEBUILDVERSTRINGLITERAL2(id, rev) \
     #id ", Revision " #rev ", Built " __DATE__ " " __TIME__ ", by " \
     COMPILER " version " __VERSION__
@@ -58,5 +58,5 @@
 
 const char *GBuildVer = MAKEBUILDVERSTRINGLITERAL(APPID, APPREV);
 
-// end of buildver.c ...
+/* end of buildver.c ... */
 
