@@ -1241,6 +1241,11 @@ bool TobyWxApp::OnInit()
                 printf("%s\n", GBuildVer);
                 return false;
             } // if
+            else if (wxString(arg) == wxT("license"))
+            {
+                printf("%s\n", GLicense);
+                return false;
+            } // else if
         } // if
     } // for
 
