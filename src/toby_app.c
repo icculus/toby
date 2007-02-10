@@ -272,6 +272,20 @@ static inline void calculateTurtleTriangle(Turtle *turtle)
 void TOBY_renderAllTurtles(int allDirty, int intoBackingStore)
 {
     int i;
+
+    /* blank all turtles that need redrawing first... */
+    for (i = 0; i < totalTurtles; i++)
+    {
+        Turtle *current = &turtles[i].current;
+        Turtle *shadowed = &turtles[i].shadowed;
+        if ((allDirty) || (current->dirty))
+        {
+            if (shadowed->visible)
+                TOBY_blankTurtle(shadowed);
+        } /* if */
+    } /* for */
+
+    /* Now redraw any that need updating... */
     for (i = 0; i < totalTurtles; i++)
     {
         Turtle *current = &turtles[i].current;
@@ -280,8 +294,6 @@ void TOBY_renderAllTurtles(int allDirty, int intoBackingStore)
         {
             calculateTurtleTriangle(current);
             current->dirty = 0;
-            if (shadowed->visible)
-                TOBY_blankTurtle(shadowed);
             if (current->visible)
             {
                 if (intoBackingStore)
