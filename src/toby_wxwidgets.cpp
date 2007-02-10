@@ -363,7 +363,6 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
     {
         int xoff, yoff;
         tspace->calcOffset(xoff, yoff);
-        tspace->clipDC(dc, xoff, yoff);
         dc->SetPen(pen);
         dc->DrawLine( ((wxCoord)x1) + ((wxCoord)xoff),
                       ((wxCoord)y1) + ((wxCoord)yoff),

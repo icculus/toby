@@ -120,6 +120,78 @@ static inline int secsToMs(lua_Number secs)
 } /* secsToMs */
 
 
+/* Liang-Barsky line clipping algorithm implementation. */
+static int clip(lua_Number *minimum, lua_Number *maximum,
+                lua_Number directedProjection, lua_Number directedDistance)
+{
+    if (directedProjection == N(0))
+    {
+        if (directedDistance < N(0))
+            return 0;
+    } /* if */
+    else
+    {
+        const lua_Number amount = directedDistance / directedProjection;
+        if (directedProjection < N(0)) {
+            if (amount > *maximum)
+                return 0;
+            else if (amount > *minimum)
+                *minimum = amount;
+        } /* if */
+        else
+        {
+            if (amount < *minimum)
+                return 0;
+            else if (amount < *maximum)
+                *maximum = amount;
+        } /* else */
+    } /* else */
+    return 1;
+} /* clip */
+
+
+int TOBY_clipLine(lua_Number *_x1, lua_Number *_y1,
+                  lua_Number *_x2, lua_Number *_y2,
+                  lua_Number w, lua_Number h)
+{
+    const lua_Number x1 = *_x1;
+    const lua_Number y1 = *_y1;
+    const lua_Number x2 = *_x2;
+    const lua_Number y2 = *_y2;
+    const lua_Number px = x2 - x1;
+    const lua_Number py = y2 - y1;
+    lua_Number minimum = N(0);
+    lua_Number maximum = N(1);
+
+    if (clip(&minimum, &maximum, -px, x1 - N(0)))
+    {
+        if (clip(&minimum, &maximum, px, w - x1))
+        {
+            if (clip(&minimum, &maximum, -py, y1 - N(0)))
+            {
+                if (clip(&minimum, &maximum, py, h - y1))
+                {
+                    if (maximum < N(1))
+                    {
+                        *_x2 = x1 + maximum * px;
+                        *_y2 = y1 + maximum * py;
+                    } /* if */
+
+                    if (minimum > N(0))
+                    {
+                        *_x1 += minimum * px;
+                        *_y1 += minimum * py;
+                    } /* if */
+                    return 1;
+                } /* if */
+            } /* if */
+        } /* if */
+    } /* if */
+
+    return 0;
+} /* TOBY_clipLine */
+
+
 static inline int checkWholeNum(lua_State *L, int idx)
 {
     const lua_Number num = luaL_checknumber(L, idx);
@@ -309,24 +381,23 @@ static void driveTurtle(lua_State *L, lua_Number distance)
     {
         lua_Number x1 = turtle->pos.x;
         lua_Number y1 = turtle->pos.y;
+        lua_Number unclipped_x2, unclipped_y2;
         lua_Number x2, y2;
  
         calculateLine(turtle->angle, distance, x1, y1, &x2, &y2);
- 
+        unclipped_x2 = x2;
+        unclipped_y2 = y2;
         if (turtle->penDown)   /* draw the line covering path turtle took? */
         {
             /* only draw if SOMETHING is inside TurtleSpace... */
-            if ( ((x1 >= N(0)) && (x1 <= N(1000))) ||
-                 ((y1 >= N(0)) && (y1 <= N(1000))) ||
-                 ((x2 >= N(0)) && (x2 <= N(1000))) ||
-                 ((y2 >= N(0)) && (y2 <= N(1000))) )
+            if (TOBY_clipLine(&x1, &y1, &x2, &y2, N(1000), N(1000)))
             {
                 const TurtleRGB *pen = &turtle->pen;
                 TOBY_drawLine(x1, y1, x2, y2, pen->r, pen->g, pen->b);
             } /* if */
         } /* if */
  
-        setTurtleXY(L, x2, y2);
+        setTurtleXY(L, unclipped_x2, unclipped_y2);
     } /* if */
 } /* driveTurtle */
 

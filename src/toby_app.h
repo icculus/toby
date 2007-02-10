@@ -112,6 +112,10 @@ void TOBY_messageBox(const char *msg);
  *  between 0 and 1000, with (0,0) being the top left of the screen and
  *  ...(1000, 1000) being to bottom right. You need to scale to the correct
  *  coordinates for your display.
+ *
+ * All lines are clipped prior to this call, so they will never be outside
+ *  the 0-1000 range. If they don't intersect TurtleSpace at all, this
+ *  function will not be called.
  */
 void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                    int r, int g, int b);
@@ -144,6 +148,22 @@ void TOBY_cleanup(int r, int g, int b);
  *  before (ms) milliseconds if returning zero.
  */
 int TOBY_delay(int ms);
+
+
+/*
+ * Clip a line defined by (*x1,*y1)-(*x2,*y2) to a rectangle of (0,0)-(w,h).
+ *  x1, y1, x2, y2 are updated to reflect clipping. Returns zero if line
+ *  is completely outside the rectangle, non-zero if some portion of the line
+ *  intersects the rectangle.
+ *
+ * Frontends don't generally call this, since TOBY_drawLine() will clip the
+ *  lines before calling the frontend (and not call it if the line isn't inside
+ *  TurtleSpace), meaning frontends may not need to manipulate a clip region
+ *  at all.
+ */
+int TOBY_clipLine(lua_Number *x1, lua_Number *y1,
+                  lua_Number *x2, lua_Number *y2,
+                  lua_Number w, lua_Number h);
 
 
 extern const char *GLicense;
