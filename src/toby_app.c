@@ -703,7 +703,11 @@ static int luahook_drawstring(lua_State *L)
 
 static int luahook_random(lua_State *L)
 {
-    lua_pushnumber(L, random());  // !!! FIXME: seed this.
+    const long val = random();  // !!! FIXME: seed this.
+    // !!! FIXME: fixed point
+    // !!! FIXME: nasty double code.
+    const lua_Number flt = (lua_Number) (((double)val) / ((double)RAND_MAX));
+    lua_pushnumber(L, flt);
     return 1;
 } /* luahook_random */
 
