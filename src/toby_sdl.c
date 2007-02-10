@@ -228,7 +228,6 @@ void TOBY_blankTurtle(const Turtle *turtle)
 void TOBY_cleanup(int r, int g, int b)
 {
     SDL_FillRect(GScreen, NULL, SDL_MapRGB(GScreen->format, r, g, b));
-    SDL_Flip(GScreen);
 } /* TOBY_cleanup */
 
 
