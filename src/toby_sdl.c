@@ -19,6 +19,7 @@ static int GRequestingQuit = 0;
 static Uint32 GLastPumpEvents = 0;
 static Uint32 GStopWatch = 0;
 static lua_Number GTurtleSpaceSize = 0;
+static int GDelayAndQuit = -1;
 
 #define TOBY_PROFILE 1
 
@@ -314,7 +315,12 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
 
     TOBY_runProgram(program, 0);
 
-    while (TOBY_delay(100)) { /* no-op. */ }
+    if (GDelayAndQuit >= 0)
+        TOBY_delay(GDelayAndQuit);
+    else
+    {
+        while (TOBY_delay(100)) { /* no-op. */ }
+    } /* else */
 
     SDL_Quit();
     return 0;
@@ -342,16 +348,21 @@ int main(int argc, char **argv)
                 sdlflags |= SDL_FULLSCREEN;
             else if (strcmp(arg, "windowed") == 0)
                 sdlflags &= ~SDL_FULLSCREEN;
+            else if (strcmp(arg, "delayandquit") == 0)
+            {
+                if ((arg = argv[++i]) != NULL)
+                    GDelayAndQuit = atoi(arg);
+            } /* else if */
             else if (strcmp(arg, "buildver") == 0)
             {
                 printf("%s\n", GBuildVer);
                 return 0;
-            } /* if */
+            } /* else if */
             else if (strcmp(arg, "license") == 0)
             {
                 printf("%s\n", GLicense);
                 return 0;
-            } /* if */
+            } /* else if */
         } /* if */
         else
         {
