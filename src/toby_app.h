@@ -109,12 +109,12 @@ void TOBY_messageBox(const char *msg);
 
 /*
  * Draw line between (x1,y1) and (x2,y2) in color r,g,b. All coordinates are
- *  between 0 and 1000, with (0,0) being the top left of the screen and
- *  ...(1000, 1000) being to bottom right. You need to scale to the correct
+ *  between 0 and 999, with (0,0) being the top left of the screen and
+ *  ...(999, 999) being to bottom right. You need to scale to the correct
  *  coordinates for your display.
  *
  * All lines are clipped prior to this call, so they will never be outside
- *  the 0-1000 range. If they don't intersect TurtleSpace at all, this
+ *  the 0-999 range. If they don't intersect TurtleSpace at all, this
  *  function will not be called.
  */
 void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,

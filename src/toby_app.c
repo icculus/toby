@@ -390,7 +390,7 @@ static void driveTurtle(lua_State *L, lua_Number distance)
         if (turtle->penDown)   /* draw the line covering path turtle took? */
         {
             /* only draw if SOMETHING is inside TurtleSpace... */
-            if (TOBY_clipLine(&x1, &y1, &x2, &y2, N(1000), N(1000)))
+            if (TOBY_clipLine(&x1, &y1, &x2, &y2, N(999), N(999)))
             {
                 const TurtleRGB *pen = &turtle->pen;
                 TOBY_drawLine(x1, y1, x2, y2, pen->r, pen->g, pen->b);
