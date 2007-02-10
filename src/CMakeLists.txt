@@ -67,17 +67,17 @@ SET(wxWidgets_INCLUDE_DIRS_NO_SYSTEM 1)
 FIND_PACKAGE(wxWidgets)
 IF(wxWidgets_FOUND)
     INCLUDE(${wxWidgets_USE_FILE})
-    SET(OPTIONAL_LIBS ${OPTIONAL_LIBS} ${wxWidgets_LIBRARIES})
     ADD_DEFINITIONS(${wxWidgets_CXX_FLAGS})
-ELSE(wxWidgets_FOUND)
-    # !!! FIXME: does this actually kill the config process?
-    MESSAGE(FATAL_ERROR "Toby requires wxWidgets: http://www.wxwidgets.org/")
 ENDIF(wxWidgets_FOUND)
+
+FIND_PACKAGE(SDL)
+IF(SDL_FOUND)
+    INCLUDE_DIRECTORIES(${SDL_INCLUDE_DIR})
+ENDIF(SDL_FOUND)
 
 SET(TOBY_SRCS
     buildver.c
     toby_app.c
-    toby_wxwidgets.cpp
     lua-5.1.1/src/lapi.c
     lua-5.1.1/src/ldebug.c
     lua-5.1.1/src/ldo.c
@@ -108,8 +108,11 @@ IF(UNIX AND NOT MACOSX)
     ENDIF(HAVE_LIBM)
 ENDIF(UNIX AND NOT MACOSX)
 
-ADD_EXECUTABLE(toby ${TOBY_SRCS} ${OPTIONAL_SRCS})
-TARGET_LINK_LIBRARIES(toby ${OPTIONAL_LIBS})
+ADD_EXECUTABLE(toby ${TOBY_SRCS} ${OPTIONAL_SRCS} toby_wxwidgets.cpp)
+TARGET_LINK_LIBRARIES(toby ${OPTIONAL_LIBS} ${wxWidgets_LIBRARIES})
+
+ADD_EXECUTABLE(toby-sdl ${TOBY_SRCS} ${OPTIONAL_SRCS} toby_sdl.c)
+TARGET_LINK_LIBRARIES(toby-sdl ${OPTIONAL_LIBS} ${SDL_LIBRARY})
 
 # end of CMakeLists.txt ...
 
