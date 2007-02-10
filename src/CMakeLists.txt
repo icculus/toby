@@ -61,19 +61,38 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 ADD_DEFINITIONS(-D_setjmp=setjmp)
 ADD_DEFINITIONS(-D_longjmp=longjmp)
 
-# We need wxWidgets for the GUI stuff right now...
-SET(wxWidgets_USE_LIBS base core adv)
-SET(wxWidgets_INCLUDE_DIRS_NO_SYSTEM 1)
-FIND_PACKAGE(wxWidgets)
-IF(wxWidgets_FOUND)
-    INCLUDE(${wxWidgets_USE_FILE})
-    ADD_DEFINITIONS(${wxWidgets_CXX_FLAGS})
-ENDIF(wxWidgets_FOUND)
+SET(TOBY_HAVE_GUI FALSE)
 
-FIND_PACKAGE(SDL)
-IF(SDL_FOUND)
-    INCLUDE_DIRECTORIES(${SDL_INCLUDE_DIR})
-ENDIF(SDL_FOUND)
+OPTION(TOBY_GUI_WXWIDGETS "Build wxWidgets GUI" TRUE)
+IF(TOBY_GUI_WXWIDGETS)
+    SET(wxWidgets_USE_LIBS base core adv)
+    SET(wxWidgets_INCLUDE_DIRS_NO_SYSTEM 1)
+    FIND_PACKAGE(wxWidgets)
+    IF(wxWidgets_FOUND)
+        SET(TOBY_HAVE_GUI TRUE)
+        INCLUDE(${wxWidgets_USE_FILE})
+        ADD_DEFINITIONS(${wxWidgets_CXX_FLAGS})
+    ELSE(wxWidgets_FOUND)
+        MESSAGE(STATUS "wxWidgets not found. Support is disabled.")
+        SET(TOBY_GUI_WXWIDGETS FALSE)
+    ENDIF(wxWidgets_FOUND)
+ENDIF(TOBY_GUI_WXWIDGETS)
+
+OPTION(TOBY_GUI_SDL "Build SDL standalone GUI" TRUE)
+IF(TOBY_GUI_SDL)
+    FIND_PACKAGE(SDL)
+    IF(SDL_FOUND)
+        SET(TOBY_HAVE_GUI TRUE)
+        INCLUDE_DIRECTORIES(${SDL_INCLUDE_DIR})
+    ELSE(SDL_FOUND)
+        MESSAGE(STATUS "SDL not found. Support is disabled.")
+        SET(TOBY_GUI_SDL FALSE)
+    ENDIF(SDL_FOUND)
+ENDIF(TOBY_GUI_SDL)
+
+IF(NOT TOBY_HAVE_GUI)
+    MESSAGE(FATAL_ERROR "Can't find any GUI libraries we can use!")
+ENDIF(NOT TOBY_HAVE_GUI)
 
 SET(TOBY_SRCS
     buildver.c
@@ -110,11 +129,15 @@ ENDIF(UNIX AND NOT MACOSX)
 
 ADD_LIBRARY(tobybackend STATIC ${TOBY_SRCS} ${OPTIONAL_SRCS})
 
-ADD_EXECUTABLE(toby toby_wxwidgets.cpp)
-TARGET_LINK_LIBRARIES(toby tobybackend ${OPTIONAL_LIBS} ${wxWidgets_LIBRARIES})
+IF(TOBY_GUI_WXWIDGETS)
+    ADD_EXECUTABLE(toby toby_wxwidgets.cpp)
+    TARGET_LINK_LIBRARIES(toby tobybackend ${OPTIONAL_LIBS} ${wxWidgets_LIBRARIES})
+ENDIF(TOBY_GUI_WXWIDGETS)
 
-ADD_EXECUTABLE(toby-sdl toby_sdl.c)
-TARGET_LINK_LIBRARIES(toby-sdl tobybackend ${OPTIONAL_LIBS} ${SDL_LIBRARY})
+IF(TOBY_GUI_SDL)
+    ADD_EXECUTABLE(toby-sdl toby_sdl.c)
+    TARGET_LINK_LIBRARIES(toby-sdl tobybackend ${OPTIONAL_LIBS} ${SDL_LIBRARY})
+ENDIF(TOBY_GUI_SDL)
 
 # end of CMakeLists.txt ...
 
