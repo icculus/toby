@@ -392,6 +392,7 @@ void TOBY_blankTurtle(const Turtle *turtle)
         tspace->calcOffset(xoff, yoff);
         // hopefully the clipping code really saves us here...you can't blit
         //  a portion of a bitmap...
+        dc->DestroyClippingRegion();
         dc->SetClippingRegion( ((wxCoord)tx) + ((wxCoord)xoff),
                                ((wxCoord)ty) + ((wxCoord)yoff),
                                ((wxCoord)tw), ((wxCoord)th) );
@@ -552,7 +553,10 @@ void TurtleSpace::clipDC(wxDC *dc, int xoff, int yoff) const
     const int w = this->backingW;
     const int h = this->backingH;
     if ((w < this->clientW) || (h < this->clientH))
+    {
+        dc->DestroyClippingRegion();
         dc->SetClippingRegion(xoff, yoff, w, h);
+    } // if
 } // TurtleSpace::clipDC
 
 
