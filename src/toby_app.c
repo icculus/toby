@@ -14,17 +14,10 @@
 #include <ctype.h>  // !!! FIXME: lose this with tolower/toupper...
 #include "toby_app.h"
 
-typedef struct TurtleStates
-{
-    Turtle current;
-    Turtle shadowed;
-} TurtleStates;
-
-
 /* TurtlesSpace state... */
 static int currentTurtleIndex = -1;
 static int totalTurtles = 0;
-static TurtleStates *turtles = NULL;
+static Turtle *turtles = NULL;
 static int fenceEnabled = 1;
 static int halted = 0;
 static TurtleRGB background = { 0, 0, 0 };
@@ -205,25 +198,23 @@ static inline int checkWholeNum(lua_State *L, int idx)
 
 static int allocateTurtle(lua_State *L)
 {
-    Turtle *current = NULL;
-    TurtleStates *ptr = (TurtleStates *) realloc(turtles,
-                        sizeof (TurtleStates) * (totalTurtles + 1));
+    Turtle *ptr;
+
+    ptr = (Turtle *) realloc(turtles, sizeof (Turtle) * (totalTurtles + 1));
     if (ptr == NULL)
         throwError(L, "Out of memory");
 
     turtles = ptr;
     ptr = &turtles[totalTurtles];
-    memset(ptr, '\0', sizeof (TurtleStates));
+    memset(ptr, '\0', sizeof (Turtle));
 
-    current = &ptr->current;
-    current->pos.x = current->pos.y = N(500);   /* center of turtlespace. */
-    current->width = current->height = N(20);
-    current->pen.r = current->pen.g = current->pen.b = N(255);  /* white. */
-    current->angle = 270;  /* due north. */
-    current->penDown = 1;
-    current->recalcPoints = 1;
-    current->visible = 1;
-    current->dirty = 1;
+    ptr->pos.x = ptr->pos.y = N(500);   /* center of turtlespace. */
+    ptr->width = ptr->height = N(20);
+    ptr->pen.r = ptr->pen.g = ptr->pen.b = N(255);  /* white. */
+    ptr->angle = 270;  /* due north. */
+    ptr->penDown = 1;
+    ptr->recalcPoints = 1;
+    ptr->visible = 1;
 
     return totalTurtles++;
 } /* allocateTurtle */
@@ -233,7 +224,7 @@ static inline Turtle *getTurtle(lua_State *L)
 {
     if (currentTurtleIndex < 0)
         throwError(L, "No current turtle");
-    return &turtles[currentTurtleIndex].current;
+    return &turtles[currentTurtleIndex];
 } /* getTurtle */
 
 
@@ -264,44 +255,15 @@ static inline void calculateTurtleTriangle(Turtle *turtle)
 } /* calculateTurtleTriangle */
 
 
-/*
- * Figure out which turtles are "dirty" since the last call, and update them
- *  in TurtleSpace, blanking the old ("shadowed") state and rendering the
- *  current state.
- */
-void TOBY_renderAllTurtles(int allDirty, int intoBackingStore)
+void TOBY_renderAllTurtles(void *udata)
 {
     int i;
-
-    /* blank all turtles that need redrawing first... */
     for (i = 0; i < totalTurtles; i++)
     {
-        Turtle *current = &turtles[i].current;
-        Turtle *shadowed = &turtles[i].shadowed;
-        if ((allDirty) || (current->dirty))
-        {
-            if (shadowed->visible)
-                TOBY_blankTurtle(shadowed);
-        } /* if */
-    } /* for */
-
-    /* Now redraw any that need updating... */
-    for (i = 0; i < totalTurtles; i++)
-    {
-        Turtle *current = &turtles[i].current;
-        Turtle *shadowed = &turtles[i].shadowed;
-        if ((allDirty) || (current->dirty))
-        {
-            calculateTurtleTriangle(current);
-            current->dirty = 0;
-            if (current->visible)
-            {
-                if (intoBackingStore)
-                    TOBY_drawTurtle(current, 1);
-                TOBY_drawTurtle(current, 0);
-            } // if
-            memcpy(shadowed, current, sizeof (Turtle));
-        } /* if */
+        Turtle *turtle = &turtles[i];
+        calculateTurtleTriangle(turtle);
+        if (turtle->visible)
+            TOBY_drawTurtle(turtle, udata);
     } /* for */
 } /* TOBY_renderAllTurtles */
 
@@ -315,7 +277,7 @@ static void setTurtleAngle(lua_State *L, lua_Number angle)
         while (angle >= N(360)) angle -= N(360);
         while (angle < N(0)) angle += N(360);
         turtle->angle = angle;
-        turtle->dirty = turtle->recalcPoints = 1;
+        turtle->recalcPoints = 1;
     } /* if */
 } /* setTurtleAngle */
 
@@ -363,7 +325,6 @@ static void setTurtleXY(lua_State *L, lua_Number x, lua_Number y)
     Turtle *turtle = getTurtle(L);
     turtle->pos.x = x;
     turtle->pos.y = y;
-    turtle->dirty = 1;
 
     if (fenceEnabled)
         testFence(L, turtle);
@@ -540,7 +501,6 @@ static int luahook_showturtle(lua_State *L)
 {
     Turtle *turtle = getTurtle(L);
     turtle->visible = 1;
-    turtle->dirty = 1;
     return 0;
 } /* luahook_showturtle */
 
@@ -549,7 +509,6 @@ static int luahook_hideturtle(lua_State *L)
 {
     Turtle *turtle = getTurtle(L);
     turtle->visible = 0;
-    turtle->dirty = 1;
     return 0;
 } /* luahook_hideturtle */
 
@@ -561,7 +520,7 @@ static int luahook_enablefence(lua_State *L)
     fenceEnabled = 1;
 
     for (i = 0; i < totalTurtles; i++)
-        testFence(L, &turtles[i].current);
+        testFence(L, &turtles[i]);
 
     return 0;
 } /* luahook_enablefence */
@@ -946,7 +905,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
             if (!halted)  /* (halted) means stop requested, not error. */
                 luaErrorMsgBox(L);
         } /* if */
-        TOBY_renderAllTurtles(1, 1);
+        TOBY_renderAllTurtles(NULL);
         TOBY_stopRun();
     } /* if */
     lua_pop(L, 1);   // dump stackwalker.

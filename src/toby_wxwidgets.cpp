@@ -42,18 +42,18 @@ public:
     inline void clipDC(wxDC *dc, int xoff, int yoff) const;
     inline const wxFont *getFont() const { return &this->font; }
     inline wxBitmap *getBacking() const { return this->backing; }
-    inline void nukeDC(wxClientDC **dc) { delete *dc; *dc = NULL; }
     inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
-    inline wxDC *getBackingDC() const { return this->backingDC; }
-    inline wxDC *getClientDC() const { return this->clientDC; }
+    inline wxMemoryDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(lua_Number &x, lua_Number &y) const;
     inline void runProgram(char *program, bool printing);  // hook to GUI.
     inline void halt();  // hook to GUI.
     inline void constructBackingDC();
-    inline void constructClientDC();
+
     bool isRunning() const { return this->running; }
     bool stopRequested() const { return (this->stopping) || (!this->running); }
     bool quitRequested() const { return this->quitting; }
+
+    void putToScreen();
 
     void onResize(wxSizeEvent &evt);
     void onPaint(wxPaintEvent &evt);
@@ -74,7 +74,6 @@ private:
     int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
-    wxClientDC *clientDC;
     wxStopWatch stopwatch;
     DECLARE_EVENT_TABLE()
 };
@@ -325,17 +324,6 @@ int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
         dc->DrawRotatedText(wxstr, (wxCoord) x, (wxCoord) y, angle);
     } // if
 
-    dc = tspace->getClientDC();
-    if (dc != NULL)
-    {
-        int xoff, yoff;
-        tspace->calcOffset(xoff, yoff);
-        tspace->clipDC(dc, xoff, yoff);
-        dc->SetTextForeground(color);
-        dc->DrawRotatedText(wxstr, ((wxCoord)x) + ((wxCoord)xoff),
-                            ((wxCoord)y) + ((wxCoord)yoff), angle);
-    } // if
-
     return true;
 } // TOBY_drawString
 
@@ -344,74 +332,27 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                    int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    wxDC *dc = NULL;
-
-    wxPen pen(wxColour(r, g, b));
-
-    tspace->scaleXY(x1, y1);
-    tspace->scaleXY(x2, y2);
-
-    dc = tspace->getBackingDC();
+    wxMemoryDC *dc = tspace->getBackingDC();
     if (dc != NULL)
     {
-        dc->SetPen(pen);
+        tspace->scaleXY(x1, y1);
+        tspace->scaleXY(x2, y2);
+        dc->SetPen(wxPen(wxColour(r, g, b)));
         dc->DrawLine((wxCoord) x1, (wxCoord) y1, (wxCoord) x2, (wxCoord) y2);
-    } // if
-
-    dc = tspace->getClientDC();
-    if (dc != NULL)
-    {
-        int xoff, yoff;
-        tspace->calcOffset(xoff, yoff);
-        dc->SetPen(pen);
-        dc->DrawLine( ((wxCoord)x1) + ((wxCoord)xoff),
-                      ((wxCoord)y1) + ((wxCoord)yoff),
-                      ((wxCoord)x2) + ((wxCoord)xoff),
-                      ((wxCoord)y2) + ((wxCoord)yoff) );
     } // if
 } // TOBY_drawLine
 
 
-void TOBY_blankTurtle(const Turtle *turtle)
+void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    wxASSERT(tspace->getBackingDC() == NULL);  // should have just flushed it!
-    wxDC *dc = tspace->getClientDC();
-    if (dc != NULL)
-    {
-        // !!! FIXME: this area is a little wide...
-        lua_Number tx = turtle->pos.x - turtle->width;
-        lua_Number ty = turtle->pos.y - turtle->height;
-        lua_Number tw = turtle->width * 2;
-        lua_Number th = turtle->height * 2;
-
-        tspace->scaleXY(tx, ty);
-        tspace->scaleXY(tw, th);
-
-        int xoff, yoff;
-        tspace->calcOffset(xoff, yoff);
-        // hopefully the clipping code really saves us here...you can't blit
-        //  a portion of a bitmap...
-        dc->DestroyClippingRegion();
-        dc->SetClippingRegion( ((wxCoord)tx) + ((wxCoord)xoff),
-                               ((wxCoord)ty) + ((wxCoord)yoff),
-                               ((wxCoord)tw), ((wxCoord)th) );
-        dc->DrawBitmap(*tspace->getBacking(), xoff, yoff, false);
-        dc->DestroyClippingRegion();
-    } // if
-} // TOBY_blankTurtle
-
-
-void TOBY_drawTurtle(const Turtle *turtle, int intoBacking)
-{
-    TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    wxDC *dc = intoBacking ? tspace->getBackingDC() : tspace->getClientDC();
+    wxDC *dc = ( (data != NULL) ? ((wxDC *) data) : tspace->getBackingDC() );
     if (dc != NULL)
     {
         int xoff = 0;
         int yoff = 0;
 
-        if (!intoBacking)
+        if (data != NULL)  // not the backing store? Clip it.
         {
             tspace->calcOffset(xoff, yoff);
             tspace->clipDC(dc, xoff, yoff);
@@ -454,25 +395,13 @@ void TOBY_drawTurtle(const Turtle *turtle, int intoBacking)
 } // TOBY_drawTurtle
 
 
-
-
 void TOBY_cleanup(int r, int g, int b)
 {
     TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
-    wxBrush brush(wxColour(r, g, b));
-    wxDC *dc = NULL;
-
-    dc = tspace->getBackingDC();
+    wxMemoryDC *dc = tspace->getBackingDC();
     if (dc != NULL)
     {
-        dc->SetBackground(brush);
-        dc->Clear();
-    } // if
-
-    dc = tspace->getClientDC();
-    if (dc != NULL)
-    {
-        dc->SetBackground(brush);
+        dc->SetBackground(wxBrush(wxColour(r, g, b)));
         dc->Clear();
     } // if
 } // TOBY_cleanup
@@ -502,7 +431,6 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , backingH(1)
     , backing(NULL)
     , backingDC(NULL)
-    , clientDC(NULL)
 {
     // no-op
 } // TurtleSpace::TurtleSpace
@@ -510,7 +438,6 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
 
 TurtleSpace::~TurtleSpace()
 {
-    delete this->clientDC;
     delete this->backingDC;
     delete this->backing;
     delete this->program;
@@ -525,12 +452,11 @@ void TurtleSpace::constructBackingDC()
 } // TurtleSpace::constructBackingDC
 
 
-void TurtleSpace::constructClientDC()
+void TurtleSpace::putToScreen()
 {
-    wxASSERT(this->clientDC == NULL);
-    this->clientDC = new wxClientDC(this);
-    this->clientDC->SetFont(this->font);
-} // TurtleSpace::constructClientDC
+    this->Refresh(false);
+    this->Update();  // force repaint.
+} // TurtleSpace::putToScreen
 
 
 void TurtleSpace::scaleXY(lua_Number &x, lua_Number &y) const
@@ -583,8 +509,7 @@ void TurtleSpace::startRun()
     else
         h = w;
 
-    // (these may be NULL already, that's okay.)
-    this->nukeDC(&this->clientDC);
+    // (this may be NULL already, that's okay.)
     this->nukeDC(&this->backingDC);
 
     // resized since last run?
@@ -603,7 +528,6 @@ void TurtleSpace::startRun()
     } // if
 
     this->constructBackingDC();
-    this->constructClientDC();
     this->running = true;
     this->stopping = false;
 } // TurtleSpace::startRun
@@ -613,8 +537,8 @@ void TurtleSpace::stopRun()
 {
     wxASSERT(this->running);
     this->running = this->stopping = false;
-    this->nukeDC(&this->clientDC);  // flush to screen.
     this->nukeDC(&this->backingDC);  // flush to bitmap.
+    this->putToScreen();
 } // TurtleSpace::stopRun
 
 
@@ -629,32 +553,14 @@ int TurtleSpace::pumpEvents()
 {
     if (this->stopwatch.Time() > 50)
     {
-        // Flush the backingDC so renderAllTurtles has the right data for
-        //  blanking turtles...
-        const bool hasBackingDC = (this->backingDC != NULL);
-        this->nukeDC(&this->backingDC);
-
-        TOBY_renderAllTurtles(false, false);
-
-        // force client DC to flush here...this can mean that most platforms
-        //  will be clamped to 20fps, but the overall execution of the
-        //  program will be much faster, as rendering primitives will batch.
-        // The backing DC isn't flushed until the end of the program or an
-        //  explicit need to repaint the TurtleSpace window.
-        const bool hasClientDC = (this->clientDC != NULL);
-        this->nukeDC(&this->clientDC);
+        // force repaint here...this means we will be clamped to 20fps, but
+        //  the overall execution of the program will be much faster, as
+        //  rendering primitives will batch.
+        this->putToScreen();
 
         // Pump the system event queue if we aren't requesting a program halt.
         while ((!this->stopRequested()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
-
-        // Rebuild DCs we might have nuked to force a flush...
-
-        if (hasClientDC)
-            this->constructClientDC();
-
-        if (hasBackingDC)
-            this->constructBackingDC();
 
         this->stopwatch.Start(0);  // reset this for next call.
     } /* if */
@@ -719,11 +625,6 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
-    // delete in-progress clientDC so we don't have competing states...
-    const bool hasClientDC = (this->clientDC != NULL);
-    const bool hasBackingDC = (this->backingDC != NULL);
-    this->nukeDC(&this->clientDC);
-
     if (true)   // scope to allow wxPaintDC to destruct.
     {
         wxPaintDC dc(this);
@@ -734,18 +635,16 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
         if (this->backing != NULL)
         {
             // delete in-progress backingDC to force flush of rendered data...
+            const bool hasBackingDC = (this->backingDC != NULL);
             this->nukeDC(&this->backingDC);
             int xoff, yoff;
             this->calcOffset(xoff, yoff);
             dc.DrawBitmap(*this->backing, xoff, yoff, false);
+            TOBY_renderAllTurtles(&dc);
+            if (hasBackingDC)
+                this->constructBackingDC();
         } // if
     } // if
-
-    if (hasBackingDC)
-        this->constructBackingDC();
-
-    if (hasClientDC)
-        this->constructClientDC();
 } // TurtleSpace::onPaint
 
 
@@ -754,7 +653,6 @@ bool TobyPrintout::OnPrintPage(int page)
     const TurtleSpace *tspace = wxGetApp().getTobyWindow()->getTurtleSpace();
 
     wxASSERT(!tspace->isRunning());
-    wxASSERT(tspace->getClientDC() == NULL);
     wxASSERT(tspace->getBackingDC() == NULL);
 
     wxBitmap *bmp = tspace->getBacking();

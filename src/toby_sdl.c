@@ -47,7 +47,7 @@ int TOBY_pumpEvents(void)
     const Uint32 now = SDL_GetTicks();
     if ((now - GLastPumpEvents) > 50)
     {
-        TOBY_renderAllTurtles(0, 0);
+        //TOBY_renderAllTurtles(NULL);
         SDL_Flip(GScreen);
         while (SDL_PollEvent(&e))
         {
@@ -215,14 +215,9 @@ int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
 } /* TOBY_drawString */
 
 
-void TOBY_drawTurtle(const Turtle *turtle, int intoBackingStore)
+void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
 } /* TOBY_drawTurtle */
-
-
-void TOBY_blankTurtle(const Turtle *turtle)
-{
-} /* TOBY_blankTurtle */
 
 
 void TOBY_cleanup(int r, int g, int b)

@@ -70,7 +70,7 @@ void TOBY_background(int *r, int *g, int *b);
 
 
 /* !!! FIXME: comment this */
-void TOBY_renderAllTurtles(int allDirty, int intoBackingStore);
+void TOBY_renderAllTurtles(void *udata);
 
 
 /*
@@ -130,11 +130,9 @@ int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
  * Render a turtle of size (w,h) with the center at (x,y), facing (angle).
  *  Angle is between 0 and 360, coordinates and sizes are in the same system
  *  as TOBY_drawLine().
+ * !!! FIXME: document (data).
  */
-void TOBY_drawTurtle(const Turtle *turtle, int intoBackingStore);
-
-/* !!! FIXME: comment me. */
-void TOBY_blankTurtle(const Turtle *turtle);
+void TOBY_drawTurtle(const Turtle *turtle, void *data);
 
 
 /*
