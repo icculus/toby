@@ -15,10 +15,10 @@
 #include "toby_app.h"
 
 static SDL_Surface *GScreen = NULL;
+static SDL_Surface *GBacking = NULL;
 static int GRequestingQuit = 0;
 static Uint32 GLastPumpEvents = 0;
 static Uint32 GStopWatch = 0;
-static lua_Number GTurtleSpaceSize = 0;
 static int GDelayAndQuit = -1;
 
 #define TOBY_PROFILE 1
@@ -26,7 +26,6 @@ static int GDelayAndQuit = -1;
 
 void TOBY_startRun(void)
 {
-    GTurtleSpaceSize = (GScreen->h < GScreen->w) ? GScreen->h : GScreen->w;
     GRequestingQuit = 0;
     GLastPumpEvents = 0;
     GStopWatch = SDL_GetTicks();
@@ -47,8 +46,24 @@ int TOBY_pumpEvents(void)
     const Uint32 now = SDL_GetTicks();
     if ((now - GLastPumpEvents) > 50)
     {
-        //TOBY_renderAllTurtles(NULL);
+        const int xoff = (GScreen->w - GBacking->w) / 2;
+        const int yoff = (GScreen->h - GBacking->h) / 2;
+        SDL_Rect blitr = { xoff, yoff, GBacking->w, GBacking->h };
+
+        if (SDL_MUSTLOCK(GBacking))
+            SDL_UnlockSurface(GBacking);
+
+        SDL_BlitSurface(GBacking, NULL, GScreen, &blitr);
+
+        if (SDL_MUSTLOCK(GBacking))
+        {
+            while (SDL_LockSurface(GBacking) < 0)
+                SDL_Delay(10);
+        } /* if */
+
+        TOBY_renderAllTurtles(GScreen);
         SDL_Flip(GScreen);
+
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
@@ -86,8 +101,8 @@ void TOBY_messageBox(const char *msg)
 static inline void scaleXY(lua_Number *x, lua_Number *y)
 {
     /* !!! FIXME: Fixed point? */
-    *x = GTurtleSpaceSize * (*x / N(1000));
-    *y = GTurtleSpaceSize * (*y / N(1000));
+    *x = GBacking->w * (*x / N(1000));
+    *y = GBacking->h * (*y / N(1000));
 } /* scaleXY */
 
 
@@ -101,14 +116,12 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
      *   http://www.etek.chalmers.se/~e8cal1/sge/
      */
 
-	int dx, dy, sdx, sdy, x, y, px, py;
-    const int xoff = (GScreen->w - GTurtleSpaceSize) / 2;
-    const int yoff = (GScreen->h - GTurtleSpaceSize) / 2;
-    const int w = GScreen->w;
-    const Uint32 pval = (b << 24) | (g << 16) | (r << 8);
+    int dx, dy, sdx, sdy, x, y, px, py;
+    const int w = GBacking->w;
+    const Uint32 pval = (b << 24) | (g << 16) | (r << 8) | 0xFF;
 
     /* !!! FIXME: this is always 32-bpp at the moment. */
-    Uint32 *p = (Uint32 *) GScreen->pixels;
+    Uint32 *p = (Uint32 *) GBacking->pixels;
 
     scaleXY(&x1, &y1);
     scaleXY(&x2, &y2);
@@ -127,8 +140,8 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     x = y = 0;
 
-    px = ((int)x1) + xoff;
-    py = ((int)y1) + yoff;
+    px = (int) x1;
+    py = (int) y1;
 
     if ((dx == 1) && (dy == 1))
     {
@@ -217,11 +230,13 @@ int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
 
 void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
+    //SDL_Surface *surf = ((data == NULL)) ? GBacking : (SDL_Surface *) data);
 } /* TOBY_drawTurtle */
 
 
 void TOBY_cleanup(int r, int g, int b)
 {
+    SDL_FillRect(GBacking, NULL, SDL_MapRGBA(GBacking->format, r, g, b, 0xFF));
     SDL_FillRect(GScreen, NULL, SDL_MapRGB(GScreen->format, r, g, b));
 } /* TOBY_cleanup */
 
@@ -290,6 +305,8 @@ static char *loadProgram(const char *fname)
 
 static int doProgram(const char *program, int w, int h, Uint32 flags)
 {
+    const int size = (h < w) ? h : w;
+
     if (SDL_Init(SDL_INIT_VIDEO) == -1)
     {
         fprintf(stderr, "SDL_Init(SDL_INIT_VIDEO) failed: %s\n",
@@ -299,12 +316,36 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
 
     SDL_WM_SetCaption("Toby", "Toby");
 
-    if ((GScreen = SDL_SetVideoMode(w, h, 32, flags)) == NULL)
+    if ((GScreen = SDL_SetVideoMode(w, h, 0, flags)) == NULL)
     {
-        fprintf(stderr, "SDL_SetVideoMode(%d, %d, 32, 0) failed: %s\n",
-                w, h, SDL_GetError());
+        fprintf(stderr, "SDL_SetVideoMode() failed: %s\n", SDL_GetError());
         SDL_Quit();
         return 5;
+    } /* if */
+
+    /* Blank to black to start, just in case. */
+    SDL_FillRect(GScreen, NULL, SDL_MapRGB(GScreen->format, 0, 0, 0));
+    SDL_Flip(GScreen);
+
+    GBacking = SDL_CreateRGBSurface(0, size, size, 32,
+                                   0x0000FF00,  /* red */
+                                   0x00FF0000,  /* green */
+                                   0xFF000000,  /* blue */
+                                   0x000000FF); /* alpha */
+    if (GBacking == NULL)
+    {
+        fprintf(stderr, "SDL_CreateRGBSurface() failed: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 6;
+    } /* if */
+
+    SDL_SetAlpha(GBacking, 0, 0);
+    SDL_FillRect(GBacking, NULL, SDL_MapRGBA(GBacking->format, 0, 0, 0, 0xFF));
+
+    if (SDL_MUSTLOCK(GBacking))
+    {
+        while (SDL_LockSurface(GBacking) < 0)
+            SDL_Delay(10);
     } /* if */
 
     TOBY_runProgram(program, 0);
@@ -315,6 +356,9 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
     {
         while (TOBY_delay(100)) { /* no-op. */ }
     } /* else */
+
+    SDL_FreeSurface(GBacking);
+    GScreen = GBacking = NULL;
 
     SDL_Quit();
     return 0;
