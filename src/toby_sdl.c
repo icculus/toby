@@ -151,9 +151,9 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else if (dx == 1)
     {
-        _D(("LFB: Vertical line fastpath.\n"));
         Uint32 *linep = ((Uint32 *) p) + ((py * w) + px);
-        int incr = w * sdy;
+        const int incr = w * sdy;
+        _D(("LFB: Vertical line fastpath.\n"));
         for (y = 0; y < dy; y++)
         {
             *linep = pval;
@@ -163,9 +163,11 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else if (dy == 1)
     {
-        _D(("LFB: Horizontal line fastpath.\n"));
         Uint32 *linep = ((Uint32 *) p) + ((py * w) + px);
-        int incr = sdx;
+        const int incr = sdx;
+
+        _D(("LFB: Horizontal line fastpath.\n"));
+
         for (x = 0; x < dx; x++)
         {
             *linep = pval;
@@ -175,10 +177,10 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else if (dx >= dy)
     {
-        _D(("LFB: Line with major axis of X.\n"));
-
         int lastX = px;
         int thisY = py;
+
+        _D(("LFB: Line with major axis of X.\n"));
 
         for (x = 0; x < dx; x++)
         {
@@ -198,10 +200,10 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else
     {
-        _D(("LFB: Line with major axis of Y.\n"));
-
         int lastY = py;
         int thisX = px;
+
+        _D(("LFB: Line with major axis of Y.\n"));
 
         for (y = 0; y < dy; y++)
         {

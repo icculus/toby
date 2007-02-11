@@ -77,12 +77,10 @@ static inline void calculateLine(lua_Number heading, lua_Number distance,
                                  lua_Number startX, lua_Number startY,
                                  lua_Number *endX, lua_Number *endY)
 {
-    /* !!! FIXME: fixed point... */
-    assert(endX != NULL);
-    assert(endY != NULL);
-
-    lua_Number rad = degreesToRadians(heading);
+    const lua_Number rad = degreesToRadians(heading);
     lua_Number sinrad, cosrad;
+
+    /* !!! FIXME: fixed point... */
     sinAndCos(rad, &sinrad, &cosrad);
     *endY = (sinrad * distance) + startY;
     *endX = (cosrad * distance) + startX;

@@ -253,9 +253,10 @@ static void lookupvar(LexState *ls, TString *varname, expdesc *var,
   lua_State *L = ls->L;
 
   if (singlevaraux(fs, varname, var, 1) == VGLOBAL) {
+    int missing;
     /* see if it's an existing global provided in native code... */
     lua_getglobal(ls->L, getstr(varname));
-    int missing = lua_isnil(ls->L, -1);
+    missing = lua_isnil(ls->L, -1);
     lua_pop(ls->L, 1);
 
     if (create) {
