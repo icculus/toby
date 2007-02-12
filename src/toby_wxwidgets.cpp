@@ -639,8 +639,14 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 
     int xoff, yoff;
     this->calcOffset(xoff, yoff);
+
+    int r, g, b;
+    TOBY_background(&r, &g, &b);
+    dc.SetBackground(wxBrush(wxColour(r, g, b)));
     
-    if (this->backing != NULL)
+    if (this->backing == NULL)
+        dc.Clear();   // no backing store, just dump the whole thing.
+    else
     {
         // delete in-progress backingDC to force flush of rendered data...
         const bool hasBackingDC = (this->backingDC != NULL);
@@ -649,16 +655,10 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
         TOBY_renderAllTurtles(&dc);
         if (hasBackingDC)
             this->constructBackingDC();
-    } // if
 
-    // If there's some space in the window that isn't covered by the bitmap,
-    //  blank it out. We do a lot of tapdancing to try and clip out exactly
-    //  what will need clearing.
-    if ((xoff > 0) || (yoff > 0))
-    {
-        int r, g, b;
-        TOBY_background(&r, &g, &b);
-        dc.SetBackground(wxBrush(wxColour(r, g, b)));
+        // If there's some space in the window that isn't covered by the
+        //  bitmap, blank it out. We do a lot of tapdancing to try and clip
+        //  out exactly what will need clearing.
         if (yoff > 0)
         {
             const wxRect top(0, 0, this->clientW, yoff);
@@ -684,7 +684,7 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
             dc.SetClippingRegion(right);
             dc.Clear();
         } // if
-    } // if
+    } // else 
 } // TurtleSpace::onPaint
 
 
