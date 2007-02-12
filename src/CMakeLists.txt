@@ -139,5 +139,17 @@ IF(TOBY_GUI_SDL)
     TARGET_LINK_LIBRARIES(toby-sdl tobybackend ${OPTIONAL_LIBS} ${SDL_LIBRARY})
 ENDIF(TOBY_GUI_SDL)
 
+MACRO(MESSAGE_BOOL_OPTION _NAME _VALUE)
+    IF(${_VALUE})
+        MESSAGE(STATUS "    ${_NAME}: enabled")
+    ELSE(${_VALUE})
+        MESSAGE(STATUS "    ${_NAME}: disabled")
+    ENDIF(${_VALUE})
+ENDMACRO(MESSAGE_BOOL_OPTION)
+
+MESSAGE(STATUS "  Toby will build with the following options:")
+MESSAGE_BOOL_OPTION("wxWidgets-based IDE application" TOBY_GUI_WXWIDGETS)
+MESSAGE_BOOL_OPTION("SDL-based interpreter application" TOBY_GUI_SDL)
+
 # end of CMakeLists.txt ...
 
