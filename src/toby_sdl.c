@@ -20,20 +20,49 @@ static int GRequestingQuit = 0;
 static Uint32 GLastPumpEvents = 0;
 static Uint32 GStopWatch = 0;
 static int GDelayAndQuit = -1;
+static int GRunning = 0;
 
 #define TOBY_PROFILE 1
+
+
+static void putToScreen(void)
+{
+    const int xoff = (GScreen->w - GBacking->w) / 2;
+    const int yoff = (GScreen->h - GBacking->h) / 2;
+    SDL_Rect blitr = { xoff, yoff, GBacking->w, GBacking->h };
+
+    if (SDL_MUSTLOCK(GBacking))
+        SDL_UnlockSurface(GBacking);
+
+    SDL_BlitSurface(GBacking, NULL, GScreen, &blitr);
+
+    if (SDL_MUSTLOCK(GBacking))
+    {
+        while (SDL_LockSurface(GBacking) < 0)
+            SDL_Delay(10);
+    } /* if */
+
+    /* the turtles are already in the back buffer if the run has finished. */
+    if (GRunning)
+        TOBY_renderAllTurtles(GScreen);
+
+    SDL_Flip(GScreen);
+} /* putToScreen */
 
 
 void TOBY_startRun(void)
 {
     GRequestingQuit = 0;
     GLastPumpEvents = 0;
+    GRunning = 1;
     GStopWatch = SDL_GetTicks();
 } // TOBY_startRun
 
 
 void TOBY_stopRun()
 {
+    putToScreen();
+    GRunning = 0;
     #if TOBY_PROFILE
     printf("time execute: %ld\n", (unsigned long) (SDL_GetTicks()-GStopWatch));
     #endif
@@ -46,28 +75,18 @@ int TOBY_pumpEvents(void)
     const Uint32 now = SDL_GetTicks();
     if ((now - GLastPumpEvents) > 50)
     {
-        const int xoff = (GScreen->w - GBacking->w) / 2;
-        const int yoff = (GScreen->h - GBacking->h) / 2;
-        SDL_Rect blitr = { xoff, yoff, GBacking->w, GBacking->h };
-
-        if (SDL_MUSTLOCK(GBacking))
-            SDL_UnlockSurface(GBacking);
-
-        SDL_BlitSurface(GBacking, NULL, GScreen, &blitr);
-
-        if (SDL_MUSTLOCK(GBacking))
-        {
-            while (SDL_LockSurface(GBacking) < 0)
-                SDL_Delay(10);
-        } /* if */
-
-        TOBY_renderAllTurtles(GScreen);
-        SDL_Flip(GScreen);
+        /* still running? Put the latest to the screen. */
+        if (GRunning)
+            putToScreen();
 
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
                 GRequestingQuit = 1;
+
+            else if (e.type == SDL_VIDEOEXPOSE)
+                putToScreen();  /* in case we need to force a repaint... */
+
             else if (e.type == SDL_KEYDOWN)
             {
                 const SDL_keysym *k = &e.key.keysym;
@@ -79,6 +98,7 @@ int TOBY_pumpEvents(void)
                 #endif
             } /* else if */
         } /* while */
+
         GLastPumpEvents = SDL_GetTicks();   /* reset this for next call. */
     } /* if */
 
