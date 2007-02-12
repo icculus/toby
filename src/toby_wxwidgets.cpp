@@ -56,10 +56,9 @@ public:
     void putToScreen();
 
     void onResize(wxSizeEvent &evt);
+    void onErase(wxEraseEvent &evt);
     void onPaint(wxPaintEvent &evt);
     void onIdle(wxIdleEvent &evt);
-
-    enum { windowFlags=wxFULL_REPAINT_ON_RESIZE };
 
 private:
     const wxFont font;
@@ -81,6 +80,7 @@ private:
 BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
     EVT_SIZE(TurtleSpace::onResize)
     EVT_PAINT(TurtleSpace::onPaint)
+    EVT_ERASE_BACKGROUND(TurtleSpace::onErase)
     EVT_IDLE(TurtleSpace::onIdle)
 END_EVENT_TABLE()
 
@@ -418,7 +418,7 @@ void TOBY_messageBox(const char *msg)
 // The rest of the application...
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
-    : wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, windowFlags)
+    : wxWindow(parent, wxID_ANY)
     , font(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL)
     , program(NULL)
     , quitting(false)
@@ -620,29 +620,69 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
     wxSize size(this->GetClientSize());
     this->clientW = size.GetWidth();
     this->clientH = size.GetHeight();
+    this->putToScreen();  // force a full redraw.
 } // TurtleSpace::onResize
+
+
+void TurtleSpace::onErase(wxEraseEvent &evt)
+{
+    // We don't want to do anything here, since we redraw the whole window
+    //  in the Paint event...catching the erase event and doing nothing
+    //  prevents flicker on some platforms, though.
+    (void) evt.GetDC();
+} // TurtleSpace::onErase
 
 
 void TurtleSpace::onPaint(wxPaintEvent &evt)
 {
-    if (true)   // scope to allow wxPaintDC to destruct.
+    wxPaintDC dc(this);
+
+    int xoff, yoff;
+    this->calcOffset(xoff, yoff);
+    
+    if (this->backing != NULL)
     {
-        wxPaintDC dc(this);
+        // delete in-progress backingDC to force flush of rendered data...
+        const bool hasBackingDC = (this->backingDC != NULL);
+        this->nukeDC(&this->backingDC);
+        dc.DrawBitmap(*this->backing, xoff, yoff, false);
+        TOBY_renderAllTurtles(&dc);
+        if (hasBackingDC)
+            this->constructBackingDC();
+    } // if
+
+    // If there's some space in the window that isn't covered by the bitmap,
+    //  blank it out. We do a lot of tapdancing to try and clip out exactly
+    //  what will need clearing.
+    if ((xoff > 0) || (yoff > 0))
+    {
         int r, g, b;
         TOBY_background(&r, &g, &b);
         dc.SetBackground(wxBrush(wxColour(r, g, b)));
-        dc.Clear();
-        if (this->backing != NULL)
+        if (yoff > 0)
         {
-            // delete in-progress backingDC to force flush of rendered data...
-            const bool hasBackingDC = (this->backingDC != NULL);
-            this->nukeDC(&this->backingDC);
-            int xoff, yoff;
-            this->calcOffset(xoff, yoff);
-            dc.DrawBitmap(*this->backing, xoff, yoff, false);
-            TOBY_renderAllTurtles(&dc);
-            if (hasBackingDC)
-                this->constructBackingDC();
+            const wxRect top(0, 0, this->clientW, yoff);
+            dc.DestroyClippingRegion();
+            dc.SetClippingRegion(top);
+            dc.Clear();
+
+            const wxRect bottom(0, this->backingH+yoff, this->clientW, yoff+1);
+            dc.DestroyClippingRegion();
+            dc.SetClippingRegion(bottom);
+            dc.Clear();
+        } // if
+
+        if (xoff > 0)
+        {
+            const wxRect left(0, 0, xoff, this->clientH);
+            dc.DestroyClippingRegion();
+            dc.SetClippingRegion(left);
+            dc.Clear();
+
+            const wxRect right(xoff+this->backingW, 0, xoff+1, this->clientH);
+            dc.DestroyClippingRegion();
+            dc.SetClippingRegion(right);
+            dc.Clear();
         } // if
     } // if
 } // TurtleSpace::onPaint
@@ -877,6 +917,7 @@ void TobyWindow::onMenuPrint(wxCommandEvent &event)
 void TobyWindow::onMenuCleanup(wxCommandEvent &evt)
 {
     TOBY_cleanup(0, 0, 0);
+    getTurtleSpace()->putToScreen();
 } // TobyWindow::onMenuCleanup
 
 
