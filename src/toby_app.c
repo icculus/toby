@@ -923,7 +923,6 @@ static inline void resetProgramState(void)
 
 void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
-    const int mask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT;
     lua_State *L;
 
     resetProgramState();
@@ -939,7 +938,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
 
 // !!! FIXME
 //    lua_atpanic(L, luahook_fatal);
-    lua_sethook(L, luaDebugHook, mask, 1000);
+    lua_sethook(L, luaDebugHook, LUA_MASKLINE | LUA_MASKCOUNT, 1000);
     add_toby_functions(L);
 
     lua_pushcfunction(L, luahook_stackwalk);
