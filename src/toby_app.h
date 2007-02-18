@@ -65,12 +65,23 @@ typedef struct Turtle
 } Turtle;
 
 
+typedef struct TobyCallstack
+{
+    const char *name;
+    int linenum;
+} TobyCallstack;
+
+
 /* !!! FIXME: comment this */
 void TOBY_background(int *r, int *g, int *b);
 
 
 /* !!! FIXME: comment this */
 void TOBY_renderAllTurtles(void *udata);
+
+
+/* !!! FIXME: comment this */
+const TobyCallstack *TOBY_getCallstack(int *elementCount);
 
 
 /*

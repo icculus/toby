@@ -21,6 +21,10 @@ static Turtle *turtles = NULL;
 static int fenceEnabled = 1;
 static int halted = 0;
 static TurtleRGB background = { 0, 0, 0 };
+static TobyCallstack *callstack = NULL;
+static int callstackCount = 0;
+static lua_State *luaState = NULL;
+
 
 void TOBY_background(int *r, int *g, int *b)
 {
@@ -838,7 +842,7 @@ static int luahook_stackwalk(lua_State *L)
 
     lua_pushstring(L, errstr ? errstr : "");
     return 1;
-} // luahook_stackwalk
+} /* luahook_stackwalk */
 
 
 static void luaDebugHook(lua_State *L, lua_Debug *ar)
@@ -848,23 +852,73 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
 } /* luaDebugHook */
 
 
-static inline void resetProgramState(void)
-{
-    free(turtles);
-    turtles = NULL;
-    currentTurtleIndex = -1;
-    totalTurtles = 0;
-    fenceEnabled = 1;
-    halted = 0;
-} /* resetProgramState */
-
-
 static void luaErrorMsgBox(lua_State *L)
 {
     const char *errstr = lua_tostring(L, -1);
     TOBY_messageBox(errstr);
     lua_pop(L, 1);  /* dump error string. */
 } /* luaErrorMsgBox */
+
+
+const TobyCallstack *TOBY_getCallstack(int *elementCount)
+{
+    lua_State *L = luaState;
+    TobyCallstack *cs = NULL;
+    lua_Debug ldbg;
+    int elements = 0;
+    int i;
+
+    *elementCount = 0;
+
+    if (L == NULL)   /* if frontend calls this when program isn't running. */
+        return NULL;
+
+    for (i = 0; lua_getstack(L, i, &ldbg); i++)
+    {
+        if (!lua_getinfo(L, "nSl", &ldbg))
+            continue;  /* !!! FIXME: do something here? */
+
+        /* only care about user-written Toby code with debug information. */
+        if ((ldbg.currentline > 0) && (strcmp(ldbg.what, "Lua") == 0))
+        {
+            if (elements >= callstackCount)
+            {
+                callstackCount += 64;
+                void *ptr = realloc(callstack,
+                                    sizeof (TobyCallstack) * callstackCount);
+                if (ptr == NULL)
+                {
+                    callstackCount -= 64;
+                    return NULL;  /* oh well. */
+                } /* if */
+                callstack = (TobyCallstack *) ptr;
+            } /* if */
+
+            cs = callstack + elements;
+            cs->name = ldbg.name;   /* this gets garbage-collected by Lua! */
+            cs->linenum = ldbg.currentline;
+            elements++;
+        } /* if */
+    } /* for */
+
+    *elementCount = elements;
+    return callstack;
+} /* TOBY_getCallstack */
+
+
+static inline void resetProgramState(void)
+{
+    free(callstack);
+    callstack = NULL;
+    callstackCount = 0;
+    free(turtles);
+    turtles = NULL;
+    currentTurtleIndex = -1;
+    totalTurtles = 0;
+    fenceEnabled = 1;
+    halted = 0;
+    luaState = NULL;
+} /* resetProgramState */
 
 
 void TOBY_runProgram(const char *source_code, int run_for_printing)
@@ -879,7 +933,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
     else
         background.r = background.g = background.b = 0;  // black.
 
-    L = luaL_newstate();
+    luaState = L = luaL_newstate();
     if (L == NULL)
         return;
 

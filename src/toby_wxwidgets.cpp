@@ -562,6 +562,14 @@ int TurtleSpace::pumpEvents()
         while ((!this->stopRequested()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
+        // !!! FIXME: for debugging purposes...remove me when UI is hooked up.
+        printf("Callstack...\n");
+        int elems = 0;
+        const TobyCallstack *cs = TOBY_getCallstack(&elems);
+        for (int i = 0; i < elems; i++, cs++)
+            printf("#%d: %s (%d)\n", i, cs->name, cs->linenum);
+        printf("\n\n");
+
         this->stopwatch.Start(0);  // reset this for next call.
     } /* if */
 
