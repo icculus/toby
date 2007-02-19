@@ -129,14 +129,14 @@ class TobyWindow : public wxFrame
 {
 public:
     TobyWindow();
-    TurtleSpace *getTurtleSpace() { return &this->turtleSpace; }
+    virtual ~TobyWindow();
+    TurtleSpace *getTurtleSpace() { return this->turtleSpace; }
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
     void openFile(const wxString &path);
-    void startRun() { this->startRunImpl(); this->turtleSpace.startRun(); }
-    void stopRun() { this->stopRunImpl(); this->turtleSpace.stopRun(); }
+    void startRun() { this->startRunImpl(); this->turtleSpace->startRun(); }
+    void stopRun() { this->stopRunImpl(); this->turtleSpace->stopRun(); }
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
-    virtual void resizeImpl(wxSizeEvent &evt) = 0;
     virtual void startRunImpl() = 0;
     virtual void stopRunImpl() = 0;
     void onClose(wxCloseEvent &evt);
@@ -151,13 +151,16 @@ public:
     void onMenuOpen(wxCommandEvent &evt);
     void onMenuSaveAsImage(wxCommandEvent &evt);
     void onMenuCleanup(wxCommandEvent &evt);
+    void onMenuRunOrStop(wxCommandEvent &evt);
+    void onMenuRunForPrinting(wxCommandEvent &evt);
 
 protected:
-    TurtleSpace turtleSpace;
+    TurtleSpace *turtleSpace;
     int nonMaximizedX;
     int nonMaximizedY;
     int nonMaximizedWidth;
     int nonMaximizedHeight;
+    char *program;
 
 private:
     DECLARE_EVENT_TABLE()
@@ -176,6 +179,8 @@ BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
     EVT_MENU(MENUCMD_Website, TobyWindow::onMenuWebsite)
     EVT_MENU(MENUCMD_License, TobyWindow::onMenuLicense)
     EVT_MENU(MENUCMD_Cleanup, TobyWindow::onMenuCleanup)
+    EVT_MENU(MENUCMD_RunOrStop, TobyWindow::onMenuRunOrStop)
+    EVT_MENU(MENUCMD_RunForPrinting, TobyWindow::onMenuRunForPrinting)
 END_EVENT_TABLE()
 
 
@@ -184,24 +189,17 @@ class TobyStandaloneFrame : public TobyWindow
 {
 public:
     TobyStandaloneFrame();
-    virtual ~TobyStandaloneFrame();
     void onMenuQuit(wxCommandEvent &evt);
-    void onMenuRunOrStop(wxCommandEvent &evt);
-    void onMenuRunForPrinting(wxCommandEvent &evt);
-    virtual void resizeImpl(wxSizeEvent &evt);
     virtual void openFileImpl(const wxString &fname, char *prog);
     virtual void startRunImpl();
     virtual void stopRunImpl();
 
 private:
-    char *program;
     DECLARE_EVENT_TABLE()
 };
 
 BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyWindow)
     EVT_MENU(MENUCMD_Quit, TobyStandaloneFrame::onMenuQuit)
-    EVT_MENU(MENUCMD_RunOrStop, TobyStandaloneFrame::onMenuRunOrStop)
-    EVT_MENU(MENUCMD_RunForPrinting, TobyStandaloneFrame::onMenuRunForPrinting)
 END_EVENT_TABLE()
 
 
@@ -742,12 +740,21 @@ bool TobyPrintout::HasPage(int pageNum)
 
 TobyWindow::TobyWindow()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
-    , turtleSpace(this)
+    , turtleSpace(new TurtleSpace(this))
+    , program(NULL)
 {
     this->GetPosition(&this->nonMaximizedX, &this->nonMaximizedY);
     this->GetSize(&this->nonMaximizedWidth, &this->nonMaximizedHeight);
     // ...don't forget to resize turtleSpace somewhere in your subclass!
 } // TobyWindow::TobyWindow
+
+
+TobyWindow::~TobyWindow()
+{
+    delete[] this->program;
+    // this->turtleSpace should be deleted by the subclass (because it usually
+    //  wants to be killed by a wxSizer ...)
+} // TobyWindow::~TobyWindow
 
 
 const wxPoint TobyWindow::getPreviousPos()
@@ -922,6 +929,28 @@ void TobyWindow::onMenuPrint(wxCommandEvent &event)
 } // TobyWindow::onMenuPrint
 
 
+void TobyWindow::onMenuRunOrStop(wxCommandEvent &evt)
+{
+    // Run will kick off in next idle event.
+    if (this->turtleSpace->isRunning())
+        this->turtleSpace->halt();
+    else
+    {
+        wxASSERT(this->program != NULL);
+        this->turtleSpace->runProgram(this->program, false);
+    } // else
+} // TobyWindow::onMenuRunOrStop
+
+
+void TobyWindow::onMenuRunForPrinting(wxCommandEvent &evt)
+{
+    // Run will kick off in next idle event.
+    wxASSERT(!this->turtleSpace->isRunning());
+    wxASSERT(this->program != NULL);
+    this->turtleSpace->runProgram(this->program, true);
+} // TobyWindow::onMenuRunForPrinting
+
+
 void TobyWindow::onMenuCleanup(wxCommandEvent &evt)
 {
     TOBY_cleanup(0, 0, 0);
@@ -1004,9 +1033,9 @@ void TobyWindow::onMenuWebsite(wxCommandEvent &evt)
 
 void TobyWindow::onResize(wxSizeEvent &evt)
 {
+    this->Layout();  // Have sizer resize child windows...
     if (!this->IsMaximized())
         this->GetSize(&this->nonMaximizedWidth, &this->nonMaximizedHeight);
-    this->resizeImpl(evt);
 } // TobyWindow::onResize
 
 
@@ -1043,8 +1072,6 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 // !!! FIXME: overflowing 80 chars here...
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
-    this->program = NULL;
-
     wxMenu *file_menu = new wxMenu;
     file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
     file_menu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image\tCtrl-S"))->Enable(false);
@@ -1069,13 +1096,17 @@ TobyStandaloneFrame::TobyStandaloneFrame()
     menu_bar->Append(run_menu, wxT("&Run"));
     menu_bar->Append(help_menu, wxT("&Help"));
     this->SetMenuBar(menu_bar);
+
+    this->turtleSpace->SetSize(GetClientSize());
+
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(this->turtleSpace, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
+    // let TurtleSpace shrink as far as window will.
+    sizer->SetItemMinSize(this->turtleSpace, 1, 1);
+    this->SetSizer(sizer);
+    //this->SetAutoLayout(true);
+    //sizer->Fit(this);
 } // TobyStandaloneFrame::TobyStandaloneFrame
-
-
-TobyStandaloneFrame::~TobyStandaloneFrame()
-{
-    delete[] this->program;
-} // TobyStandaloneFrame::~TobyStandaloneFrame
 
 
 void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
@@ -1088,30 +1119,8 @@ void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
 {
     // Run will kick off in next idle event.
     this->program = prog;  // we have to delete[] this later!
-    turtleSpace.runProgram(this->program, false);
+    this->turtleSpace->runProgram(this->program, false);
 } // TobyStandaloneFrame::openFileImpl
-
-
-void TobyStandaloneFrame::onMenuRunOrStop(wxCommandEvent &evt)
-{
-    // Run will kick off in next idle event.
-    if (turtleSpace.isRunning())
-        this->turtleSpace.halt();
-    else
-    {
-        wxASSERT(this->program != NULL);
-        this->turtleSpace.runProgram(this->program, false);
-    } // else
-} // TobyStandaloneFrame::onMenuRunOrStop
-
-
-void TobyStandaloneFrame::onMenuRunForPrinting(wxCommandEvent &evt)
-{
-    // Run will kick off in next idle event.
-    wxASSERT(!this->turtleSpace.isRunning());
-    wxASSERT(this->program != NULL);
-    this->turtleSpace.runProgram(this->program, true);
-} // TobyStandaloneFrame::onMenuRunForPrinting
 
 
 void TobyStandaloneFrame::startRunImpl()
@@ -1138,13 +1147,6 @@ void TobyStandaloneFrame::stopRunImpl()
     mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
     mb->FindItem(MENUCMD_Cleanup)->Enable(true);
 } // TobyStandaloneFrame::stopRunImpl
-
-
-void TobyStandaloneFrame::resizeImpl(wxSizeEvent &evt)
-{
-    this->turtleSpace.SetSize(this->GetClientSize());
-} // TobyStandaloneFrame::resizeImpl
-
 
 
 IMPLEMENT_APP(TobyWxApp)
