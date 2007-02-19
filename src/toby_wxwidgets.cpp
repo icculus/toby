@@ -166,6 +166,10 @@ protected:
     int nonMaximizedWidth;
     int nonMaximizedHeight;
     char *program;
+    wxMenu *fileMenu;
+    wxMenu *runMenu;
+    wxMenu *helpMenu;
+    wxMenuBar *menuBar;
 
 private:
     DECLARE_EVENT_TABLE()
@@ -749,18 +753,49 @@ TobyWindow::TobyWindow()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(new TurtleSpace(this))
     , program(NULL)
+    , fileMenu(new wxMenu)
+    , runMenu(new wxMenu)
+    , helpMenu(new wxMenu)
+    , menuBar(new wxMenuBar)
 {
     this->GetPosition(&this->nonMaximizedX, &this->nonMaximizedY);
     this->GetSize(&this->nonMaximizedWidth, &this->nonMaximizedHeight);
     // ...don't forget to resize turtleSpace somewhere in your subclass!
+
+    // !!! FIXME: overflowing 80 chars here...
+
+    // Set up common menu items. Subclasses will add more menus and menu items.
+    this->fileMenu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
+    this->fileMenu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image\tCtrl-S"))->Enable(false);
+    this->fileMenu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
+    this->fileMenu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"))->Enable(false);
+    this->fileMenu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"))->Enable(false);
+    this->fileMenu->AppendSeparator();
+    this->fileMenu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
+
+    this->runMenu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
+    this->runMenu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
+    this->runMenu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
+
+    this->helpMenu->Append(MENUCMD_About, wxT("&About\tF1"));
+    this->helpMenu->Append(MENUCMD_License, wxT("&License"));
+    this->helpMenu->Append(MENUCMD_Website, wxT("Toby on the &Web"));
+
+    this->menuBar->Append(this->fileMenu, wxT("&File"));
+    this->menuBar->Append(this->runMenu, wxT("&Run"));
+    this->menuBar->Append(this->helpMenu, wxT("&Help"));
+    this->SetMenuBar(this->menuBar);
 } // TobyWindow::TobyWindow
 
 
 TobyWindow::~TobyWindow()
 {
     delete[] this->program;
+
     // this->turtleSpace should be deleted by the subclass (because it usually
     //  wants to be killed by a wxSizer ...)
+
+    // this->fileMenu, etc is deleted by wxFrame when it cleans up the menubar.
 } // TobyWindow::~TobyWindow
 
 
@@ -1078,43 +1113,14 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 
 #if TOBY_WX_BUILD_STANDALONE
 
-// !!! FIXME: overflowing 80 chars here...
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
-    wxMenu *file_menu = new wxMenu;
-    file_menu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
-    file_menu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image\tCtrl-S"))->Enable(false);
-    file_menu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
-    file_menu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"))->Enable(false);
-    file_menu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"))->Enable(false);
-    file_menu->AppendSeparator();
-    file_menu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
-
-    wxMenu *run_menu = new wxMenu;
-    run_menu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
-    run_menu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
-    run_menu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
-
-    wxMenu *help_menu = new wxMenu;
-    help_menu->Append(MENUCMD_About, wxT("&About\tF1"));
-    help_menu->Append(MENUCMD_License, wxT("&License"));
-    help_menu->Append(MENUCMD_Website, wxT("Toby on the &Web"));
-
-    wxMenuBar *menu_bar = new wxMenuBar;
-    menu_bar->Append(file_menu, wxT("&File"));
-    menu_bar->Append(run_menu, wxT("&Run"));
-    menu_bar->Append(help_menu, wxT("&Help"));
-    this->SetMenuBar(menu_bar);
-
     this->turtleSpace->SetSize(GetClientSize());
-
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(this->turtleSpace, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
     // let TurtleSpace shrink as far as window will.
     sizer->SetItemMinSize(this->turtleSpace, 1, 1);
     this->SetSizer(sizer);
-    //this->SetAutoLayout(true);
-    //sizer->Fit(this);
 } // TobyStandaloneFrame::TobyStandaloneFrame
 
 
@@ -1243,7 +1249,7 @@ bool TobyWxApp::OnInit()
         cfg->SetPath(wxT("/Standalone"));
         this->mainWindow = new TobyStandaloneFrame;
         #else
-        fprintf(stderr, "ERROR: No Standalone app support in this build.\n");
+        fprintf(stderr, "ERROR: No standalone app support in this build.\n");
         return false;
         #endif
     } // if
