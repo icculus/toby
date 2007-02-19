@@ -139,8 +139,8 @@ public:
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
     void openFile(const wxString &path);
-    void startRun() { this->startRunImpl(); this->turtleSpace->startRun(); }
-    void stopRun() { this->stopRunImpl(); this->turtleSpace->stopRun(); }
+    void startRun();
+    void stopRun();
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
     virtual void startRunImpl() = 0;
     virtual void stopRunImpl() = 0;
@@ -201,8 +201,8 @@ public:
     TobyStandaloneFrame();
     void onMenuQuit(wxCommandEvent &evt);
     virtual void openFileImpl(const wxString &fname, char *prog);
-    virtual void startRunImpl();
-    virtual void stopRunImpl();
+    virtual void startRunImpl() { /* no-op in this implementation. */ }
+    virtual void stopRunImpl() { /* no-op in this implementation. */ }
 
 private:
     DECLARE_EVENT_TABLE()
@@ -843,6 +843,38 @@ const wxSize TobyFrame::getPreviousSize()
 } // TobyFrame::getPreviousSize
 
 
+void TobyFrame::startRun()
+{
+    wxMenuBar *mb = this->menuBar;
+    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
+    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
+    mb->FindItem(MENUCMD_RunForPrinting)->Enable(false);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(false);
+    mb->FindItem(MENUCMD_Print)->Enable(false);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(false);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(false);
+
+    this->startRunImpl();
+    this->turtleSpace->startRun();
+} // TobyFrame::startRun
+
+
+void TobyFrame::stopRun()
+{
+    wxMenuBar *mb = this->menuBar;
+    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
+    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
+    mb->FindItem(MENUCMD_RunForPrinting)->Enable(true);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(true);
+    mb->FindItem(MENUCMD_Print)->Enable(true);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(true);
+
+    this->stopRunImpl();
+    this->turtleSpace->stopRun();
+} // TobyFrame::stopRun
+
+
 void TobyFrame::openFile(const wxString &path)
 {
     wxFileInputStream strm(path);
@@ -1136,32 +1168,6 @@ void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
     this->program = prog;  // we have to delete[] this later!
     this->turtleSpace->runProgram(this->program, false);
 } // TobyStandaloneFrame::openFileImpl
-
-
-void TobyStandaloneFrame::startRunImpl()
-{
-    wxMenuBar *mb = this->GetMenuBar();
-    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
-    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
-    mb->FindItem(MENUCMD_RunForPrinting)->Enable(false);
-    mb->FindItem(MENUCMD_SaveAsImage)->Enable(false);
-    mb->FindItem(MENUCMD_Print)->Enable(false);
-    mb->FindItem(MENUCMD_PrintPreview)->Enable(false);
-    mb->FindItem(MENUCMD_Cleanup)->Enable(false);
-} // TobyStandaloneFrame::startRunImpl
-
-
-void TobyStandaloneFrame::stopRunImpl()
-{
-    wxMenuBar *mb = this->GetMenuBar();
-    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
-    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
-    mb->FindItem(MENUCMD_RunForPrinting)->Enable(true);
-    mb->FindItem(MENUCMD_SaveAsImage)->Enable(true);
-    mb->FindItem(MENUCMD_Print)->Enable(true);
-    mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
-    mb->FindItem(MENUCMD_Cleanup)->Enable(true);
-} // TobyStandaloneFrame::stopRunImpl
 
 #endif  // TOBY_WX_BUILD_STANDALONE
 
