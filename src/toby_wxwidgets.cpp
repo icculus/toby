@@ -19,9 +19,14 @@
 
 #include "toby_app.h"
 
-
-// !!! FIXME: Just building standalone for now...
-#define TOBY_STANDALONE 1
+// define something.
+#if ((!TOBY_WX_BUILD_STANDALONE) && (!TOBY_WX_BUILD_IDE))
+#error Nothing to build here.
+#elif ((TOBY_WX_BUILD_STANDALONE) && (!TOBY_WX_BUILD_IDE))
+#define TOBY_WX_STANDALONE_DEFAULT true
+#else  // Both IDE and standalone available, or just IDE.
+#define TOBY_WX_STANDALONE_DEFAULT false
+#endif
 
 
 // Interfaces ...
@@ -184,6 +189,7 @@ BEGIN_EVENT_TABLE(TobyWindow, wxFrame)
 END_EVENT_TABLE()
 
 
+#if TOBY_WX_BUILD_STANDALONE
 // This is a TobyWindow that only provides a TurtleSpace and no other UI.
 class TobyStandaloneFrame : public TobyWindow
 {
@@ -201,6 +207,7 @@ private:
 BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyWindow)
     EVT_MENU(MENUCMD_Quit, TobyStandaloneFrame::onMenuQuit)
 END_EVENT_TABLE()
+#endif
 
 
 class TobyLicenseDialog : public wxDialog
@@ -1069,6 +1076,8 @@ void TobyWindow::onClose(wxCloseEvent &evt)
 } // TobyWindow::onClose
 
 
+#if TOBY_WX_BUILD_STANDALONE
+
 // !!! FIXME: overflowing 80 chars here...
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
@@ -1148,6 +1157,9 @@ void TobyStandaloneFrame::stopRunImpl()
     mb->FindItem(MENUCMD_Cleanup)->Enable(true);
 } // TobyStandaloneFrame::stopRunImpl
 
+#endif  // TOBY_WX_BUILD_STANDALONE
+
+
 
 IMPLEMENT_APP(TobyWxApp)
 
@@ -1181,6 +1193,8 @@ static void tobyInitAllImageHandlers()
 
 bool TobyWxApp::OnInit()
 {
+    bool standalone = TOBY_WX_STANDALONE_DEFAULT;
+
     // See if there are any interesting command line options to get started.
     for (int i = 1; i < this->argc; i++)
     {
@@ -1188,11 +1202,15 @@ bool TobyWxApp::OnInit()
         if (*arg == '-')
         {
             while (*(++arg) == '-') { /* no-op. */ }
-            if (wxString(arg) == wxT("buildver"))
+            if (wxString(arg) == wxT("standalone"))
+                standalone = true;
+            else if (wxString(arg) == wxT("ide"))
+                standalone = false;
+            else if (wxString(arg) == wxT("buildver"))
             {
                 printf("%s\n", GBuildVer);
                 return false;
-            } // if
+            } // else if
             else if (wxString(arg) == wxT("license"))
             {
                 printf("%s\n", GLicense);
@@ -1219,17 +1237,26 @@ bool TobyWxApp::OnInit()
 
     tobyInitAllImageHandlers();
 
-    #if TOBY_STANDALONE
+    if (standalone)
+    {
+        #if TOBY_WX_BUILD_STANDALONE
         cfg->SetPath(wxT("/Standalone"));
         this->mainWindow = new TobyStandaloneFrame;
-    #else
-        #error Write me.
-        cfg->SetPath(wxT("/IDE"));
-        this->mainWindow = new TobyWxGuiFrame;
-    #endif
-
-    if (this->mainWindow == NULL)
+        #else
+        fprintf(stderr, "ERROR: No Standalone app support in this build.\n");
         return false;
+        #endif
+    } // if
+    else
+    {
+        #if TOBY_WX_BUILD_IDE
+        cfg->SetPath(wxT("/IDE"));
+        this->mainWindow = new TobyIDEFrame;
+        #else
+        fprintf(stderr, "ERROR: No IDE app support in this build.\n");
+        return false;
+        #endif
+    } // else
 
     long mx = 0;
     if ((wxConfig::Get()->Read(wxT("Maximized"), &mx, -1)) && (mx))
