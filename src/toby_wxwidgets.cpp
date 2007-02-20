@@ -218,7 +218,6 @@ class TobyLicenseDialog : public wxDialog
 {
 public:
     TobyLicenseDialog(wxWindow *parent);
-    virtual ~TobyLicenseDialog() { delete this->textCtrl; }
     void onOK(wxCommandEvent &evt);
 
     enum
@@ -228,7 +227,6 @@ public:
     };
 
 private:
-    wxTextCtrl *textCtrl;
     DECLARE_EVENT_TABLE()
 };
 
@@ -1049,7 +1047,6 @@ void TobyFrame::onMenuAbout(wxCommandEvent &evt)
 
 TobyLicenseDialog::TobyLicenseDialog(wxWindow *parent)
     : wxDialog(parent, -1, wxT("License"), wxDefaultPosition, wxDefaultSize, dlgFlags)
-    , textCtrl(NULL)
 {
     ::wxBeginBusyCursor();
 
@@ -1061,7 +1058,7 @@ TobyLicenseDialog::TobyLicenseDialog(wxWindow *parent)
     int dpyw, dpyh;
     ::wxDisplaySize(&dpyw, &dpyh);
 
-    this->textCtrl = new wxTextCtrl(this, wxID_ANY,
+    wxTextCtrl *textCtrl = new wxTextCtrl(this, wxID_ANY,
                                     wxString(GLicense, wxConvUTF8),
                                     wxDefaultPosition, wxSize(dpyw/2, dpyh/2),
                                     wxTE_READONLY | wxTE_MULTILINE);
@@ -1080,7 +1077,7 @@ TobyLicenseDialog::TobyLicenseDialog(wxWindow *parent)
     topsizer->Fit(this);
 
     this->Centre(wxBOTH);
-    this->textCtrl->SetFocus();
+    textCtrl->SetFocus();
 
     ::wxEndBusyCursor();
 } // TobyLicenseDialog::TobyLicenseDialog
