@@ -1138,7 +1138,7 @@ void TobyFrame::onClose(wxCloseEvent &evt)
 
 TobyStandaloneFrame::TobyStandaloneFrame()
 {
-    this->turtleSpace->SetSize(GetClientSize());
+    this->turtleSpace->SetSize(this->GetClientSize());
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(this->turtleSpace, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
     // let TurtleSpace shrink as far as window will.
