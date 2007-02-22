@@ -41,7 +41,6 @@ public:
     virtual ~TurtleSpace();
     inline void startRun();
     inline void stopRun();
-    inline int pumpEvents();
     inline void requestQuit();
     inline void calcOffset(int &xoff, int &yoff) const;
     inline void clipDC(wxDC *dc, int xoff, int yoff) const;
@@ -78,7 +77,6 @@ private:
     int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
-    wxStopWatch stopwatch;
     DECLARE_EVENT_TABLE()
 };
 
@@ -141,6 +139,7 @@ public:
     void openFile(const wxString &path);
     void startRun();
     void stopRun();
+    bool pumpEvents();
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
     virtual void startRunImpl() = 0;
     virtual void stopRunImpl() = 0;
@@ -172,6 +171,7 @@ protected:
     wxMenuBar *menuBar;
 
 private:
+    wxStopWatch stopwatch;
     DECLARE_EVENT_TABLE()
 };
 
@@ -307,7 +307,7 @@ void TOBY_stopRun()
 
 int TOBY_pumpEvents()
 {
-    return wxGetApp().getTobyFrame()->getTurtleSpace()->pumpEvents();
+    return wxGetApp().getTobyFrame()->pumpEvents() ? 1 : 0;
 } // TOBY_pumpEvents
 
 
@@ -554,34 +554,6 @@ void TurtleSpace::requestQuit()
     this->halt();
     this->quitting = true;
 } // TurtleSpace::requestQuit
-
-
-int TurtleSpace::pumpEvents()
-{
-    if (this->stopwatch.Time() > 50)
-    {
-        // force repaint here...this means we will be clamped to 20fps, but
-        //  the overall execution of the program will be much faster, as
-        //  rendering primitives will batch.
-        this->putToScreen();
-
-        // Pump the system event queue if we aren't requesting a program halt.
-        while ((!this->stopRequested()) && (wxGetApp().Pending()))
-            wxGetApp().Dispatch();
-
-        // !!! FIXME: for debugging purposes...remove me when UI is hooked up.
-        printf("Callstack...\n");
-        int elems = 0;
-        const TobyCallstack *cs = TOBY_getCallstack(&elems);
-        for (int i = 0; i < elems; i++, cs++)
-            printf("#%d: %s (%d)\n", i, cs->name, cs->linenum);
-        printf("\n\n");
-
-        this->stopwatch.Start(0);  // reset this for next call.
-    } /* if */
-
-    return !this->stopRequested();
-} // TurtleSpace::pumpEvents
 
 
 void TurtleSpace::halt()
@@ -839,6 +811,28 @@ const wxSize TobyFrame::getPreviousSize()
     else if (winh < 50) winh = 50;
     return wxSize(winw, winh);
 } // TobyFrame::getPreviousSize
+
+
+bool TobyFrame::pumpEvents()
+{
+    if (this->stopwatch.Time() > 50)
+    {
+        TurtleSpace *tspace = this->getTurtleSpace();
+
+        // force repaint here...this means we will be clamped to 20fps, but
+        //  the overall execution of the program will be much faster, as
+        //  rendering primitives will batch.
+        tspace->putToScreen();
+
+        // Pump the system event queue if we aren't requesting a program halt.
+        while ((!tspace->stopRequested()) && (wxGetApp().Pending()))
+            wxGetApp().Dispatch();
+
+        this->stopwatch.Start(0);  // reset this for next call.
+    } /* if */
+
+    return true;
+} // TobyFrame::pumpEvents
 
 
 void TobyFrame::startRun()
