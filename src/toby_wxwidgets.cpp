@@ -42,7 +42,7 @@ public:
     inline void startRun(bool runForPrinting);
     inline void stopRun();
     inline const wxFont *getFont() const { return &this->font; }
-    inline wxBitmap *getBacking() const { return this->backing; }
+    inline wxBitmap *getBacking() const;
     inline void scaleXY(lua_Number &x, lua_Number &y) const;
     inline void putToScreen();
 
@@ -391,6 +391,13 @@ void TurtleSpace::constructBackingDC()
 } // TurtleSpace::constructBackingDC
 
 
+wxBitmap *TurtleSpace::getBacking() const
+{
+    wxASSERT(this->backingDC == NULL);
+    return this->backing;
+} // TurtleSpace::getBacking
+
+
 void TurtleSpace::putToScreen()
 {
     this->Refresh(false);
@@ -653,10 +660,7 @@ bool TobyPrintout::OnPrintPage(int page)
     const TobyFrame *tframe = wxGetApp().getTobyFrame();
     wxASSERT(!tframe->isRunning());
 
-    const TurtleSpace *tspace = tframe->getTurtleSpace();
-    wxASSERT(tspace->getBackingDC() == NULL);
-
-    wxBitmap *bmp = tspace->getBacking();
+    wxBitmap *bmp = tframe->getTurtleSpace()->getBacking();
     if (bmp != NULL)
     {
         wxDC *dc = this->GetDC();
@@ -791,12 +795,10 @@ bool TobyFrame::pumpEvents()
 {
     if (this->pumpStopwatch.Time() > 50)
     {
-        TurtleSpace *tspace = this->getTurtleSpace();
-
         // force repaint here...this means we will be clamped to 20fps, but
         //  the overall execution of the program will be much faster, as
         //  rendering primitives will batch.
-        tspace->putToScreen();
+        this->turtleSpace->putToScreen();
 
         // Pump the system event queue if we aren't requesting a program halt.
         while ((!this->stopRequested()) && (wxGetApp().Pending()))
