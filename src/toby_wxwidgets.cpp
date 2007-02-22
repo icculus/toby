@@ -39,38 +39,33 @@ class TurtleSpace : public wxWindow
 public:
     TurtleSpace(wxWindow *parent);
     virtual ~TurtleSpace();
-    inline void startRun();
+    inline void startRun(bool runForPrinting);
     inline void stopRun();
-    inline void requestQuit();
-    inline void calcOffset(int &xoff, int &yoff) const;
-    inline void clipDC(wxDC *dc, int xoff, int yoff) const;
     inline const wxFont *getFont() const { return &this->font; }
     inline wxBitmap *getBacking() const { return this->backing; }
-    inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
-    inline wxMemoryDC *getBackingDC() const { return this->backingDC; }
     inline void scaleXY(lua_Number &x, lua_Number &y) const;
-    inline void runProgram(char *program, bool printing);  // hook to GUI.
-    inline void halt();  // hook to GUI.
-    inline void constructBackingDC();
+    inline void putToScreen();
 
-    bool isRunning() const { return this->running; }
-    bool stopRequested() const { return (this->stopping) || (!this->running); }
-    bool quitRequested() const { return this->quitting; }
+    bool drawString(lua_Number x, lua_Number y, const wxString &str,
+                    lua_Number angle, int r, int g, int b);
+    void drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
+                  int r, int g, int b);
+    void drawTurtle(const Turtle *turtle, void *data);
+    void cleanup(int r, int g, int b);
 
-    void putToScreen();
-
+    // wxWidgets event handlers...
     void onResize(wxSizeEvent &evt);
     void onErase(wxEraseEvent &evt);
     void onPaint(wxPaintEvent &evt);
-    void onIdle(wxIdleEvent &evt);
 
 private:
+    inline void nukeDC(wxMemoryDC **dc) { delete *dc; *dc = NULL; }
+    inline wxMemoryDC *getBackingDC() const { return this->backingDC; }
+    inline void constructBackingDC();
+    inline void calcOffset(int &xoff, int &yoff) const;
+    inline void clipDC(wxDC *dc, int xoff, int yoff) const;
+
     const wxFont font;
-    char *program;
-    bool quitting;
-    bool stopping;
-    bool running;
-    bool runForPrinting;
     int clientW;  // width of physical window (changes on resize event).
     int clientH;  // height of physical window (changes on resize event).
     int backingW;  // width of backing store (changes on startRun()).
@@ -84,7 +79,6 @@ BEGIN_EVENT_TABLE(TurtleSpace, wxWindow)
     EVT_SIZE(TurtleSpace::onResize)
     EVT_PAINT(TurtleSpace::onPaint)
     EVT_ERASE_BACKGROUND(TurtleSpace::onErase)
-    EVT_IDLE(TurtleSpace::onIdle)
 END_EVENT_TABLE()
 
 
@@ -133,19 +127,33 @@ class TobyFrame : public wxFrame
 public:
     TobyFrame();
     virtual ~TobyFrame();
-    TurtleSpace *getTurtleSpace() { return this->turtleSpace; }
+    TurtleSpace *getTurtleSpace() const { return this->turtleSpace; }
     static const wxPoint getPreviousPos();
     static const wxSize getPreviousSize();
     void openFile(const wxString &path);
     void startRun();
     void stopRun();
     bool pumpEvents();
+    inline void requestQuit();
+    inline void runProgram(bool printing);
+    bool isRunning() const { return this->running; }
+    inline void halt();
+    bool stopRequested() const { return (this->stopping) || (!this->running); }
+    bool quitRequested() const { return this->quitting; }
+
+    // subclasses fill in these.
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
     virtual void startRunImpl() = 0;
     virtual void stopRunImpl() = 0;
+    virtual char *getProgramImpl() = 0;
+    virtual bool shouldVetoClose() = 0;
+
+    // wxWidgets event handlers...
+    void onIdle(wxIdleEvent &evt);
     void onClose(wxCloseEvent &evt);
     void onResize(wxSizeEvent &evt);
     void onMove(wxMoveEvent &evt);
+    void onMenuQuit(wxCommandEvent &evt);
     void onMenuPageSetup(wxCommandEvent &evt);
     void onMenuPrintPreview(wxCommandEvent &evt);
     void onMenuPrint(wxCommandEvent &evt);
@@ -164,22 +172,28 @@ protected:
     int nonMaximizedY;
     int nonMaximizedWidth;
     int nonMaximizedHeight;
-    char *program;
+    bool quitting;
+    bool stopping;
+    bool running;
+    bool runForPrinting;
+    char *execProgram;
     wxMenu *fileMenu;
     wxMenu *runMenu;
     wxMenu *helpMenu;
     wxMenuBar *menuBar;
 
 private:
-    wxStopWatch stopwatch;
+    wxStopWatch pumpStopwatch;
     DECLARE_EVENT_TABLE()
 };
 
 BEGIN_EVENT_TABLE(TobyFrame, wxFrame)
+    EVT_IDLE(TobyFrame::onIdle)
     EVT_CLOSE(TobyFrame::onClose)
     EVT_SIZE(TobyFrame::onResize)
     EVT_MOVE(TobyFrame::onMove)
     EVT_MENU(MENUCMD_Open, TobyFrame::onMenuOpen)
+    EVT_MENU(MENUCMD_Quit, TobyFrame::onMenuQuit)
     EVT_MENU(MENUCMD_SaveAsImage, TobyFrame::onMenuSaveAsImage)
     EVT_MENU(MENUCMD_PageSetup, TobyFrame::onMenuPageSetup)
     EVT_MENU(MENUCMD_PrintPreview, TobyFrame::onMenuPrintPreview)
@@ -194,23 +208,22 @@ END_EVENT_TABLE()
 
 
 #if TOBY_WX_BUILD_STANDALONE
-// This is a TobyFrame that only provides a TurtleSpace and no other UI.
+// This is a TobyFrame that only provides a TurtleSpace, basic menu items,
+//  and no other UI.
 class TobyStandaloneFrame : public TobyFrame
 {
 public:
     TobyStandaloneFrame();
-    void onMenuQuit(wxCommandEvent &evt);
+    virtual ~TobyStandaloneFrame() { delete[] this->sourceCode; }
     virtual void openFileImpl(const wxString &fname, char *prog);
     virtual void startRunImpl() { /* no-op in this implementation. */ }
     virtual void stopRunImpl() { /* no-op in this implementation. */ }
+    virtual char *getProgramImpl();
+    virtual bool shouldVetoClose() { return false; }  // nothing to save, etc.
 
 private:
-    DECLARE_EVENT_TABLE()
+    char *sourceCode;
 };
-
-BEGIN_EVENT_TABLE(TobyStandaloneFrame, TobyFrame)
-    EVT_MENU(MENUCMD_Quit, TobyStandaloneFrame::onMenuQuit)
-END_EVENT_TABLE()
 #endif
 
 
@@ -280,7 +293,7 @@ int TOBY_delay(int ms)
 
 #define TOBY_PROFILE 1
 #if TOBY_PROFILE
-static wxStopWatch *stopWatch = NULL;
+static wxStopWatch *profileStopwatch = NULL;
 #endif
 
 void TOBY_startRun()
@@ -288,7 +301,7 @@ void TOBY_startRun()
     wxGetApp().getTobyFrame()->startRun();
 
     #if TOBY_PROFILE
-    stopWatch = new wxStopWatch;
+    profileStopwatch = new wxStopWatch;
     #endif
 } // TOBY_startRun
 
@@ -296,9 +309,9 @@ void TOBY_startRun()
 void TOBY_stopRun()
 {
     #if TOBY_PROFILE
-    printf("time to execute: %ld\n", stopWatch->Time());
-    delete stopWatch;
-    stopWatch = NULL;
+    printf("time to execute: %ld\n", profileStopwatch->Time());
+    delete profileStopwatch;
+    profileStopwatch = NULL;
     #endif
 
     wxGetApp().getTobyFrame()->stopRun();
@@ -312,105 +325,30 @@ int TOBY_pumpEvents()
 
 
 int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
-                     lua_Number angle, int r, int g, int b)
+                    lua_Number angle, int r, int g, int b)
 {
-    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
-    if (!tspace->getFont()->IsOk())
-        return false;
-
     const wxString wxstr(utf8str, wxConvUTF8);
-    const wxColour color(r, g, b);
-    wxDC *dc = NULL;
-
-    tspace->scaleXY(x, y);
-
-    dc = tspace->getBackingDC();
-    if (dc != NULL)
-    {
-        dc->SetTextForeground(color);
-        dc->DrawRotatedText(wxstr, (wxCoord) x, (wxCoord) y, angle);
-    } // if
-
-    return true;
+    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
+    return tspace->drawString(x, y, wxstr, angle, r, g, b) ? 1 : 0;
 } // TOBY_drawString
 
 
 void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                    int r, int g, int b)
 {
-    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
-    wxMemoryDC *dc = tspace->getBackingDC();
-    if (dc != NULL)
-    {
-        tspace->scaleXY(x1, y1);
-        tspace->scaleXY(x2, y2);
-        dc->SetPen(wxPen(wxColour(r, g, b)));
-        dc->DrawLine((wxCoord) x1, (wxCoord) y1, (wxCoord) x2, (wxCoord) y2);
-    } // if
+    wxGetApp().getTobyFrame()->getTurtleSpace()->drawLine(x1,y1,x2,y2,r,g,b);
 } // TOBY_drawLine
 
 
 void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
-    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
-    wxDC *dc = ( (data != NULL) ? ((wxDC *) data) : tspace->getBackingDC() );
-    if (dc != NULL)
-    {
-        int xoff = 0;
-        int yoff = 0;
-
-        if (data != NULL)  // not the backing store? Clip it.
-        {
-            tspace->calcOffset(xoff, yoff);
-            tspace->clipDC(dc, xoff, yoff);
-        } // if
-
-        TurtlePoint tpts[4];
-        const lua_Number tx = turtle->pos.x;
-        const lua_Number ty = turtle->pos.y;
-        tpts[0].x = turtle->points[0].x + tx;
-        tpts[0].y = turtle->points[0].y + ty;
-        tpts[1].x = turtle->points[1].x + tx;
-        tpts[1].y = turtle->points[1].y + ty;
-        tpts[2].x = turtle->points[2].x + tx;
-        tpts[2].y = turtle->points[2].y + ty;
-        tpts[3].x = turtle->points[3].x + tx;
-        tpts[3].y = turtle->points[3].y + ty;
-
-        tspace->scaleXY(tpts[0].x, tpts[0].y);
-        tspace->scaleXY(tpts[1].x, tpts[1].y);
-        tspace->scaleXY(tpts[2].x, tpts[2].y);
-        tspace->scaleXY(tpts[3].x, tpts[3].y);
-
-        wxPoint points[3] =
-        {
-            wxPoint((wxCoord) tpts[0].x, (wxCoord) tpts[0].y),
-            wxPoint((wxCoord) tpts[1].x, (wxCoord) tpts[1].y),
-            wxPoint((wxCoord) tpts[2].x, (wxCoord) tpts[2].y),
-        };
-
-        const wxColor color(0, 255, 0);  // full green.
-        dc->SetPen(wxPen(color));
-        dc->SetBrush(wxBrush(color));
-        dc->DrawPolygon(3, points, xoff, yoff);
-        dc->SetPen(wxPen(wxColor(0, 0, 255)));  // full blue.
-        dc->DrawLine( ((wxCoord)tpts[0].x) + ((wxCoord)xoff),
-                      ((wxCoord)tpts[0].y) + ((wxCoord)yoff),
-                      ((wxCoord)tpts[3].x) + ((wxCoord)xoff),
-                      ((wxCoord)tpts[3].y) + ((wxCoord)yoff) );
-    } // if
+    wxGetApp().getTobyFrame()->getTurtleSpace()->drawTurtle(turtle, data);
 } // TOBY_drawTurtle
 
 
 void TOBY_cleanup(int r, int g, int b)
 {
-    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
-    wxMemoryDC *dc = tspace->getBackingDC();
-    if (dc != NULL)
-    {
-        dc->SetBackground(wxBrush(wxColour(r, g, b)));
-        dc->Clear();
-    } // if
+    wxGetApp().getTobyFrame()->getTurtleSpace()->cleanup(r, g, b);
 } // TOBY_cleanup
 
 
@@ -427,11 +365,6 @@ void TOBY_messageBox(const char *msg)
 TurtleSpace::TurtleSpace(wxWindow *parent)
     : wxWindow(parent, wxID_ANY)
     , font(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL)
-    , program(NULL)
-    , quitting(false)
-    , stopping(false)
-    , running(false)
-    , runForPrinting(false)
     , clientW(1)
     , clientH(1)
     , backingW(1)
@@ -447,7 +380,6 @@ TurtleSpace::~TurtleSpace()
 {
     delete this->backingDC;
     delete this->backing;
-    delete this->program;
 } // TurtleSpace::~TurtleSpace
 
 
@@ -493,14 +425,108 @@ void TurtleSpace::clipDC(wxDC *dc, int xoff, int yoff) const
 } // TurtleSpace::clipDC
 
 
-void TurtleSpace::startRun()
+void TurtleSpace::drawLine(lua_Number x1, lua_Number y1,
+                           lua_Number x2, lua_Number y2,
+                           int r, int g, int b)
 {
-    wxASSERT(!this->running);
+    wxMemoryDC *dc = this->getBackingDC();
+    if (dc != NULL)
+    {
+        this->scaleXY(x1, y1);
+        this->scaleXY(x2, y2);
+        dc->SetPen(wxPen(wxColour(r, g, b)));
+        dc->DrawLine((wxCoord) x1, (wxCoord) y1, (wxCoord) x2, (wxCoord) y2);
+    } // if
+} // TurtleSpace::drawLine
 
+
+bool TurtleSpace::drawString(lua_Number x, lua_Number y, const wxString &str,
+                             lua_Number angle, int r, int g, int b)
+{
+    if (!this->getFont()->IsOk())
+        return false;
+
+    wxMemoryDC *dc = this->getBackingDC();
+    if (dc != NULL)
+    {
+        this->scaleXY(x, y);
+        const wxColour color(r, g, b);
+        dc->SetTextForeground(color);
+        dc->DrawRotatedText(str, (wxCoord) x, (wxCoord) y, angle);
+    } // if
+
+    return true;
+} // TurtleSpace::drawString
+
+
+void TurtleSpace::drawTurtle(const Turtle *turtle, void *data)
+{
+    wxDC *dc = ( (data != NULL) ? ((wxDC *) data) : this->getBackingDC() );
+    if (dc != NULL)
+    {
+        int xoff = 0;
+        int yoff = 0;
+
+        if (data != NULL)  // not the backing store? Clip it.
+        {
+            this->calcOffset(xoff, yoff);
+            this->clipDC(dc, xoff, yoff);
+        } // if
+
+        TurtlePoint tpts[4];
+        const lua_Number tx = turtle->pos.x;
+        const lua_Number ty = turtle->pos.y;
+        tpts[0].x = turtle->points[0].x + tx;
+        tpts[0].y = turtle->points[0].y + ty;
+        tpts[1].x = turtle->points[1].x + tx;
+        tpts[1].y = turtle->points[1].y + ty;
+        tpts[2].x = turtle->points[2].x + tx;
+        tpts[2].y = turtle->points[2].y + ty;
+        tpts[3].x = turtle->points[3].x + tx;
+        tpts[3].y = turtle->points[3].y + ty;
+
+        this->scaleXY(tpts[0].x, tpts[0].y);
+        this->scaleXY(tpts[1].x, tpts[1].y);
+        this->scaleXY(tpts[2].x, tpts[2].y);
+        this->scaleXY(tpts[3].x, tpts[3].y);
+
+        wxPoint points[3] =
+        {
+            wxPoint((wxCoord) tpts[0].x, (wxCoord) tpts[0].y),
+            wxPoint((wxCoord) tpts[1].x, (wxCoord) tpts[1].y),
+            wxPoint((wxCoord) tpts[2].x, (wxCoord) tpts[2].y),
+        };
+
+        const wxColor color(0, 255, 0);  // full green.
+        dc->SetPen(wxPen(color));
+        dc->SetBrush(wxBrush(color));
+        dc->DrawPolygon(3, points, xoff, yoff);
+        dc->SetPen(wxPen(wxColor(0, 0, 255)));  // full blue.
+        dc->DrawLine( ((wxCoord)tpts[0].x) + ((wxCoord)xoff),
+                      ((wxCoord)tpts[0].y) + ((wxCoord)yoff),
+                      ((wxCoord)tpts[3].x) + ((wxCoord)xoff),
+                      ((wxCoord)tpts[3].y) + ((wxCoord)yoff) );
+    } // if
+} // TurtleSpace::drawTurtle
+
+
+void TurtleSpace::cleanup(int r, int g, int b)
+{
+    wxMemoryDC *dc = this->getBackingDC();
+    if (dc != NULL)
+    {
+        dc->SetBackground(wxBrush(wxColour(r, g, b)));
+        dc->Clear();
+    } // if
+} // TurtleSpace::cleanup
+
+
+void TurtleSpace::startRun(bool runForPrinting)
+{
     int w = this->clientW;
     int h = this->clientH;
 
-    if (this->runForPrinting)
+    if (runForPrinting)
     {
         // !!! FIXME
         // Run with a target of 300dpi on 8x11 paper. This isn't really
@@ -535,75 +561,21 @@ void TurtleSpace::startRun()
     } // if
 
     this->constructBackingDC();
-    this->running = true;
-    this->stopping = false;
 } // TurtleSpace::startRun
 
 
 void TurtleSpace::stopRun()
 {
-    wxASSERT(this->running);
-    this->running = this->stopping = false;
     this->nukeDC(&this->backingDC);  // flush to bitmap.
     this->putToScreen();
 } // TurtleSpace::stopRun
-
-
-void TurtleSpace::requestQuit()
-{
-    this->halt();
-    this->quitting = true;
-} // TurtleSpace::requestQuit
-
-
-void TurtleSpace::halt()
-{
-    if (this->running)
-        this->stopping = true;
-} // TurtleSpace::halt
-
-
-void TurtleSpace::runProgram(char *_program, bool _runForPrinting)
-{
-    this->halt();  // stop the current run as soon as possible.
-    // This gets kicked off in the next idle event.
-    //  Don't delete[] _program until it's finished running!
-    this->runForPrinting = _runForPrinting;
-    delete[] this->program;
-    this->program = _program;
-} // TurtleSpace::runProgram
-
-
-void TurtleSpace::onIdle(wxIdleEvent &evt)
-{
-    if (this->quitRequested())
-    {
-        if (this->isRunning())
-            this->halt();
-        else
-        {
-            this->quitting = false;
-            GetParent()->Close(false);
-        } // else
-    } // if
-    else if (this->program != NULL)
-    {
-        if (this->isRunning())
-            this->halt();
-        else
-        {
-            char *prog = this->program;
-            this->program = NULL;
-            TOBY_runProgram(prog, this->runForPrinting);
-        } // else
-    } // else if
-} // TurtleSpace::onIdle
 
 
 void TurtleSpace::onResize(wxSizeEvent &evt)
 {
     // Just cache the dimensions, since we're spending an enormous amount of
     //  time looking them up over and over during program execution.
+// !!! FIXME: do this without the wxSize?
     wxSize size(this->GetClientSize());
     this->clientW = size.GetWidth();
     this->clientH = size.GetHeight();
@@ -635,6 +607,7 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
         dc.Clear();   // no backing store, just dump the whole thing.
     else
     {
+        // !!! FIXME: clear to something other than the background color?
         // delete in-progress backingDC to force flush of rendered data...
         const bool hasBackingDC = (this->backingDC != NULL);
         this->nukeDC(&this->backingDC);
@@ -677,9 +650,10 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 
 bool TobyPrintout::OnPrintPage(int page)
 {
-    const TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
+    const TobyFrame *tframe = wxGetApp().getTobyFrame();
+    wxASSERT(!tframe->isRunning());
 
-    wxASSERT(!tspace->isRunning());
+    const TurtleSpace *tspace = tframe->getTurtleSpace();
     wxASSERT(tspace->getBackingDC() == NULL);
 
     wxBitmap *bmp = tspace->getBacking();
@@ -715,14 +689,14 @@ void TobyPrintout::GetPageInfo(int *minPage, int *maxPage,
 bool TobyPrintout::HasPage(int pageNum)
 {
     return (pageNum == 1);
-} // TobyPrintout::HasPage
+} // TobyPrint/out::HasPage
 
 
 
 TobyFrame::TobyFrame()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(new TurtleSpace(this))
-    , program(NULL)
+    , execProgram(NULL)
     , fileMenu(new wxMenu)
     , runMenu(new wxMenu)
     , helpMenu(new wxMenu)
@@ -760,7 +734,7 @@ TobyFrame::TobyFrame()
 
 TobyFrame::~TobyFrame()
 {
-    delete[] this->program;
+    delete[] this->execProgram;
 
     // this->turtleSpace should be deleted by the subclass (because it usually
     //  wants to be killed by a wxSizer ...)
@@ -815,7 +789,7 @@ const wxSize TobyFrame::getPreviousSize()
 
 bool TobyFrame::pumpEvents()
 {
-    if (this->stopwatch.Time() > 50)
+    if (this->pumpStopwatch.Time() > 50)
     {
         TurtleSpace *tspace = this->getTurtleSpace();
 
@@ -825,10 +799,10 @@ bool TobyFrame::pumpEvents()
         tspace->putToScreen();
 
         // Pump the system event queue if we aren't requesting a program halt.
-        while ((!tspace->stopRequested()) && (wxGetApp().Pending()))
+        while ((!this->stopRequested()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
-        this->stopwatch.Start(0);  // reset this for next call.
+        this->pumpStopwatch.Start(0);  // reset this for next call.
     } /* if */
 
     return true;
@@ -837,6 +811,8 @@ bool TobyFrame::pumpEvents()
 
 void TobyFrame::startRun()
 {
+    wxASSERT(!this->running);
+
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
     mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
@@ -847,12 +823,17 @@ void TobyFrame::startRun()
     mb->FindItem(MENUCMD_Cleanup)->Enable(false);
 
     this->startRunImpl();
-    this->turtleSpace->startRun();
+    this->turtleSpace->startRun(this->runForPrinting);
+
+    this->running = true;
+    this->stopping = false;
 } // TobyFrame::startRun
 
 
 void TobyFrame::stopRun()
 {
+    wxASSERT(this->running);
+
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
     mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
@@ -864,7 +845,60 @@ void TobyFrame::stopRun()
 
     this->stopRunImpl();
     this->turtleSpace->stopRun();
+
+    this->running = this->stopping = false;
 } // TobyFrame::stopRun
+
+
+void TobyFrame::requestQuit()
+{
+    this->halt();
+    this->quitting = true;
+} // TobyFrame::requestQuit
+
+
+void TobyFrame::halt()
+{
+    if (this->running)
+        this->stopping = true;
+} // TobyFrame::halt
+
+
+void TobyFrame::runProgram(bool _runForPrinting)
+{
+    this->halt();  // stop the current run as soon as possible.
+    // This gets kicked off in the next idle event.
+    this->runForPrinting = _runForPrinting;
+    delete[] this->execProgram;
+    this->execProgram = this->getProgramImpl();
+} // TobyFrame::runProgram
+
+
+void TobyFrame::onIdle(wxIdleEvent &evt)
+{
+    if (this->quitRequested())
+    {
+        if (this->isRunning())
+            this->halt();
+        else
+        {
+            this->quitting = false;
+            this->Close(false);
+        } // else
+    } // if
+    else if (this->execProgram != NULL)
+    {
+        if (this->isRunning())
+            this->halt();
+        else
+        {
+            char *prog = this->execProgram;
+            this->execProgram = NULL;
+            TOBY_runProgram(prog, this->runForPrinting);
+            delete[] prog;
+        } // else
+    } // else if
+} // TobyFrame::onIdle
 
 
 void TobyFrame::openFile(const wxString &path)
@@ -924,7 +958,7 @@ void TobyFrame::onMenuSaveAsImage(wxCommandEvent &evt)
 
     if (dlg.ShowModal() == wxID_OK)
     {
-        wxImage img(getTurtleSpace()->getBacking()->ConvertToImage());
+        wxImage img(this->turtleSpace->getBacking()->ConvertToImage());
         // Force alpha to opaque so background shows up.
         unsigned char *alpha = img.GetAlpha();
         if (alpha != NULL)
@@ -998,29 +1032,25 @@ void TobyFrame::onMenuPrint(wxCommandEvent &event)
 void TobyFrame::onMenuRunOrStop(wxCommandEvent &evt)
 {
     // Run will kick off in next idle event.
-    if (this->turtleSpace->isRunning())
-        this->turtleSpace->halt();
+    if (this->isRunning())
+        this->halt();
     else
-    {
-        wxASSERT(this->program != NULL);
-        this->turtleSpace->runProgram(this->program, false);
-    } // else
+        this->runProgram(false);
 } // TobyFrame::onMenuRunOrStop
 
 
 void TobyFrame::onMenuRunForPrinting(wxCommandEvent &evt)
 {
     // Run will kick off in next idle event.
-    wxASSERT(!this->turtleSpace->isRunning());
-    wxASSERT(this->program != NULL);
-    this->turtleSpace->runProgram(this->program, true);
+    wxASSERT(!this->isRunning());
+    this->runProgram(true);
 } // TobyFrame::onMenuRunForPrinting
 
 
 void TobyFrame::onMenuCleanup(wxCommandEvent &evt)
 {
     TOBY_cleanup(0, 0, 0);
-    getTurtleSpace()->putToScreen();
+    this->turtleSpace->putToScreen();
 } // TobyFrame::onMenuCleanup
 
 
@@ -1096,6 +1126,12 @@ void TobyFrame::onMenuWebsite(wxCommandEvent &evt)
 } // TobyFrame::onMenuWebsite
 
 
+void TobyFrame::onMenuQuit(wxCommandEvent& evt)
+{
+    Close(true);
+} // TobyFrame::onMenuQuit
+
+
 void TobyFrame::onResize(wxSizeEvent &evt)
 {
     this->Layout();  // Have sizer resize child windows...
@@ -1113,12 +1149,14 @@ void TobyFrame::onMove(wxMoveEvent &evt)
 
 void TobyFrame::onClose(wxCloseEvent &evt)
 {
-    TurtleSpace *tspace = wxGetApp().getTobyFrame()->getTurtleSpace();
-    if (tspace->isRunning())
+    if (this->shouldVetoClose())
+        evt.Veto();  // subclass says no.
+
+    else if (this->isRunning())
     {
-        tspace->requestQuit();  // try it again later so tspace can halt...
+        this->requestQuit();  // try it again later so program can halt...
         evt.Veto();  // ...this time, though, no deal.
-    } // if
+    } // else if
 
     else  // really closing this time.
     {
@@ -1137,6 +1175,7 @@ void TobyFrame::onClose(wxCloseEvent &evt)
 #if TOBY_WX_BUILD_STANDALONE
 
 TobyStandaloneFrame::TobyStandaloneFrame()
+    : sourceCode(NULL)
 {
     this->turtleSpace->SetSize(this->GetClientSize());
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
@@ -1147,17 +1186,25 @@ TobyStandaloneFrame::TobyStandaloneFrame()
 } // TobyStandaloneFrame::TobyStandaloneFrame
 
 
-void TobyStandaloneFrame::onMenuQuit(wxCommandEvent& evt)
+char *TobyStandaloneFrame::getProgramImpl()
 {
-    Close(true);
-} // TobyStandaloneFrame::onMenuQuit
+    char *retval = NULL;
+    if (this->sourceCode != NULL)
+    {
+        retval = new char[strlen(this->sourceCode) + 1];
+        strcpy(retval, this->sourceCode);
+    } // if
+
+    return retval;
+} // TobyStandaloneFrame::getProgramImpl
 
 
 void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
 {
     // Run will kick off in next idle event.
-    this->program = prog;  // we have to delete[] this later!
-    this->turtleSpace->runProgram(this->program, false);
+    delete[] this->sourceCode;
+    this->sourceCode = prog;  // we have to delete[] this later!
+    this->runProgram(false);  // just run right away.
 } // TobyStandaloneFrame::openFileImpl
 
 #endif  // TOBY_WX_BUILD_STANDALONE
