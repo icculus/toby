@@ -904,9 +904,7 @@ void TobyFrame::onIdle(wxIdleEvent &evt)
 void TobyFrame::openFile(const wxString &path)
 {
     wxFileInputStream strm(path);
-    if (!strm.IsOk())
-        TOBY_messageBox("Could not open file");
-    else
+    if (strm.IsOk())
     {
         size_t len = strm.GetLength();
         char *buf = new char[len + 1];
@@ -1244,12 +1242,15 @@ static void tobyInitAllImageHandlers()
 bool TobyWxApp::OnInit()
 {
     bool standalone = TOBY_WX_STANDALONE_DEFAULT;
+    const wxChar *filenameArgument = NULL;
 
     // See if there are any interesting command line options to get started.
     for (int i = 1; i < this->argc; i++)
     {
         const wxChar *arg = this->argv[i];
-        if (*arg == '-')
+        if ((*arg != '-') && (filenameArgument == NULL))
+            filenameArgument = arg;
+        else
         {
             while (*(++arg) == '-') { /* no-op. */ }
             if (wxString(arg) == wxT("standalone"))
@@ -1266,7 +1267,7 @@ bool TobyWxApp::OnInit()
                 printf("%s\n", GLicense);
                 return false;
             } // else if
-        } // if
+        } // else
     } // for
 
     #if PLATFORM_MACOSX
@@ -1315,8 +1316,8 @@ bool TobyWxApp::OnInit()
     this->mainWindow->Show(true);
     SetTopWindow(this->mainWindow);
 
-    if (this->argc > 1)
-        this->mainWindow->openFile(wxString(this->argv[1]));
+    if (filenameArgument != NULL)
+        this->mainWindow->openFile(wxString(filenameArgument));
 
     return true;
 } // TobyWxApp::OnInit
