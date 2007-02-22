@@ -51,7 +51,7 @@ public:
     void drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
                   int r, int g, int b);
     void drawTurtle(const Turtle *turtle, void *data);
-    void cleanup(int r, int g, int b);
+    void cleanup(int r, int g, int b, bool force=false);
 
     // wxWidgets event handlers...
     void onResize(wxSizeEvent &evt);
@@ -517,14 +517,24 @@ void TurtleSpace::drawTurtle(const Turtle *turtle, void *data)
 } // TurtleSpace::drawTurtle
 
 
-void TurtleSpace::cleanup(int r, int g, int b)
+void TurtleSpace::cleanup(int r, int g, int b, bool force)
 {
-    wxMemoryDC *dc = this->getBackingDC();
+    wxMemoryDC *dc = this->backingDC;
+    const bool haveDC = (dc != NULL);
+    if ((!haveDC) && (force))
+    {
+        this->constructBackingDC();
+        dc = this->backingDC;
+    } // if
+
     if (dc != NULL)
     {
         dc->SetBackground(wxBrush(wxColour(r, g, b)));
         dc->Clear();
     } // if
+
+    if (!haveDC)
+        this->nukeDC(&this->backingDC);
 } // TurtleSpace::cleanup
 
 
@@ -1049,7 +1059,7 @@ void TobyFrame::onMenuRunForPrinting(wxCommandEvent &evt)
 
 void TobyFrame::onMenuCleanup(wxCommandEvent &evt)
 {
-    TOBY_cleanup(0, 0, 0);
+    this->turtleSpace->cleanup(0, 0, 0, true);
     this->turtleSpace->putToScreen();
 } // TobyFrame::onMenuCleanup
 
