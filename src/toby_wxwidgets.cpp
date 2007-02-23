@@ -132,6 +132,7 @@ private:
         EXEC_STOPPING,
         EXEC_RUNNING,
         EXEC_STEPPING,
+        EXEC_PAUSED,
     };
 
 public:
@@ -147,6 +148,7 @@ public:
     inline void requestQuit();
     inline void runProgram(bool printing);
     inline void haltProgram();
+    inline bool isPaused() const { return this->execState == EXEC_PAUSED; }
     inline bool isStepping() const { return this->execState == EXEC_STEPPING; }
     inline bool isQuitting() const { return this->quitting; }
 
@@ -154,6 +156,7 @@ public:
     {
         return ( (this->execState == EXEC_RUNNING) ||
                  (this->execState == EXEC_STEPPING) ||
+                 (this->execState == EXEC_PAUSED) ||
                  (this->execState == EXEC_STOPPING) );
     } // isRunning
 
@@ -196,6 +199,7 @@ protected:
     int nonMaximizedY;
     int nonMaximizedWidth;
     int nonMaximizedHeight;
+    int executingLine;
     ExecState execState;
     bool quitting;
     bool runForPrinting;
@@ -731,6 +735,7 @@ TobyFrame::TobyFrame()
     , nonMaximizedY(0)
     , nonMaximizedWidth(0)
     , nonMaximizedHeight(0)
+    , executingLine(-1)
     , execState(EXEC_STOPPED)
     , quitting(false)
     , runForPrinting(false)
@@ -756,7 +761,6 @@ TobyFrame::TobyFrame()
     this->fileMenu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
     this->runMenu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
-    this->runMenu->Append(MENUCMD_Step, wxT("&Step\tF8"))->Enable(false);
     this->runMenu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
     this->runMenu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
 
@@ -828,29 +832,40 @@ const wxSize TobyFrame::getPreviousSize()
 
 bool TobyFrame::pumpEvents(int hook, int currentline)
 {
-#if 0
-    if (this->executingLine != currentline)
+    bool shouldRedraw = (this->pumpStopwatch.Time() >= 50);
+
+    // should only break inside this function, and should block here until
+    //  breakpoint ends and program continues.
+    wxASSERT(!this->isPaused());
+
+    // If we hit a new line, see if this is a breakpoint. Pause here if so.
+    if ( (hook == TOBY_HOOKLINE) && (this->executingLine != currentline) )
     {
+        //printf("Now on line #%d\n", currentline);
         this->executingLine = currentline;
-        if (this->stepping)
-        {
-        } // if
+        if (this->isStepping())  // single stepping? Break here.
+            this->execState = EXEC_PAUSED;
     } // if
-#endif
 
-    if (this->pumpStopwatch.Time() > 50)
+    while ( (this->isPaused()) || (shouldRedraw) )
     {
-        // force repaint here...this means we will be clamped to 20fps, but
-        //  the overall execution of the program will be much faster, as
-        //  rendering primitives will batch.
-        this->turtleSpace->putToScreen();
+        if (shouldRedraw)
+        {
+            // force repaint here...this means we will be clamped to 20fps,
+            //  but the overall execution of the program will be much faster,
+            //  as rendering primitives will batch.
+            this->turtleSpace->putToScreen();
+            this->pumpStopwatch.Start(0);  // reset stopwatch.
+            shouldRedraw = false;  // only redraw once if spinning.
+        } // if
 
-        // Pump the system event queue if we aren't requesting a program halt.
+        // Pump the system event queue if we aren't requesting a halt.
         while ((!this->isStopping()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
-        this->pumpStopwatch.Start(0);  // reset this for next call.
-    } /* if */
+        if (this->isPaused())
+            TOBY_yieldCPU(50); // we're apparently spinning on the user.
+    } // while
 
     return !this->isStopping();
 } // TobyFrame::pumpEvents
@@ -873,6 +888,7 @@ void TobyFrame::startRun()
     this->turtleSpace->startRun(this->runForPrinting);
 
     this->execState = EXEC_RUNNING;
+    this->executingLine = -1;
 } // TobyFrame::startRun
 
 
@@ -1088,7 +1104,10 @@ void TobyFrame::onMenuStep(wxCommandEvent &evt)
     {
         // if it's not running, start it.
         if (!this->isRunning())
+        {
+            // !!! FIXME: set a breakpoint on main()...
             this->runProgram(false);  // Run will kick off in next idle event.
+        } // if
         this->execState = EXEC_STEPPING;
     } // if
 } // TobyFrame::onMenuStep
