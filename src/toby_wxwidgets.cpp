@@ -72,6 +72,7 @@ private:
     int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
+    bool dirty;
     DECLARE_EVENT_TABLE()
 };
 
@@ -423,8 +424,12 @@ wxBitmap *TurtleSpace::getBacking() const
 
 void TurtleSpace::putToScreen()
 {
-    this->Refresh(false);
-    this->Update();  // force repaint.
+    if (this->dirty)
+    {
+        this->Refresh(false);
+        this->Update();  // force repaint.
+        this->dirty = false;
+    } // if
 } // TurtleSpace::putToScreen
 
 
@@ -462,6 +467,7 @@ void TurtleSpace::drawLine(lua_Number x1, lua_Number y1,
     wxMemoryDC *dc = this->getBackingDC();
     if (dc != NULL)
     {
+        this->dirty = true;
         this->scaleXY(x1, y1);
         this->scaleXY(x2, y2);
         dc->SetPen(wxPen(wxColour(r, g, b)));
@@ -479,6 +485,7 @@ bool TurtleSpace::drawString(lua_Number x, lua_Number y, const wxString &str,
     wxMemoryDC *dc = this->getBackingDC();
     if (dc != NULL)
     {
+        this->dirty = true;
         this->scaleXY(x, y);
         const wxColour color(r, g, b);
         dc->SetTextForeground(color);
@@ -497,7 +504,9 @@ void TurtleSpace::drawTurtle(const Turtle *turtle, void *data)
         int xoff = 0;
         int yoff = 0;
 
-        if (data != NULL)  // not the backing store? Clip it.
+        if (data == NULL)
+            this->dirty = true;
+        else  // not the backing store? Clip it.
         {
             this->calcOffset(xoff, yoff);
             this->clipDC(dc, xoff, yoff);
@@ -552,6 +561,7 @@ void TurtleSpace::cleanup(int r, int g, int b, bool force)
 
     if (dc != NULL)
     {
+        this->dirty = true;
         dc->SetBackground(wxBrush(wxColour(r, g, b)));
         dc->Clear();
     } // if
