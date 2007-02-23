@@ -395,6 +395,7 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , backingH(1)
     , backing(NULL)
     , backingDC(NULL)
+    , dirty(false)
 {
     // no-op
 } // TurtleSpace::TurtleSpace
