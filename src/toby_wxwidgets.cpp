@@ -817,7 +817,7 @@ bool TobyFrame::pumpEvents()
         this->pumpStopwatch.Start(0);  // reset this for next call.
     } /* if */
 
-    return true;
+    return !this->stopRequested();
 } // TobyFrame::pumpEvents
 
 
