@@ -145,6 +145,7 @@ public:
     void startRun();
     void stopRun();
     bool pumpEvents(int hook=TOBY_HOOKDELAY, int currentline=-1);
+    inline long delayTicksPerLine() { return this->delayPerLine; }
     inline void requestQuit();
     inline void runProgram(bool printing);
     inline void haltProgram();
@@ -203,6 +204,7 @@ protected:
     ExecState execState;
     bool quitting;
     bool runForPrinting;
+    long delayPerLine;
     char *execProgram;
     wxMenu *fileMenu;
     wxMenu *runMenu;
@@ -739,6 +741,7 @@ TobyFrame::TobyFrame()
     , execState(EXEC_STOPPED)
     , quitting(false)
     , runForPrinting(false)
+    , delayPerLine(0)
     , execProgram(NULL)
     , fileMenu(new wxMenu)
     , runMenu(new wxMenu)
@@ -832,11 +835,10 @@ const wxSize TobyFrame::getPreviousSize()
 
 bool TobyFrame::pumpEvents(int hook, int currentline)
 {
-    bool shouldRedraw = (this->pumpStopwatch.Time() >= 50);
-
     // should only break inside this function, and should block here until
     //  breakpoint ends and program continues.
     wxASSERT(!this->isPaused());
+    long pauseTicks = -1;
 
     // If we hit a new line, see if this is a breakpoint. Pause here if so.
     if ( (hook == TOBY_HOOKLINE) && (this->executingLine != currentline) )
@@ -845,9 +847,14 @@ bool TobyFrame::pumpEvents(int hook, int currentline)
         this->executingLine = currentline;
         if (this->isStepping())  // single stepping? Break here.
             this->execState = EXEC_PAUSED;
+
+        const long mustDelay = this->delayTicksPerLine();
+        if (mustDelay > 0)
+            pauseTicks = TOBY_getTicks() + mustDelay;
     } // if
 
-    while ( (this->isPaused()) || (shouldRedraw) )
+    bool shouldRedraw = (this->pumpStopwatch.Time() >= 50);
+    while ( (this->isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
     {
         if (shouldRedraw)
         {
@@ -863,8 +870,23 @@ bool TobyFrame::pumpEvents(int hook, int currentline)
         while ((!this->isStopping()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
-        if (this->isPaused())
+        if (pauseTicks > 0)  // we're just slowing down this run.
+        {
+            const long now = TOBY_getTicks();
+            if (now >= pauseTicks)
+                pauseTicks = -1;
+            else
+            {
+                const long remain = pauseTicks - now;
+                const long lagTicks = ((remain > 10) ? 10 : remain);
+                TOBY_yieldCPU(lagTicks);
+            } // else
+        } // if
+
+        else if (this->isPaused())
+        {
             TOBY_yieldCPU(50); // we're apparently spinning on the user.
+        } // else if
     } // while
 
     return !this->isStopping();
