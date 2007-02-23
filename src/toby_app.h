@@ -72,6 +72,13 @@ typedef struct TobyCallstack
 } TobyCallstack;
 
 
+#define TOBY_HOOKDELAY  -1
+#define TOBY_HOOKCALL   0
+#define TOBY_HOOKRET    1
+#define TOBY_HOOKLINE   2
+#define TOBY_HOOKCOUNT  3
+
+
 /* !!! FIXME: comment this */
 void TOBY_background(int *r, int *g, int *b);
 
@@ -109,7 +116,7 @@ void TOBY_stopRun(void);
  * Let UI pump its event queue. Return non-zero to keep going, zero to
  *  stop program execution, making TOBY_runProgram() return.
  */
-int TOBY_pumpEvents(void);
+int TOBY_pumpEvents(int hook, int currentline);
 
 
 /*

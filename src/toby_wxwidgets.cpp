@@ -109,6 +109,7 @@ enum TobyMenuCommands
 
     // non-standard menu items go here.
     MENUCMD_RunForPrinting,
+    MENUCMD_Step,
     MENUCMD_SaveAsImage,
     MENUCMD_Cleanup,
     MENUCMD_Website,
@@ -124,6 +125,15 @@ enum TobyMenuCommands
 //  this:  TurtleSpace *ts = wxGetApp().getTobyFrame()->getTurtleSpace();
 class TobyFrame : public wxFrame
 {
+private:
+    enum ExecState
+    {
+        EXEC_STOPPED=0,
+        EXEC_STOPPING,
+        EXEC_RUNNING,
+        EXEC_STEPPING,
+    };
+
 public:
     TobyFrame();
     virtual ~TobyFrame();
@@ -133,13 +143,26 @@ public:
     void openFile(const wxString &path);
     void startRun();
     void stopRun();
-    bool pumpEvents();
+    bool pumpEvents(int hook=TOBY_HOOKDELAY, int currentline=-1);
     inline void requestQuit();
     inline void runProgram(bool printing);
-    bool isRunning() const { return this->running; }
-    inline void halt();
-    bool stopRequested() const { return (this->stopping) || (!this->running); }
-    bool quitRequested() const { return this->quitting; }
+    inline void haltProgram();
+    inline bool isStepping() const { return this->execState == EXEC_STEPPING; }
+    inline bool isQuitting() const { return this->quitting; }
+
+    inline bool isRunning() const
+    {
+        return ( (this->execState == EXEC_RUNNING) ||
+                 (this->execState == EXEC_STEPPING) ||
+                 (this->execState == EXEC_STOPPING) );
+    } // isRunning
+
+    inline bool isStopping() const
+    {
+        return ( (this->execState == EXEC_STOPPING) ||
+                 (this->execState == EXEC_STOPPED) ||
+                 (this->quitting) );
+    } // isStopping
 
     // subclasses fill in these.
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
@@ -164,6 +187,7 @@ public:
     void onMenuSaveAsImage(wxCommandEvent &evt);
     void onMenuCleanup(wxCommandEvent &evt);
     void onMenuRunOrStop(wxCommandEvent &evt);
+    void onMenuStep(wxCommandEvent &evt);
     void onMenuRunForPrinting(wxCommandEvent &evt);
 
 protected:
@@ -172,9 +196,8 @@ protected:
     int nonMaximizedY;
     int nonMaximizedWidth;
     int nonMaximizedHeight;
+    ExecState execState;
     bool quitting;
-    bool stopping;
-    bool running;
     bool runForPrinting;
     char *execProgram;
     wxMenu *fileMenu;
@@ -203,6 +226,7 @@ BEGIN_EVENT_TABLE(TobyFrame, wxFrame)
     EVT_MENU(MENUCMD_License, TobyFrame::onMenuLicense)
     EVT_MENU(MENUCMD_Cleanup, TobyFrame::onMenuCleanup)
     EVT_MENU(MENUCMD_RunOrStop, TobyFrame::onMenuRunOrStop)
+    EVT_MENU(MENUCMD_Step, TobyFrame::onMenuStep)
     EVT_MENU(MENUCMD_RunForPrinting, TobyFrame::onMenuRunForPrinting)
 END_EVENT_TABLE()
 
@@ -272,11 +296,12 @@ DECLARE_APP(TobyWxApp)
 
 int TOBY_delay(int ms)
 {
+    TobyFrame *tframe = wxGetApp().getTobyFrame();
     wxLongLong now(::wxGetLocalTimeMillis());
     const wxLongLong end = now + wxLongLong(ms);
     while (now < end)
     {
-        if (!TOBY_pumpEvents())
+        if (!tframe->pumpEvents())
             return 0;
         now = ::wxGetLocalTimeMillis();
         if (now < end)
@@ -287,7 +312,7 @@ int TOBY_delay(int ms)
         } // if
     } // while
 
-    return TOBY_pumpEvents();
+    return tframe->pumpEvents();
 } // TOBY_delay
 
 
@@ -318,9 +343,9 @@ void TOBY_stopRun()
 } // TOBY_stopRun
 
 
-int TOBY_pumpEvents()
+int TOBY_pumpEvents(int hook, int currentline)
 {
-    return wxGetApp().getTobyFrame()->pumpEvents() ? 1 : 0;
+    return wxGetApp().getTobyFrame()->pumpEvents(hook, currentline) ? 1 : 0;
 } // TOBY_pumpEvents
 
 
@@ -710,6 +735,13 @@ bool TobyPrintout::HasPage(int pageNum)
 TobyFrame::TobyFrame()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(new TurtleSpace(this))
+    , nonMaximizedX(0)
+    , nonMaximizedY(0)
+    , nonMaximizedWidth(0)
+    , nonMaximizedHeight(0)
+    , execState(EXEC_STOPPED)
+    , quitting(false)
+    , runForPrinting(false)
     , execProgram(NULL)
     , fileMenu(new wxMenu)
     , runMenu(new wxMenu)
@@ -732,6 +764,7 @@ TobyFrame::TobyFrame()
     this->fileMenu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
     this->runMenu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
+    this->runMenu->Append(MENUCMD_Step, wxT("&Step\tF8"))->Enable(false);
     this->runMenu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
     this->runMenu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
 
@@ -801,8 +834,18 @@ const wxSize TobyFrame::getPreviousSize()
 } // TobyFrame::getPreviousSize
 
 
-bool TobyFrame::pumpEvents()
+bool TobyFrame::pumpEvents(int hook, int currentline)
 {
+#if 0
+    if (this->executingLine != currentline)
+    {
+        this->executingLine = currentline;
+        if (this->stepping)
+        {
+        } // if
+    } // if
+#endif
+
     if (this->pumpStopwatch.Time() > 50)
     {
         // force repaint here...this means we will be clamped to 20fps, but
@@ -811,19 +854,19 @@ bool TobyFrame::pumpEvents()
         this->turtleSpace->putToScreen();
 
         // Pump the system event queue if we aren't requesting a program halt.
-        while ((!this->stopRequested()) && (wxGetApp().Pending()))
+        while ((!this->isStopping()) && (wxGetApp().Pending()))
             wxGetApp().Dispatch();
 
         this->pumpStopwatch.Start(0);  // reset this for next call.
     } /* if */
 
-    return !this->stopRequested();
+    return !this->isStopping();
 } // TobyFrame::pumpEvents
 
 
 void TobyFrame::startRun()
 {
-    wxASSERT(!this->running);
+    wxASSERT(!this->isRunning());
 
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
@@ -837,14 +880,13 @@ void TobyFrame::startRun()
     this->startRunImpl();
     this->turtleSpace->startRun(this->runForPrinting);
 
-    this->running = true;
-    this->stopping = false;
+    this->execState = EXEC_RUNNING;
 } // TobyFrame::startRun
 
 
 void TobyFrame::stopRun()
 {
-    wxASSERT(this->running);
+    wxASSERT(this->isRunning());
 
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
@@ -857,28 +899,27 @@ void TobyFrame::stopRun()
 
     this->stopRunImpl();
     this->turtleSpace->stopRun();
-
-    this->running = this->stopping = false;
+    this->execState = EXEC_STOPPED;
 } // TobyFrame::stopRun
 
 
 void TobyFrame::requestQuit()
 {
-    this->halt();
+    this->haltProgram();
     this->quitting = true;
 } // TobyFrame::requestQuit
 
 
-void TobyFrame::halt()
+void TobyFrame::haltProgram()
 {
-    if (this->running)
-        this->stopping = true;
-} // TobyFrame::halt
+    if (this->isRunning())
+        this->execState = EXEC_STOPPING;
+} // TobyFrame::haltProgram
 
 
 void TobyFrame::runProgram(bool _runForPrinting)
 {
-    this->halt();  // stop the current run as soon as possible.
+    this->haltProgram();  // stop the current run as soon as possible.
     // This gets kicked off in the next idle event.
     this->runForPrinting = _runForPrinting;
     delete[] this->execProgram;
@@ -888,20 +929,21 @@ void TobyFrame::runProgram(bool _runForPrinting)
 
 void TobyFrame::onIdle(wxIdleEvent &evt)
 {
-    if (this->quitRequested())
+    if (this->isQuitting())
     {
         if (this->isRunning())
-            this->halt();
+            this->haltProgram();
         else
         {
             this->quitting = false;
             this->Close(false);
         } // else
     } // if
+
     else if (this->execProgram != NULL)
     {
         if (this->isRunning())
-            this->halt();
+            this->haltProgram();
         else
         {
             char *prog = this->execProgram;
@@ -1041,12 +1083,23 @@ void TobyFrame::onMenuPrint(wxCommandEvent &event)
 
 void TobyFrame::onMenuRunOrStop(wxCommandEvent &evt)
 {
-    // Run will kick off in next idle event.
     if (this->isRunning())
-        this->halt();
+        this->haltProgram();
     else
-        this->runProgram(false);
+        this->runProgram(false);  // Run will kick off in next idle event.
 } // TobyFrame::onMenuRunOrStop
+
+
+void TobyFrame::onMenuStep(wxCommandEvent &evt)
+{
+    if (!this->isStopping())
+    {
+        // if it's not running, start it.
+        if (!this->isRunning())
+            this->runProgram(false);  // Run will kick off in next idle event.
+        this->execState = EXEC_STEPPING;
+    } // if
+} // TobyFrame::onMenuStep
 
 
 void TobyFrame::onMenuRunForPrinting(wxCommandEvent &evt)

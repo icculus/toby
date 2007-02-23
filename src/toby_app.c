@@ -847,7 +847,7 @@ static int luahook_stackwalk(lua_State *L)
 
 static void luaDebugHook(lua_State *L, lua_Debug *ar)
 {
-    if (!TOBY_pumpEvents())
+    if (!TOBY_pumpEvents(ar->event, ar->currentline))
         haltProgram(L);
 } /* luaDebugHook */
 
@@ -924,6 +924,11 @@ static inline void resetProgramState(void)
 void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
     lua_State *L;
+
+    assert(TOBY_HOOKCALL == LUA_HOOKCALL);
+    assert(TOBY_HOOKRET == LUA_HOOKRET);
+    assert(TOBY_HOOKLINE == LUA_HOOKLINE);
+    assert(TOBY_HOOKCOUNT == LUA_HOOKCOUNT);
 
     resetProgramState();
 

@@ -69,10 +69,15 @@ void TOBY_stopRun()
 } /* TOBY_stopRun */
 
 
-int TOBY_pumpEvents(void)
+int TOBY_pumpEvents(int hook, int currentline)
 {
     SDL_Event e;
     const Uint32 now = SDL_GetTicks();
+
+    /* these aren't used in this implementation. */
+    (void) hook;
+    (void) currentline;
+
     if ((now - GLastPumpEvents) > 50)
     {
         /* still running? Put the latest to the screen. */
@@ -269,7 +274,7 @@ int TOBY_delay(int ms)
     const Uint32 end = now + ms;
     while (now < end)
     {
-        if (!TOBY_pumpEvents())
+        if (!TOBY_pumpEvents(TOBY_HOOKDELAY, -1))
             return 0;
         now = SDL_GetTicks();
         if (now < end)
@@ -280,7 +285,7 @@ int TOBY_delay(int ms)
         } /* if */
     } /* while */
 
-    return TOBY_pumpEvents();
+    return TOBY_pumpEvents(TOBY_HOOKDELAY, -1);
 } /* TOBY_delay */
 
 
