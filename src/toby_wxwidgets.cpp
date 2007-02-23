@@ -145,7 +145,7 @@ public:
     void openFile(const wxString &path);
     void startRun();
     void stopRun();
-    bool pumpEvents(int hook=TOBY_HOOKDELAY, int currentline=-1);
+    bool pumpEvents(TobyHookType hook=TOBY_HOOKDELAY, int currentline=-1);
     inline long delayTicksPerLine() { return this->delayPerLine; }
     inline void requestQuit();
     inline void runProgram(bool printing);
@@ -342,7 +342,7 @@ void TOBY_stopRun()
 } // TOBY_stopRun
 
 
-int TOBY_pumpEvents(int hook, int currentline)
+int TOBY_pumpEvents(TobyHookType hook, int currentline)
 {
     return wxGetApp().getTobyFrame()->pumpEvents(hook, currentline) ? 1 : 0;
 } // TOBY_pumpEvents
@@ -844,7 +844,7 @@ const wxSize TobyFrame::getPreviousSize()
 } // TobyFrame::getPreviousSize
 
 
-bool TobyFrame::pumpEvents(int hook, int currentline)
+bool TobyFrame::pumpEvents(TobyHookType hook, int currentline)
 {
     // should only break inside this function, and should block here until
     //  breakpoint ends and program continues.

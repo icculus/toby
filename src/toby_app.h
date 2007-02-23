@@ -71,12 +71,14 @@ typedef struct TobyCallstack
     int linenum;
 } TobyCallstack;
 
-
-#define TOBY_HOOKDELAY  -1
-#define TOBY_HOOKCALL   0
-#define TOBY_HOOKRET    1
-#define TOBY_HOOKLINE   2
-#define TOBY_HOOKCOUNT  3
+typedef enum TobyHookType
+{
+    TOBY_HOOKDELAY=-1,
+    TOBY_HOOKCALL,
+    TOBY_HOOKRET,
+    TOBY_HOOKLINE,
+    TOBY_HOOKCOUNT,
+} TobyHookType;
 
 
 /* !!! FIXME: comment this */
@@ -126,7 +128,7 @@ void TOBY_stopRun(void);
  * Let UI pump its event queue. Return non-zero to keep going, zero to
  *  stop program execution, making TOBY_runProgram() return.
  */
-int TOBY_pumpEvents(int hook, int currentline);
+int TOBY_pumpEvents(TobyHookType hook, int currentline);
 
 
 /*

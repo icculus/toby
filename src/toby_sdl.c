@@ -69,7 +69,7 @@ void TOBY_stopRun()
 } /* TOBY_stopRun */
 
 
-int TOBY_pumpEvents(int hook, int currentline)
+int TOBY_pumpEvents(TobyHookType hook, int currentline)
 {
     SDL_Event e;
     const Uint32 now = SDL_GetTicks();
