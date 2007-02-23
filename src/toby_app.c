@@ -693,11 +693,32 @@ static int luahook_round(lua_State *L)
 } /* luahook_setpendown */
 
 
+int TOBY_delay(long ms)
+{
+    long now = TOBY_getTicks();
+    const long end = now + ms;
+    while (now < end)
+    {
+        if (!TOBY_pumpEvents(TOBY_HOOKDELAY, -1))
+            return 0;
+
+        now = TOBY_getTicks();
+        if (now < end)
+        {
+            const long ticks = end - now;
+            TOBY_yieldCPU((ticks > 50) ? 50 : ticks);
+            now = TOBY_getTicks();
+        } /* if */
+    } /* while */
+
+    return TOBY_pumpEvents(TOBY_HOOKDELAY, -1);
+} /* TOBY_delay */
+
+
 static int luahook_pause(lua_State *L)
 {
     const lua_Number secs = luaL_checknumber(L, 1);
-    const int ms = secsToMs(secs);
-    if (!TOBY_delay(ms))
+    if (!TOBY_delay(secsToMs(secs)))
         haltProgram(L);
     return 0;
 } /* luahook_pause */

@@ -281,10 +281,12 @@ public:
     virtual int OnExit();
     TobyFrame *getTobyFrame() const { return this->mainWindow; }
     inline wxPrintData *getPrintData();
+    inline long getTicks() { return this->processStopwatch.Time(); }
 
 private:
     TobyFrame *mainWindow;
     wxPrintData *printData;
+    wxStopWatch processStopwatch;
 };
 
 DECLARE_APP(TobyWxApp)
@@ -294,26 +296,16 @@ DECLARE_APP(TobyWxApp)
 
 // implementations of callbacks during execution of Toby programs...
 
-int TOBY_delay(int ms)
+long TOBY_getTicks(void)
 {
-    TobyFrame *tframe = wxGetApp().getTobyFrame();
-    wxLongLong now(::wxGetLocalTimeMillis());
-    const wxLongLong end = now + wxLongLong(ms);
-    while (now < end)
-    {
-        if (!tframe->pumpEvents())
-            return 0;
-        now = ::wxGetLocalTimeMillis();
-        if (now < end)
-        {
-            const unsigned long ticks = (unsigned long) ((end-now).ToLong());
-            ::wxMilliSleep((ticks > 50) ? 50 : ticks);
-            now = ::wxGetLocalTimeMillis();
-        } // if
-    } // while
+    return wxGetApp().getTicks();
+} // TOBY_getTicks
 
-    return tframe->pumpEvents();
-} // TOBY_delay
+
+void TOBY_yieldCPU(int ms)
+{
+    ::wxMilliSleep(ms);
+} // TOBY_yieldCPU
 
 
 #define TOBY_PROFILE 1
@@ -1350,6 +1342,8 @@ bool TobyWxApp::OnInit()
 
     wxConfigBase *cfg = new wxConfig(wxT("Toby"), wxT("icculus.org"));
     wxConfig::Set(cfg);
+
+    this->processStopwatch.Start(0);
 
     tobyInitAllImageHandlers();
 

@@ -268,25 +268,16 @@ void TOBY_cleanup(int r, int g, int b)
 } /* TOBY_cleanup */
 
 
-int TOBY_delay(int ms)
+long TOBY_getTicks(void)
 {
-    Uint32 now = SDL_GetTicks();
-    const Uint32 end = now + ms;
-    while (now < end)
-    {
-        if (!TOBY_pumpEvents(TOBY_HOOKDELAY, -1))
-            return 0;
-        now = SDL_GetTicks();
-        if (now < end)
-        {
-            const Uint32 ticks = end - now;
-            SDL_Delay((ticks > 50) ? 50 : ticks);
-            now = SDL_GetTicks();
-        } /* if */
-    } /* while */
+    return (long) SDL_GetTicks();
+} // TOBY_getTicks
 
-    return TOBY_pumpEvents(TOBY_HOOKDELAY, -1);
-} /* TOBY_delay */
+
+void TOBY_yieldCPU(int ms)
+{
+    SDL_Delay(ms);
+} // TOBY_yieldCPU
 
 
 static char *loadProgram(const char *fname)

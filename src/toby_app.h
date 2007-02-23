@@ -92,6 +92,16 @@ const TobyCallstack *TOBY_getCallstack(int *elementCount);
 
 
 /*
+ * Pause for (ms) milliseconds, calling TOBY_pumpEvents(TOBY_HOOKDELAY, -1)
+ *  every 50 ms or so, and TOBY_yieldCPU() to give up time between pumps.
+ *  Returns 0 if any call to TOBY_pumpEvents() returns 0, returns 1 if all
+ *  pumping succeeded. Will pump the event queue at least once, even if ms
+ *  is <= 0.
+ */
+int TOBY_delay(long ms);
+
+
+/*
  * This can block for a LONG time, but it will call back into your
  *  application with the following functions...
  */
@@ -159,12 +169,19 @@ void TOBY_drawTurtle(const Turtle *turtle, void *data);
 void TOBY_cleanup(int r, int g, int b);
 
 /*
- * Block for (ms) milliseconds, pumping event queue.
- *  Return non-zero to keep going, zero to stop Toby program. You can return
- *  before (ms) milliseconds if returning zero.
+ * Get the time, in milliseconds, that the process has been running.
  */
-int TOBY_delay(int ms);
+long TOBY_getTicks(void);
 
+/*
+ * Surrender the CPU to other processes for (ms) milliseconds. This doesn't
+ *  have to exact if the OS's scheduler doesn't have good precision, and it
+ *  can just busy loop if the OS doesn't have facilities.
+ * You don't have to pump the event queue here...callers are expected to
+ *  alternate between this and TOBY_pumpEvents(TOBY_HOOKDELAY, -1) if they
+ *  are wasting time.
+ */
+void TOBY_yieldCPU(int ms);
 
 /*
  * Clip a line defined by (*x1,*y1)-(*x2,*y2) to a rectangle of (0,0)-(w,h).
