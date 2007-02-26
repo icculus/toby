@@ -626,7 +626,7 @@ static int luahook_joinstrings(lua_State *L)
     if (buf == NULL)
         throwError(L, "Out of memory");
     strcpy(buf, str1);
-    strcat(buf, str1);
+    strcat(buf, str2);
     lua_pushstring(L, buf);
     free(buf);
     return 1;
