@@ -374,7 +374,6 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
 
 int main(int argc, char **argv)
 {
-    /* !!! FIXME: allow user to change dimensions. */
     int w = 600;
     int h = 600;
     int set_dimension = 0;
