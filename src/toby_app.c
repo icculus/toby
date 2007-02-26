@@ -591,19 +591,13 @@ static int luahook_leftstring(lua_State *L)
 {
     const char *str = luaL_checklstring(L, 1, NULL);
     const size_t origLen = strlen(str);
-    char *buf = NULL;
     int charCount = checkWholeNum(L, 2);
     if (charCount < 0)
         throwError(L, "Negative string length");
     else if (charCount > origLen)
         charCount = origLen;
 
-    /* !!! FIXME: can we push a string without null terminating it to save the copy? */
-    buf = (char *) alloca(charCount + 1);
-    memcpy(buf, str, charCount);
-    buf[charCount] = '\0';
-
-    lua_pushstring(L, buf);
+    lua_pushlstring(L, str, charCount);
     return 1;
 } /* luahook_leftstring */
 
@@ -643,7 +637,6 @@ static int luahook_substring(lua_State *L)
 {
     const char *str = luaL_checklstring(L, 1, NULL);
     size_t origLen = strlen(str);
-    char *buf = NULL;
     const int pos = checkWholeNum(L, 2);
     int charCount = checkWholeNum(L, 3);
 
@@ -660,10 +653,7 @@ static int luahook_substring(lua_State *L)
     {
         if (charCount > origLen)
             charCount = origLen;
-        buf = (char *) alloca(charCount + 1);
-        memcpy(buf, str+pos, charCount);
-        buf[charCount] = '\0';
-        lua_pushstring(L, buf);
+        lua_pushlstring(L, str+pos, charCount);
     } /* else */
 
     return 1;
