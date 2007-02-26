@@ -581,10 +581,7 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
 {
     // Just cache the dimensions, since we're spending an enormous amount of
     //  time looking them up over and over during program execution.
-// !!! FIXME: do this without the wxSize?
-    wxSize size(this->GetClientSize());
-    this->clientW = size.GetWidth();
-    this->clientH = size.GetHeight();
+    this->GetClientSize(&this->clientW, &this->clientH);
 } // TurtleSpace::onResize
 
 
