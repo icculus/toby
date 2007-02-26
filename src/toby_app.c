@@ -11,7 +11,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <ctype.h>  // !!! FIXME: lose this with tolower/toupper...
+#include <ctype.h>  /* !!! FIXME: lose this with tolower/toupper... */
 #include "toby_app.h"
 
 typedef enum TobyExecState
@@ -85,8 +85,8 @@ static inline lua_Number radiansToDegrees(lua_Number radians)
 /* This can be optimized into one FPU operation on x86 chips. */
 static inline void sinAndCos(lua_Number x, lua_Number *sval, lua_Number *cval)
 {
-    // !!! FIXME: x86 version
-    // !!! FIXME: fixed point?
+    /* !!! FIXME: x86 version */
+    /* !!! FIXME: fixed point? */
     *sval = sin(x);
     *cval = cos(x);
 } /* sinAndCos */
@@ -307,7 +307,7 @@ static void setTurtleAngle(lua_State *L, lua_Number angle)
     Turtle *turtle = getTurtle(L);
     if (angle != turtle->angle)
     {
-        // !!! FIXME: ugh, use modulus...
+        /* !!! FIXME: ugh, use modulus... */
         while (angle >= N(360)) angle -= N(360);
         while (angle < N(0)) angle += N(360);
         turtle->angle = angle;
@@ -440,14 +440,14 @@ static int luahook_getturtley(lua_State *L)
 
 static int luahook_getturtlespacewidth(lua_State *L)
 {
-    lua_pushnumber(L, N(1000));   // !!! FIXME: allow this to change?
+    lua_pushnumber(L, N(1000));   /* !!! FIXME: allow this to change? */
     return 1;
 } /* luahook_getturtlespacewidth */
 
 
 static int luahook_getturtlespaceheight(lua_State *L)
 {
-    lua_pushnumber(L, N(1000));   // !!! FIXME: allow this to change?
+    lua_pushnumber(L, N(1000));   /* !!! FIXME: allow this to change? */
     return 1;
 } /* luahook_getturtlespaceheight */
 
@@ -505,22 +505,22 @@ static int luahook_setpencolor(lua_State *L)
      */
     static const TurtleRGB colors[] =
     {
-        { 0, 0, 0 },       // black
-        { 0, 26, 196 },    // dark blue
-        { 0, 153, 45 },    // dark green
-        { 0, 144, 138 },   // dark cyan
-        { 160, 0, 0 },     // dark red
-        { 197, 0, 202 },   // dark magenta
-        { 129, 90, 16 },   // brown
-        { 200, 200, 200 }, // gray
-        { 90, 90, 90 },    // dark gray
-        { 0, 200, 255 },   // bright blue
-        { 0, 90, 38 },     // bright green
-        { 91, 110, 255 },  // bright cyan
-        { 255, 0, 0 },     // bright red
-        { 255, 0, 255 },   // bright pink
-        { 255, 255, 0 },   // bright yellow
-        { 255, 255, 255 }, // bright white
+        { 0, 0, 0 },       /* black */
+        { 0, 26, 196 },    /* dark blue */
+        { 0, 153, 45 },    /* dark green */
+        { 0, 144, 138 },   /* dark cyan */
+        { 160, 0, 0 },     /* dark red */
+        { 197, 0, 202 },   /* dark magenta */
+        { 129, 90, 16 },   /* brown */
+        { 200, 200, 200 }, /* gray */
+        { 90, 90, 90 },    /* dark gray */
+        { 0, 200, 255 },   /* bright blue */
+        { 0, 90, 38 },     /* bright green */
+        { 91, 110, 255 },  /* bright cyan */
+        { 255, 0, 0 },     /* bright red */
+        { 255, 0, 255 },   /* bright pink */
+        { 255, 255, 0 },   /* bright yellow */
+        { 255, 255, 255 }, /* bright white */
     };
 
     const int color = checkWholeNum(L, 1);
@@ -570,18 +570,18 @@ static int luahook_disablefence(lua_State *L)
 
 static int luahook_cleanupturtlespace(lua_State *L)
 {
-    // !!! FIXME: let user choose color?
+    /* !!! FIXME: let user choose color? */
     TOBY_cleanup(background.r, background.g, background.b);
     turtleSpaceIsDirty = 1;
     return 0;
 } /* luahook_getturtlespaceheight */
 
 
-// !!! FIXME: all must handle utf8....
+/* !!! FIXME: all must handle utf8.... */
 
 static int luahook_stringlength(lua_State *L)
 {
-    // !!! FIXME: this is doing bytes, not chars...
+    /* !!! FIXME: this is doing bytes, not chars... */
     lua_pushinteger(L, (lua_Integer) strlen(luaL_checklstring(L, 1, NULL)));
     return 1;
 } /* luahook_stringlength */
@@ -598,7 +598,7 @@ static int luahook_leftstring(lua_State *L)
     else if (charCount > origLen)
         charCount = origLen;
 
-    // !!! FIXME: can we push a string without null terminating it to save the copy?
+    /* !!! FIXME: can we push a string without null terminating it to save the copy? */
     buf = (char *) alloca(charCount + 1);
     memcpy(buf, str, charCount);
     buf[charCount] = '\0';
@@ -625,7 +625,7 @@ static int luahook_rightstring(lua_State *L)
 
 static int luahook_joinstrings(lua_State *L)
 {
-    // !!! FIXME: this code sucks.
+    /* !!! FIXME: this code sucks. */
     const char *str1 = luaL_checklstring(L, 1, NULL);
     const char *str2 = luaL_checklstring(L, 2, NULL);
     char *buf = (char *) malloc(strlen(str1) + strlen(str2) + 1);
@@ -651,7 +651,7 @@ static int luahook_substring(lua_State *L)
         throwError(L, "Negative string length");
 
     if (pos < 0)
-        throwError(L, "Negative string position");  // !!! FIXME: just clamp instead?
+        throwError(L, "Negative string position");  /* !!! FIXME: just clamp instead? */
 
     origLen -= pos;
     if (origLen <= 0)
@@ -711,9 +711,9 @@ static int luahook_drawstring(lua_State *L)
 
 static int luahook_random(lua_State *L)
 {
-    const long val = random();  // !!! FIXME: seed this.
-    // !!! FIXME: fixed point
-    // !!! FIXME: nasty double code.
+    const long val = random();  /* !!! FIXME: seed this. */
+    /* !!! FIXME: fixed point */
+    /* !!! FIXME: nasty double code. */
     const lua_Number flt = (lua_Number) (((double)val) / ((double)RAND_MAX));
     lua_pushnumber(L, flt);
     return 1;
@@ -722,7 +722,7 @@ static int luahook_random(lua_State *L)
 
 static int luahook_round(lua_State *L)
 {
-    // !!! FIXME: fixed point.
+    /* !!! FIXME: fixed point. */
     lua_pushinteger(L, (lua_Integer) (luaL_checknumber(L, 1) + 0.5));
     return 1;
 } /* luahook_setpendown */
@@ -838,7 +838,7 @@ static int luahook_stackwalk(lua_State *L)
 
     logDebug("Lua stack backtrace:");
 
-    // start at 1 to skip this function.
+    /* start at 1 to skip this function. */
     for (i = 1; lua_getstack(L, i, &ldbg); i++)
     {
         char *ptr = (char *) scratchbuf_128k;
@@ -854,7 +854,7 @@ static int luahook_stackwalk(lua_State *L)
             snprintfcat(&ptr, &len, "???\n");
             logDebug((const char *) scratchbuf_128k);
             continue;
-        } // if
+        } /* if */
 
         if (ldbg.namewhat[0])
             snprintfcat(&ptr, &len, "%s ", ldbg.namewhat);
@@ -869,7 +869,7 @@ static int luahook_stackwalk(lua_State *L)
                 snprintfcat(&ptr, &len, "tail call");
             else
                 snprintfcat(&ptr, &len, "unidentifiable function");
-        } // if
+        } /* if */
 
         logDebug((const char *) scratchbuf_128k);
         ptr = (char *) scratchbuf_128k;
@@ -889,9 +889,9 @@ static int luahook_stackwalk(lua_State *L)
             snprintfcat(&ptr, &len, "in Lua code at %s", ldbg.short_src);
             if (ldbg.currentline != -1)
                 snprintfcat(&ptr, &len, ":%d", ldbg.currentline);
-        } // else
+        } /* else */
         logDebug((const char *) scratchbuf_128k);
-    } // for
+    } /* for */
 #endif
 
     lua_pushstring(L, errstr ? errstr : "");
@@ -912,34 +912,38 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
      */
     assert(!TOBY_isPaused());
 
-    // If we hit a new line, see if this is a breakpoint. Pause here if so.
+    /* If we hit a new line, see if this is a breakpoint. Pause here if so. */
     if (hook == LUA_HOOKLINE)
     {
         const long mustDelay = TOBY_getDelayTicksPerLine();
-        //printf("Now on line #%d\n", ar->currentline);
+        /*printf("Now on line #%d\n", ar->currentline);*/
         if (mustDelay > 0)
             pauseTicks = startTicks + mustDelay;
-        if (TOBY_isStepping())  // single stepping? Break here.
+        if (TOBY_isStepping())  /* single stepping? Break here. */
             execState = EXEC_PAUSED;
-    } // if
+    } /* if */
 
     while ( (TOBY_isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
     {
         if (shouldRedraw)
         {
-            // force repaint here...this means we will be clamped to 20fps,
-            //  but the overall execution of the program will be much faster,
-            //  as rendering primitives will batch.
+            /*
+             * Force repaint here...this means we will be clamped to 20fps,
+             *  but the overall execution of the program will be much faster,
+             *  as rendering primitives will batch.
+             */
             putToScreen();
             nextPumpTicks = TOBY_getTicks() + 50;
-            shouldRedraw = 0;  // only redraw once if spinning.
-        } // if
+            shouldRedraw = 0;  /* only redraw once if spinning. */
+        } /* if */
 
-        // Pump the system event queue. This only happens if we're delaying
-        //  or it's been >= 50ms since the last pump.
+        /*
+         * Pump the system event queue. This only happens if we're delaying
+         *  or it's been >= 50ms since the last pump.
+         */
         TOBY_pumpEvents();
 
-        if (pauseTicks > 0)  // we're just slowing down this run.
+        if (pauseTicks > 0)  /* we're just slowing down this run. */
         {
             const long now = TOBY_getTicks();
             if (now >= pauseTicks)
@@ -949,14 +953,14 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
                 const long remain = pauseTicks - now;
                 const long lagTicks = ((remain > 10) ? 10 : remain);
                 TOBY_yieldCPU(lagTicks);
-            } // else
-        } // if
+            } /* else */
+        } /* if */
 
         else if (TOBY_isPaused())
         {
-            TOBY_yieldCPU(50); // we're apparently spinning on the user.
-        } // else if
-    } // while
+            TOBY_yieldCPU(50);  /* we're apparently spinning on the user. */
+        } /* else if */
+    } /* while */
 
     if (TOBY_isStopping())
         haltProgram(L);
@@ -1102,16 +1106,19 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
     resetProgramState();
 
     if (run_for_printing)
-        background.r = background.g = background.b = 255;  // white.
+        background.r = background.g = background.b = 255;  /* white. */
     else
-        background.r = background.g = background.b = 0;  // black.
+        background.r = background.g = background.b = 0;  /* black. */
 
     luaState = L = luaL_newstate();
     if (L == NULL)
         return;
 
+/*
 // !!! FIXME
 //    lua_atpanic(L, luahook_fatal);
+*/
+
     lua_sethook(L, luaDebugHook, LUA_MASKLINE | LUA_MASKCOUNT, 1000);
     add_toby_functions(L);
 
@@ -1127,7 +1134,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
         turtleSpaceIsDirty = 1;
 
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
-        if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
+        if (lua_pcall(L, 0, 0, -2) != 0)  /* retvals are dumped. */
         {
             if (!halted)  /* (halted) means stop requested, not error. */
                 luaErrorMsgBox(L);
@@ -1137,7 +1144,7 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
         TOBY_putToScreen();
         TOBY_stopRun();
     } /* if */
-    lua_pop(L, 1);   // dump stackwalker.
+    lua_pop(L, 1);   /* dump stackwalker. */
 
     resetProgramState();
     lua_close(L);

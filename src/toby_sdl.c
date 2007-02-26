@@ -49,7 +49,7 @@ void TOBY_startRun(void)
 {
     GRequestingQuit = 0;
     GStopWatch = SDL_GetTicks();
-} // TOBY_startRun
+} /* TOBY_startRun */
 
 
 void TOBY_stopRun()
@@ -188,7 +188,7 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
         {
             *( ((Uint32 *) p) + ((py * w) + px) ) = pval;
             y += dy;
-            if (y >= dx)   // run length completed.
+            if (y >= dx)   /* run length completed. */
             {
                 y -= dx;
                 py += sdy;
@@ -211,7 +211,7 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
         {
             *( ((Uint32 *) p) + ((py * w) + px) ) = pval;
             x += dx;
-            if (x >= dy)  // run length completed.
+            if (x >= dy)  /* run length completed. */
             {
                 x -= dy;
                 px += sdx;
@@ -234,7 +234,7 @@ int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
 
 void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
-    //SDL_Surface *surf = ((data == NULL)) ? GBacking : (SDL_Surface *) data);
+    /*SDL_Surface *surf = ((data == NULL)) ? GBacking : (SDL_Surface *) data);*/
 } /* TOBY_drawTurtle */
 
 
@@ -248,13 +248,13 @@ void TOBY_cleanup(int r, int g, int b)
 long TOBY_getTicks(void)
 {
     return (long) SDL_GetTicks();
-} // TOBY_getTicks
+} /* TOBY_getTicks */
 
 
 void TOBY_yieldCPU(int ms)
 {
     SDL_Delay(ms);
-} // TOBY_yieldCPU
+} /* TOBY_yieldCPU */
 
 
 static char *loadProgram(const char *fname)
