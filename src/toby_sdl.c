@@ -71,6 +71,17 @@ void TOBY_pumpEvents(void)
         else if (e.type == SDL_VIDEOEXPOSE)
             TOBY_putToScreen();  /* in case we need to force a repaint... */
 
+        else if (e.type == SDL_VIDEORESIZE)
+        {
+            int r, g, b;
+            const SDL_ResizeEvent *re = &e.resize;
+            GScreen = SDL_SetVideoMode(re->w, re->h, 0, GScreen->flags);
+            /* !!! FIXME: what do we do if GScreen is NULL? */
+            TOBY_background(&r, &g, &b);
+            SDL_FillRect(GScreen, NULL, SDL_MapRGB(GScreen->format, r, g, b));
+            TOBY_putToScreen();
+        } /* else if */
+
         else if (e.type == SDL_KEYDOWN)
         {
             const SDL_keysym *k = &e.key.keysym;
@@ -364,8 +375,9 @@ static int doProgram(const char *program, int w, int h, Uint32 flags)
 int main(int argc, char **argv)
 {
     /* !!! FIXME: allow user to change dimensions. */
-    const int w = 800;
-    const int h = 600;
+    int w = 600;
+    int h = 600;
+    int set_dimension = 0;
     char *program = NULL;
     Uint32 sdlflags = 0;
     int retval = 0;
@@ -386,6 +398,22 @@ int main(int argc, char **argv)
             {
                 if ((arg = argv[++i]) != NULL)
                     GDelayAndQuit = atoi(arg);
+            } /* else if */
+            else if (strcmp(arg, "width") == 0)
+            {
+                if ((arg = argv[++i]) != NULL)
+                {
+                    set_dimension = 1;
+                    w = atoi(arg);
+                } /* if */
+            } /* else if */
+            else if (strcmp(arg, "height") == 0)
+            {
+                if ((arg = argv[++i]) != NULL)
+                {
+                    set_dimension = 1;
+                    h = atoi(arg);
+                } /* if */
             } /* else if */
             else if (strcmp(arg, "buildver") == 0)
             {
@@ -417,6 +445,14 @@ int main(int argc, char **argv)
         fprintf(stderr, "No program specified.\n");
         return 3;
     } /* if */
+
+    if ((sdlflags & SDL_FULLSCREEN) == 0)
+        sdlflags |= SDL_RESIZABLE;
+    else
+    {
+        if (!set_dimension)
+            w = 800;  /* bump to likely available default resolution. */
+    } /* else */
 
     retval = doProgram(program, w, h, sdlflags);
     free(program);
