@@ -44,7 +44,6 @@ public:
     inline const wxFont *getFont() const { return &this->font; }
     inline wxBitmap *getBacking() const;
     inline void scaleXY(lua_Number &x, lua_Number &y) const;
-    inline void putToScreen();
 
     bool drawString(lua_Number x, lua_Number y, const wxString &str,
                     lua_Number angle, int r, int g, int b);
@@ -72,7 +71,6 @@ private:
     int backingH;  // height of backing store (changes on startRun()).
     wxBitmap *backing;
     wxMemoryDC *backingDC;
-    bool dirty;
     DECLARE_EVENT_TABLE()
 };
 
@@ -126,16 +124,6 @@ enum TobyMenuCommands
 //  this:  TurtleSpace *ts = wxGetApp().getTobyFrame()->getTurtleSpace();
 class TobyFrame : public wxFrame
 {
-private:
-    enum ExecState
-    {
-        EXEC_STOPPED=0,
-        EXEC_STOPPING,
-        EXEC_RUNNING,
-        EXEC_STEPPING,
-        EXEC_PAUSED,
-    };
-
 public:
     TobyFrame();
     virtual ~TobyFrame();
@@ -145,29 +133,11 @@ public:
     void openFile(const wxString &path);
     void startRun();
     void stopRun();
-    bool pumpEvents(TobyHookType hook=TOBY_HOOKDELAY, int currentline=-1);
-    inline long delayTicksPerLine() { return this->delayPerLine; }
-    inline void requestQuit();
+    inline void pumpEvents();
+    inline void repaintTurtlespace();
     inline void runProgram(bool printing);
-    inline void haltProgram();
-    inline bool isPaused() const { return this->execState == EXEC_PAUSED; }
-    inline bool isStepping() const { return this->execState == EXEC_STEPPING; }
+    inline void requestQuit();
     inline bool isQuitting() const { return this->quitting; }
-
-    inline bool isRunning() const
-    {
-        return ( (this->execState == EXEC_RUNNING) ||
-                 (this->execState == EXEC_STEPPING) ||
-                 (this->execState == EXEC_PAUSED) ||
-                 (this->execState == EXEC_STOPPING) );
-    } // isRunning
-
-    inline bool isStopping() const
-    {
-        return ( (this->execState == EXEC_STOPPING) ||
-                 (this->execState == EXEC_STOPPED) ||
-                 (this->quitting) );
-    } // isStopping
 
     // subclasses fill in these.
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
@@ -201,11 +171,8 @@ protected:
     int nonMaximizedY;
     int nonMaximizedWidth;
     int nonMaximizedHeight;
-    int executingLine;
-    ExecState execState;
     bool quitting;
     bool runForPrinting;
-    long delayPerLine;
     char *execProgram;
     wxMenu *fileMenu;
     wxMenu *runMenu;
@@ -213,7 +180,6 @@ protected:
     wxMenuBar *menuBar;
 
 private:
-    wxStopWatch pumpStopwatch;
     DECLARE_EVENT_TABLE()
 };
 
@@ -342,10 +308,16 @@ void TOBY_stopRun()
 } // TOBY_stopRun
 
 
-int TOBY_pumpEvents(TobyHookType hook, int currentline)
+void TOBY_pumpEvents()
 {
-    return wxGetApp().getTobyFrame()->pumpEvents(hook, currentline) ? 1 : 0;
+    wxGetApp().getTobyFrame()->pumpEvents();
 } // TOBY_pumpEvents
+
+
+void TOBY_putToScreen()
+{
+    wxGetApp().getTobyFrame()->repaintTurtlespace();
+} // TOBY_putToScreen
 
 
 int TOBY_drawString(lua_Number x, lua_Number y, const char *utf8str,
@@ -387,7 +359,8 @@ void TOBY_messageBox(const char *msg)
 // The rest of the application...
 
 TurtleSpace::TurtleSpace(wxWindow *parent)
-    : wxWindow(parent, wxID_ANY)
+    : wxWindow(parent, wxID_ANY, wxDefaultPosition,
+               wxDefaultSize, wxFULL_REPAINT_ON_RESIZE)
     , font(12, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL)
     , clientW(1)
     , clientH(1)
@@ -395,7 +368,6 @@ TurtleSpace::TurtleSpace(wxWindow *parent)
     , backingH(1)
     , backing(NULL)
     , backingDC(NULL)
-    , dirty(false)
 {
     // no-op
 } // TurtleSpace::TurtleSpace
@@ -421,17 +393,6 @@ wxBitmap *TurtleSpace::getBacking() const
     wxASSERT(this->backingDC == NULL);
     return this->backing;
 } // TurtleSpace::getBacking
-
-
-void TurtleSpace::putToScreen()
-{
-    if (this->dirty)
-    {
-        this->Refresh(false);
-        this->Update();  // force repaint.
-        this->dirty = false;
-    } // if
-} // TurtleSpace::putToScreen
 
 
 void TurtleSpace::scaleXY(lua_Number &x, lua_Number &y) const
@@ -468,7 +429,6 @@ void TurtleSpace::drawLine(lua_Number x1, lua_Number y1,
     wxMemoryDC *dc = this->getBackingDC();
     if (dc != NULL)
     {
-        this->dirty = true;
         this->scaleXY(x1, y1);
         this->scaleXY(x2, y2);
         dc->SetPen(wxPen(wxColour(r, g, b)));
@@ -486,7 +446,6 @@ bool TurtleSpace::drawString(lua_Number x, lua_Number y, const wxString &str,
     wxMemoryDC *dc = this->getBackingDC();
     if (dc != NULL)
     {
-        this->dirty = true;
         this->scaleXY(x, y);
         const wxColour color(r, g, b);
         dc->SetTextForeground(color);
@@ -505,9 +464,7 @@ void TurtleSpace::drawTurtle(const Turtle *turtle, void *data)
         int xoff = 0;
         int yoff = 0;
 
-        if (data == NULL)
-            this->dirty = true;
-        else  // not the backing store? Clip it.
+        if (data != NULL)  // not the backing store? Clip it.
         {
             this->calcOffset(xoff, yoff);
             this->clipDC(dc, xoff, yoff);
@@ -562,7 +519,6 @@ void TurtleSpace::cleanup(int r, int g, int b, bool force)
 
     if (dc != NULL)
     {
-        this->dirty = true;
         dc->SetBackground(wxBrush(wxColour(r, g, b)));
         dc->Clear();
     } // if
@@ -618,7 +574,6 @@ void TurtleSpace::startRun(bool runForPrinting)
 void TurtleSpace::stopRun()
 {
     this->nukeDC(&this->backingDC);  // flush to bitmap.
-    this->putToScreen();
 } // TurtleSpace::stopRun
 
 
@@ -630,7 +585,6 @@ void TurtleSpace::onResize(wxSizeEvent &evt)
     wxSize size(this->GetClientSize());
     this->clientW = size.GetWidth();
     this->clientH = size.GetHeight();
-    this->putToScreen();  // force a full redraw.
 } // TurtleSpace::onResize
 
 
@@ -702,7 +656,7 @@ void TurtleSpace::onPaint(wxPaintEvent &evt)
 bool TobyPrintout::OnPrintPage(int page)
 {
     const TobyFrame *tframe = wxGetApp().getTobyFrame();
-    wxASSERT(!tframe->isRunning());
+    wxASSERT(!TOBY_isRunning());
 
     wxBitmap *bmp = tframe->getTurtleSpace()->getBacking();
     if (bmp != NULL)
@@ -748,11 +702,8 @@ TobyFrame::TobyFrame()
     , nonMaximizedY(0)
     , nonMaximizedWidth(0)
     , nonMaximizedHeight(0)
-    , executingLine(-1)
-    , execState(EXEC_STOPPED)
     , quitting(false)
     , runForPrinting(false)
-    , delayPerLine(0)
     , execProgram(NULL)
     , fileMenu(new wxMenu)
     , runMenu(new wxMenu)
@@ -844,69 +795,24 @@ const wxSize TobyFrame::getPreviousSize()
 } // TobyFrame::getPreviousSize
 
 
-bool TobyFrame::pumpEvents(TobyHookType hook, int currentline)
+void TobyFrame::pumpEvents()
 {
-    // should only break inside this function, and should block here until
-    //  breakpoint ends and program continues.
-    wxASSERT(!this->isPaused());
-    long pauseTicks = -1;
-
-    // If we hit a new line, see if this is a breakpoint. Pause here if so.
-    if ( (hook == TOBY_HOOKLINE) && (this->executingLine != currentline) )
-    {
-        //printf("Now on line #%d\n", currentline);
-        this->executingLine = currentline;
-        if (this->isStepping())  // single stepping? Break here.
-            this->execState = EXEC_PAUSED;
-
-        const long mustDelay = this->delayTicksPerLine();
-        if (mustDelay > 0)
-            pauseTicks = TOBY_getTicks() + mustDelay;
-    } // if
-
-    bool shouldRedraw = (this->pumpStopwatch.Time() >= 50);
-    while ( (this->isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
-    {
-        if (shouldRedraw)
-        {
-            // force repaint here...this means we will be clamped to 20fps,
-            //  but the overall execution of the program will be much faster,
-            //  as rendering primitives will batch.
-            this->turtleSpace->putToScreen();
-            this->pumpStopwatch.Start(0);  // reset stopwatch.
-            shouldRedraw = false;  // only redraw once if spinning.
-        } // if
-
-        // Pump the system event queue if we aren't requesting a halt.
-        while ((!this->isStopping()) && (wxGetApp().Pending()))
-            wxGetApp().Dispatch();
-
-        if (pauseTicks > 0)  // we're just slowing down this run.
-        {
-            const long now = TOBY_getTicks();
-            if (now >= pauseTicks)
-                pauseTicks = -1;
-            else
-            {
-                const long remain = pauseTicks - now;
-                const long lagTicks = ((remain > 10) ? 10 : remain);
-                TOBY_yieldCPU(lagTicks);
-            } // else
-        } // if
-
-        else if (this->isPaused())
-        {
-            TOBY_yieldCPU(50); // we're apparently spinning on the user.
-        } // else if
-    } // while
-
-    return !this->isStopping();
+    while (wxGetApp().Pending())
+        wxGetApp().Dispatch();
 } // TobyFrame::pumpEvents
+
+
+void TobyFrame::repaintTurtlespace()
+{
+    TurtleSpace *tspace = this->turtleSpace;
+    tspace->Refresh(false);
+    tspace->Update();  // force repaint.
+} // TobyFrame::repaintTurtlespace
 
 
 void TobyFrame::startRun()
 {
-    wxASSERT(!this->isRunning());
+    wxASSERT(!TOBY_isRunning());
 
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
@@ -919,15 +825,12 @@ void TobyFrame::startRun()
 
     this->startRunImpl();
     this->turtleSpace->startRun(this->runForPrinting);
-
-    this->execState = EXEC_RUNNING;
-    this->executingLine = -1;
 } // TobyFrame::startRun
 
 
 void TobyFrame::stopRun()
 {
-    wxASSERT(this->isRunning());
+    wxASSERT(TOBY_isRunning());
 
     wxMenuBar *mb = this->menuBar;
     mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
@@ -940,27 +843,19 @@ void TobyFrame::stopRun()
 
     this->stopRunImpl();
     this->turtleSpace->stopRun();
-    this->execState = EXEC_STOPPED;
 } // TobyFrame::stopRun
 
 
 void TobyFrame::requestQuit()
 {
-    this->haltProgram();
+    TOBY_haltProgram();
     this->quitting = true;
 } // TobyFrame::requestQuit
 
 
-void TobyFrame::haltProgram()
-{
-    if (this->isRunning())
-        this->execState = EXEC_STOPPING;
-} // TobyFrame::haltProgram
-
-
 void TobyFrame::runProgram(bool _runForPrinting)
 {
-    this->haltProgram();  // stop the current run as soon as possible.
+    TOBY_haltProgram();  // stop the current run as soon as possible.
     // This gets kicked off in the next idle event.
     this->runForPrinting = _runForPrinting;
     delete[] this->execProgram;
@@ -972,8 +867,8 @@ void TobyFrame::onIdle(wxIdleEvent &evt)
 {
     if (this->isQuitting())
     {
-        if (this->isRunning())
-            this->haltProgram();
+        if (TOBY_isRunning())
+            TOBY_haltProgram();
         else
         {
             this->quitting = false;
@@ -983,8 +878,8 @@ void TobyFrame::onIdle(wxIdleEvent &evt)
 
     else if (this->execProgram != NULL)
     {
-        if (this->isRunning())
-            this->haltProgram();
+        if (TOBY_isRunning())
+            TOBY_haltProgram();
         else
         {
             char *prog = this->execProgram;
@@ -1124,8 +1019,8 @@ void TobyFrame::onMenuPrint(wxCommandEvent &event)
 
 void TobyFrame::onMenuRunOrStop(wxCommandEvent &evt)
 {
-    if (this->isRunning())
-        this->haltProgram();
+    if (TOBY_isRunning())
+        TOBY_haltProgram();
     else
         this->runProgram(false);  // Run will kick off in next idle event.
 } // TobyFrame::onMenuRunOrStop
@@ -1133,23 +1028,21 @@ void TobyFrame::onMenuRunOrStop(wxCommandEvent &evt)
 
 void TobyFrame::onMenuStep(wxCommandEvent &evt)
 {
-    if (!this->isStopping())
+    if (TOBY_isRunning())
+        TOBY_stepProgram();
+    else
     {
         // if it's not running, start it.
-        if (!this->isRunning())
-        {
-            // !!! FIXME: set a breakpoint on main()...
-            this->runProgram(false);  // Run will kick off in next idle event.
-        } // if
-        this->execState = EXEC_STEPPING;
-    } // if
+        // !!! FIXME: set a breakpoint on main()...
+        //this->runProgram(false);  // Run will kick off in next idle event.
+    } // else
 } // TobyFrame::onMenuStep
 
 
 void TobyFrame::onMenuRunForPrinting(wxCommandEvent &evt)
 {
     // Run will kick off in next idle event.
-    wxASSERT(!this->isRunning());
+    wxASSERT(!TOBY_isRunning());
     this->runProgram(true);
 } // TobyFrame::onMenuRunForPrinting
 
@@ -1157,7 +1050,7 @@ void TobyFrame::onMenuRunForPrinting(wxCommandEvent &evt)
 void TobyFrame::onMenuCleanup(wxCommandEvent &evt)
 {
     this->turtleSpace->cleanup(0, 0, 0, true);
-    this->turtleSpace->putToScreen();
+    this->repaintTurtlespace();
 } // TobyFrame::onMenuCleanup
 
 
@@ -1259,7 +1152,7 @@ void TobyFrame::onClose(wxCloseEvent &evt)
     if (this->shouldVetoClose())
         evt.Veto();  // subclass says no.
 
-    else if (this->isRunning())
+    else if (TOBY_isRunning())
     {
         this->requestQuit();  // try it again later so program can halt...
         evt.Veto();  // ...this time, though, no deal.

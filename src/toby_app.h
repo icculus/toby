@@ -71,15 +71,6 @@ typedef struct TobyCallstack
     int linenum;
 } TobyCallstack;
 
-typedef enum TobyHookType
-{
-    TOBY_HOOKDELAY=-1,
-    TOBY_HOOKCALL,
-    TOBY_HOOKRET,
-    TOBY_HOOKLINE,
-    TOBY_HOOKCOUNT,
-} TobyHookType;
-
 
 /* !!! FIXME: comment this */
 void TOBY_background(int *r, int *g, int *b);
@@ -93,11 +84,24 @@ void TOBY_renderAllTurtles(void *udata);
 const TobyCallstack *TOBY_getCallstack(int *elementCount);
 
 
+/* !!! FIXME: comment all these */
+void TOBY_setDelayTicksPerLine(long ms);
+long TOBY_getDelayTicksPerLine(void);
+void TOBY_haltProgram(void);
+void TOBY_stepProgram(void);
+void TOBY_continueProgram(void);
+int TOBY_isPaused(void);
+int TOBY_isStepping(void);
+int TOBY_isRunning(void);
+int TOBY_isStopping(void);
+void TOBY_stepProgram(void);
+
+
 /*
- * Pause for (ms) milliseconds, calling TOBY_pumpEvents(TOBY_HOOKDELAY, -1)
- *  every 50 ms or so, and TOBY_yieldCPU() to give up time between pumps.
- *  Returns 0 if any call to TOBY_pumpEvents() returns 0, returns 1 if all
- *  pumping succeeded. Will pump the event queue at least once, even if ms
+ * Pause for (ms) milliseconds, calling TOBY_pumpEvents() every 50 ms or so,
+ *  and TOBY_yieldCPU() to give up time between pumps. Returns 0 if
+ *  TOBY_haltProgram() got called before or during the function's run,
+ *  non-zero otherwise. Will pump the event queue at least once, even if ms
  *  is <= 0.
  */
 int TOBY_delay(long ms);
@@ -128,8 +132,10 @@ void TOBY_stopRun(void);
  * Let UI pump its event queue. Return non-zero to keep going, zero to
  *  stop program execution, making TOBY_runProgram() return.
  */
-int TOBY_pumpEvents(TobyHookType hook, int currentline);
+void TOBY_pumpEvents(void);
 
+/* !!! FIXME: comment me. */
+void TOBY_putToScreen(void);
 
 /*
  * Put up a message box with "OK" message. Block until the user dismisses it.
@@ -180,8 +186,7 @@ long TOBY_getTicks(void);
  *  have to exact if the OS's scheduler doesn't have good precision, and it
  *  can just busy loop if the OS doesn't have facilities.
  * You don't have to pump the event queue here...callers are expected to
- *  alternate between this and TOBY_pumpEvents(TOBY_HOOKDELAY, -1) if they
- *  are wasting time.
+ *  alternate between this and TOBY_pumpEvents() if they are wasting time.
  */
 void TOBY_yieldCPU(int ms);
 

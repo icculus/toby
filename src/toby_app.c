@@ -14,6 +14,16 @@
 #include <ctype.h>  // !!! FIXME: lose this with tolower/toupper...
 #include "toby_app.h"
 
+typedef enum TobyExecState
+{
+    EXEC_STOPPED=0,
+    EXEC_STOPPING,
+    EXEC_RUNNING,
+    EXEC_STEPPING,
+    EXEC_PAUSED,
+} TobyExecState;
+
+
 /* TurtlesSpace state... */
 static int currentTurtleIndex = -1;
 static int totalTurtles = 0;
@@ -24,6 +34,11 @@ static TurtleRGB background = { 0, 0, 0 };
 static TobyCallstack *callstack = NULL;
 static int callstackCount = 0;
 static lua_State *luaState = NULL;
+static int turtleSpaceIsDirty = 0;
+static int executingLine = 0;
+static TobyExecState execState = EXEC_STOPPED;
+static long delayPerLine = 0;
+static long nextPumpTicks = 0;
 
 
 void TOBY_background(int *r, int *g, int *b)
@@ -260,14 +275,31 @@ static inline void calculateTurtleTriangle(Turtle *turtle)
 void TOBY_renderAllTurtles(void *udata)
 {
     int i;
+    int drewAtLeastOne = 0;
     for (i = 0; i < totalTurtles; i++)
     {
         Turtle *turtle = &turtles[i];
         calculateTurtleTriangle(turtle);
         if (turtle->visible)
+        {
             TOBY_drawTurtle(turtle, udata);
+            drewAtLeastOne = 1;
+        } /* if */
     } /* for */
+
+    if ((drewAtLeastOne) && (udata == NULL))
+        turtleSpaceIsDirty = 1; /* put to backing store, must repaint... */
 } /* TOBY_renderAllTurtles */
+
+
+static inline void putToScreen(void)
+{
+    if (turtleSpaceIsDirty)
+    {
+        TOBY_putToScreen();
+        turtleSpaceIsDirty = 0;
+    } /* if */
+} /* putToScreen */
 
 
 static void setTurtleAngle(lua_State *L, lua_Number angle)
@@ -369,6 +401,7 @@ static void driveTurtle(lua_State *L, lua_Number distance)
             {
                 const TurtleRGB *pen = &turtle->pen;
                 TOBY_drawLine(x1, y1, x2, y2, pen->r, pen->g, pen->b);
+                turtleSpaceIsDirty = 1;
             } /* if */
         } /* if */
  
@@ -539,6 +572,7 @@ static int luahook_cleanupturtlespace(lua_State *L)
 {
     // !!! FIXME: let user choose color?
     TOBY_cleanup(background.r, background.g, background.b);
+    turtleSpaceIsDirty = 1;
     return 0;
 } /* luahook_getturtlespaceheight */
 
@@ -670,6 +704,7 @@ static int luahook_drawstring(lua_State *L)
         throwError(L, "Platform doesn't support string drawing");
     } /* if */
 
+    turtleSpaceIsDirty = 1;
     return 0;
 } /* luahook_drawstring */
 
@@ -697,11 +732,9 @@ int TOBY_delay(long ms)
 {
     long now = TOBY_getTicks();
     const long end = now + ms;
-    while (now < end)
+    do
     {
-        if (!TOBY_pumpEvents(TOBY_HOOKDELAY, -1))
-            return 0;
-
+        TOBY_pumpEvents();
         now = TOBY_getTicks();
         if (now < end)
         {
@@ -709,9 +742,9 @@ int TOBY_delay(long ms)
             TOBY_yieldCPU((ticks > 50) ? 50 : ticks);
             now = TOBY_getTicks();
         } /* if */
-    } /* while */
+    } while (now < end);
 
-    return TOBY_pumpEvents(TOBY_HOOKDELAY, -1);
+    return (TOBY_isRunning() && !TOBY_isStopping());
 } /* TOBY_delay */
 
 
@@ -868,7 +901,64 @@ static int luahook_stackwalk(lua_State *L)
 
 static void luaDebugHook(lua_State *L, lua_Debug *ar)
 {
-    if (!TOBY_pumpEvents((TobyHookType) ar->event, ar->currentline))
+    const int hook = ar->event;
+    const long startTicks = TOBY_getTicks();
+    long pauseTicks = -1;
+    int shouldRedraw = (startTicks >= nextPumpTicks);
+
+    /*
+     * Should only break inside this function, and should block here until
+     *  breakpoint ends and program continues.
+     */
+    assert(!TOBY_isPaused());
+
+    // If we hit a new line, see if this is a breakpoint. Pause here if so.
+    if (hook == LUA_HOOKLINE)
+    {
+        const long mustDelay = TOBY_getDelayTicksPerLine();
+        //printf("Now on line #%d\n", ar->currentline);
+        if (mustDelay > 0)
+            pauseTicks = startTicks + mustDelay;
+        if (TOBY_isStepping())  // single stepping? Break here.
+            execState = EXEC_PAUSED;
+    } // if
+
+    while ( (TOBY_isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
+    {
+        if (shouldRedraw)
+        {
+            // force repaint here...this means we will be clamped to 20fps,
+            //  but the overall execution of the program will be much faster,
+            //  as rendering primitives will batch.
+            putToScreen();
+            nextPumpTicks = TOBY_getTicks() + 50;
+            shouldRedraw = 0;  // only redraw once if spinning.
+        } // if
+
+        // Pump the system event queue. This only happens if we're delaying
+        //  or it's been >= 50ms since the last pump.
+        TOBY_pumpEvents();
+
+        if (pauseTicks > 0)  // we're just slowing down this run.
+        {
+            const long now = TOBY_getTicks();
+            if (now >= pauseTicks)
+                pauseTicks = -1;
+            else
+            {
+                const long remain = pauseTicks - now;
+                const long lagTicks = ((remain > 10) ? 10 : remain);
+                TOBY_yieldCPU(lagTicks);
+            } // else
+        } // if
+
+        else if (TOBY_isPaused())
+        {
+            TOBY_yieldCPU(50); // we're apparently spinning on the user.
+        } // else if
+    } // while
+
+    if (TOBY_isStopping())
         haltProgram(L);
 } /* luaDebugHook */
 
@@ -927,6 +1017,64 @@ const TobyCallstack *TOBY_getCallstack(int *elementCount)
 } /* TOBY_getCallstack */
 
 
+long TOBY_getDelayTicksPerLine(void)
+{
+    return delayPerLine;
+} /* TOBY_delayTicksPerLine */
+
+
+void TOBY_setDelayTicksPerLine(long ms)
+{
+    delayPerLine = ms;
+} /* TOBY_delayTicksPerLine */
+
+
+void TOBY_haltProgram(void)
+{
+    if (TOBY_isRunning())
+        execState = EXEC_STOPPING;
+} /* TOBY_haltProgram */
+
+
+void TOBY_continueProgram(void)
+{
+    if (TOBY_isRunning())
+        execState = EXEC_RUNNING;
+} /* TOBY_continueProgram */
+
+
+void TOBY_stepProgram(void)
+{
+    if ( (TOBY_isRunning()) && (!TOBY_isStopping()) )
+        execState = EXEC_STEPPING;
+} /* TOBY_stepProgram */
+
+
+int TOBY_isPaused(void)
+{
+    return execState == EXEC_PAUSED;
+} /* TOBY_isPaused */
+
+
+int TOBY_isStepping(void)
+{
+    return execState == EXEC_STEPPING;
+} /* TOBY_isStepping */
+
+
+int TOBY_isRunning(void)
+{
+    return ( (execState == EXEC_RUNNING) || (execState == EXEC_STEPPING) ||
+             (execState == EXEC_PAUSED) || (execState == EXEC_STOPPING) );
+} /* TOBY_isRunning */
+
+
+int TOBY_isStopping(void)
+{
+    return ( (execState == EXEC_STOPPING) || (execState == EXEC_STOPPED) );
+} /* TOBY_isStopping */
+
+
 static inline void resetProgramState(void)
 {
     free(callstack);
@@ -939,17 +1087,17 @@ static inline void resetProgramState(void)
     fenceEnabled = 1;
     halted = 0;
     luaState = NULL;
+    turtleSpaceIsDirty = 0;
+    executingLine = -1;
+    execState = EXEC_STOPPED;
+    delayPerLine = 0;
+    nextPumpTicks = 0;
 } /* resetProgramState */
 
 
 void TOBY_runProgram(const char *source_code, int run_for_printing)
 {
     lua_State *L;
-
-    assert(((int) TOBY_HOOKCALL) == LUA_HOOKCALL);
-    assert(((int) TOBY_HOOKRET) == LUA_HOOKRET);
-    assert(((int) TOBY_HOOKLINE) == LUA_HOOKLINE);
-    assert(((int) TOBY_HOOKCOUNT) == LUA_HOOKCOUNT);
 
     resetProgramState();
 
@@ -972,9 +1120,11 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
         luaErrorMsgBox(L);
     else
     {
+        execState = EXEC_RUNNING;
         TOBY_startRun();
         TOBY_cleanup(background.r, background.g, background.b);
         currentTurtleIndex = allocateTurtle(L);
+        turtleSpaceIsDirty = 1;
 
         /* Call new chunk on top of the stack (lua_pcall will pop it off). */
         if (lua_pcall(L, 0, 0, -2) != 0)  // retvals are dumped.
@@ -982,7 +1132,9 @@ void TOBY_runProgram(const char *source_code, int run_for_printing)
             if (!halted)  /* (halted) means stop requested, not error. */
                 luaErrorMsgBox(L);
         } /* if */
-        TOBY_renderAllTurtles(NULL);
+
+        TOBY_renderAllTurtles(NULL);  /* put final turtles to backing store. */
+        TOBY_putToScreen();
         TOBY_stopRun();
     } /* if */
     lua_pop(L, 1);   // dump stackwalker.
