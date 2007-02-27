@@ -138,7 +138,7 @@ public:
     void stopRun();
     inline void pumpEvents();
     inline void repaintTurtlespace();
-    inline void runProgram(bool printing);
+    inline void runProgram(bool printing, bool _breakAtStart=false);
     void toggleWidgetsRunnable(bool enable);
     inline void requestQuit();
     inline bool isQuitting() const { return this->quitting; }
@@ -179,6 +179,7 @@ protected:
     int nonMaximizedHeight;
     bool quitting;
     bool runForPrinting;
+    bool breakAtStart;
     char *execProgram;
     wxMenu *fileMenu;
     wxMenu *runMenu;
@@ -738,6 +739,7 @@ TobyFrame::TobyFrame()
     , nonMaximizedHeight(0)
     , quitting(false)
     , runForPrinting(false)
+    , breakAtStart(false)
     , execProgram(NULL)
     , fileMenu(new wxMenu)
     , runMenu(new wxMenu)
@@ -869,6 +871,8 @@ void TobyFrame::startRun()
     wxASSERT(!TOBY_isRunning());
     this->toggleWidgetsRunnable(false);
     this->turtleSpace->startRun(this->runForPrinting);
+    if (this->breakAtStart)
+        TOBY_stepProgram();
 } // TobyFrame::startRun
 
 
@@ -887,13 +891,14 @@ void TobyFrame::requestQuit()
 } // TobyFrame::requestQuit
 
 
-void TobyFrame::runProgram(bool _runForPrinting)
+void TobyFrame::runProgram(bool _runForPrinting, bool _breakAtStart)
 {
     TOBY_haltProgram();  // stop the current run as soon as possible.
     // This gets kicked off in the next idle event.
     this->runForPrinting = _runForPrinting;
     delete[] this->execProgram;
     this->execProgram = this->getProgramImpl();
+    this->breakAtStart = _breakAtStart;
 } // TobyFrame::runProgram
 
 
@@ -1082,9 +1087,8 @@ void TobyFrame::onMenuStep(wxCommandEvent &evt)
         TOBY_stepProgram();
     else
     {
-        // if it's not running, start it.
-        // !!! FIXME: set a breakpoint on main()...
-        //this->runProgram(false);  // Run will kick off in next idle event.
+        // if it's not running, start it and break at startup.
+        this->runProgram(false, true);  // Run will kick off in next idle event.
     } // else
 } // TobyFrame::onMenuStep
 
