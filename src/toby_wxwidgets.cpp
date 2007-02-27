@@ -136,13 +136,13 @@ public:
     inline void pumpEvents();
     inline void repaintTurtlespace();
     inline void runProgram(bool printing);
+    void toggleWidgetsRunnable(bool enable);
     inline void requestQuit();
     inline bool isQuitting() const { return this->quitting; }
 
     // subclasses fill in these.
+    virtual void toggleWidgetsRunnableImpl(bool enable) = 0;
     virtual void openFileImpl(const wxString &fname, char *buf) = 0;
-    virtual void startRunImpl() = 0;
-    virtual void stopRunImpl() = 0;
     virtual char *getProgramImpl() = 0;
     virtual bool shouldVetoClose() = 0;
 
@@ -213,14 +213,38 @@ public:
     TobyStandaloneFrame();
     virtual ~TobyStandaloneFrame() { delete[] this->sourceCode; }
     virtual void openFileImpl(const wxString &fname, char *prog);
-    virtual void startRunImpl() { /* no-op in this implementation. */ }
-    virtual void stopRunImpl() { /* no-op in this implementation. */ }
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose() { return false; }  // nothing to save, etc.
+    virtual void toggleWidgetsRunnableImpl(bool enable) { /* no-op. */ }
 
 private:
     char *sourceCode;
 };
+#endif
+
+
+#if TOBY_WX_BUILD_IDE
+// This is a TobyFrame that provides text editing and debugging facilities.
+class TobyIDEFrame : public TobyFrame
+{
+public:
+    TobyIDEFrame();
+    virtual void openFileImpl(const wxString &fname, char *prog);
+    virtual char *getProgramImpl();
+    virtual bool shouldVetoClose();
+    virtual void toggleWidgetsRunnableImpl(bool enable);
+
+    // wxWidgets event handlers...
+    void onMenuOpen(wxCommandEvent &evt);
+
+private:
+    wxTextCtrl *textCtrl;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(TobyIDEFrame, TobyFrame)
+    EVT_MENU(MENUCMD_Open, TobyIDEFrame::onMenuOpen)
+END_EVENT_TABLE()
 #endif
 
 
@@ -807,20 +831,30 @@ void TobyFrame::repaintTurtlespace()
 } // TobyFrame::repaintTurtlespace
 
 
+void TobyFrame::toggleWidgetsRunnable(bool enable)
+{
+    wxMenuBar *mb = this->menuBar;
+    if (enable)
+        mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
+    else
+        mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
+
+    // always enabled (since it toggles between STOP and RUN).
+    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
+
+    mb->FindItem(MENUCMD_RunForPrinting)->Enable(enable);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(enable);
+    mb->FindItem(MENUCMD_Print)->Enable(enable);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(enable);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(enable);
+    this->toggleWidgetsRunnableImpl(enable);
+} // TobyFrame::toggleWidgetsRunnable
+
+
 void TobyFrame::startRun()
 {
     wxASSERT(!TOBY_isRunning());
-
-    wxMenuBar *mb = this->menuBar;
-    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
-    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
-    mb->FindItem(MENUCMD_RunForPrinting)->Enable(false);
-    mb->FindItem(MENUCMD_SaveAsImage)->Enable(false);
-    mb->FindItem(MENUCMD_Print)->Enable(false);
-    mb->FindItem(MENUCMD_PrintPreview)->Enable(false);
-    mb->FindItem(MENUCMD_Cleanup)->Enable(false);
-
-    this->startRunImpl();
+    this->toggleWidgetsRunnable(false);
     this->turtleSpace->startRun(this->runForPrinting);
 } // TobyFrame::startRun
 
@@ -828,17 +862,7 @@ void TobyFrame::startRun()
 void TobyFrame::stopRun()
 {
     wxASSERT(TOBY_isRunning());
-
-    wxMenuBar *mb = this->menuBar;
-    mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
-    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
-    mb->FindItem(MENUCMD_RunForPrinting)->Enable(true);
-    mb->FindItem(MENUCMD_SaveAsImage)->Enable(true);
-    mb->FindItem(MENUCMD_Print)->Enable(true);
-    mb->FindItem(MENUCMD_PrintPreview)->Enable(true);
-    mb->FindItem(MENUCMD_Cleanup)->Enable(true);
-
-    this->stopRunImpl();
+    this->toggleWidgetsRunnable(true);
     this->turtleSpace->stopRun();
 } // TobyFrame::stopRun
 
@@ -911,6 +935,9 @@ void TobyFrame::openFile(const wxString &path)
 
 void TobyFrame::onMenuOpen(wxCommandEvent& evt)
 {
+    wxASSERT(!TOBY_isRunning());
+    TOBY_haltProgram();  // just in case.
+
     // !!! FIXME: localization.
     wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
                      wxT("Toby Programs (*.toby)|*.toby"),
@@ -1169,6 +1196,18 @@ void TobyFrame::onClose(wxCloseEvent &evt)
 } // TobyFrame::onClose
 
 
+static inline char *newstr(const char *str)
+{
+    char *retval = NULL;
+    if (str != NULL)
+    {
+        retval = new char[strlen(str) + 1];
+        strcpy(retval, str);
+    } // if
+    return retval;
+} // newstr
+
+
 #if TOBY_WX_BUILD_STANDALONE
 
 TobyStandaloneFrame::TobyStandaloneFrame()
@@ -1185,14 +1224,7 @@ TobyStandaloneFrame::TobyStandaloneFrame()
 
 char *TobyStandaloneFrame::getProgramImpl()
 {
-    char *retval = NULL;
-    if (this->sourceCode != NULL)
-    {
-        retval = new char[strlen(this->sourceCode) + 1];
-        strcpy(retval, this->sourceCode);
-    } // if
-
-    return retval;
+    return newstr(this->sourceCode);
 } // TobyStandaloneFrame::getProgramImpl
 
 
@@ -1206,6 +1238,79 @@ void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
 
 #endif  // TOBY_WX_BUILD_STANDALONE
 
+
+#if TOBY_WX_BUILD_IDE
+
+TobyIDEFrame::TobyIDEFrame()
+    : textCtrl(NULL)
+{
+    int w, h;
+    this->GetClientSize(&w, &h);
+    this->turtleSpace->SetSize(w/2, h);
+    wxBoxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
+    topsizer->Add(this->turtleSpace, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
+    topsizer->SetItemMinSize(this->turtleSpace, 1, 1);
+
+    wxBoxSizer *idesizer = new wxBoxSizer(wxVERTICAL);
+    this->textCtrl = new wxTextCtrl(this, wxID_ANY, wxT(""), wxDefaultPosition,
+                                    wxSize(w / 2, h / 2),
+                                        wxTE_MULTILINE |
+                                        wxTE_PROCESS_TAB |
+                                        wxTE_DONTWRAP | wxHSCROLL);
+
+    idesizer->Add(textCtrl, 1, wxALL | wxEXPAND | wxALIGN_TOP);
+    idesizer->SetItemMinSize(this->textCtrl, 1, 1);
+
+    topsizer->Add(idesizer, 1, wxALL | wxEXPAND | wxALIGN_RIGHT);
+    this->SetSizer(topsizer);
+    textCtrl->SetFocus();
+} // TobyIDEFrame::TobyIDEFrame
+
+
+void TobyIDEFrame::toggleWidgetsRunnableImpl(bool enable)
+{
+    // !!! FIXME: toggle IDE-specific bits.
+} // TobyIDEFrame::toggleWidgetsRunnableImpl
+
+
+bool TobyIDEFrame::shouldVetoClose()
+{
+    return false;  // !!! FIXME: prompt and maybe veto if code is modified.
+} // TobyIDEFrame::shouldVetoClose
+
+
+char *TobyIDEFrame::getProgramImpl()
+{
+    const wxString wxstr(textCtrl->GetValue());
+    const wxChar *wxtext = wxstr.c_str();
+    #if wxUSE_UNICODE
+    size_t len = wxstr.Len() + 1;
+    char *utf8text = new char[len * 6];
+    wxConvUTF8.WC2MB(utf8text, wxtext, len);
+    return utf8text;
+    #else
+    return newstr(wxtext);
+    #endif
+} // TobyIDEFrame::getProgramImpl
+
+
+void TobyIDEFrame::openFileImpl(const wxString &fname, char *prog)
+{
+    // !!! FIXME: set filename in titlebar.
+    textCtrl->ChangeValue(wxString(prog, wxConvUTF8));
+    this->toggleWidgetsRunnable(true);
+} // TobyIDEFrame::openFileImpl
+
+
+void TobyIDEFrame::onMenuOpen(wxCommandEvent &evt)
+{
+    // !!! FIXME: if source is modified, prompt to throwaway/save...
+
+    // go through parent's open command handler.
+    TobyFrame::onMenuOpen(evt);
+} // TobyIDEFrame::onMenuOpen
+
+#endif  // TOBY_WX_BUILD_IDE
 
 
 IMPLEMENT_APP(TobyWxApp)
