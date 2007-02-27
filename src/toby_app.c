@@ -312,6 +312,8 @@ static void setTurtleAngle(lua_State *L, lua_Number angle)
         while (angle < N(0)) angle += N(360);
         turtle->angle = angle;
         turtle->recalcPoints = 1;
+        if (turtle->visible)
+            turtleSpaceIsDirty = 1;
     } /* if */
 } /* setTurtleAngle */
 
@@ -535,7 +537,11 @@ static int luahook_setpencolor(lua_State *L)
 static int luahook_showturtle(lua_State *L)
 {
     Turtle *turtle = getTurtle(L);
-    turtle->visible = 1;
+    if (!turtle->visible)
+    {
+        turtle->visible = 1;
+        turtleSpaceIsDirty = 1;
+    } /* if */
     return 0;
 } /* luahook_showturtle */
 
@@ -543,7 +549,11 @@ static int luahook_showturtle(lua_State *L)
 static int luahook_hideturtle(lua_State *L)
 {
     Turtle *turtle = getTurtle(L);
-    turtle->visible = 0;
+    if (turtle->visible)
+    {
+        turtle->visible = 0;
+        turtleSpaceIsDirty = 1;
+    } /* if */
     return 0;
 } /* luahook_hideturtle */
 
