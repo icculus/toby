@@ -102,12 +102,14 @@ enum TobyMenuCommands
     MENUCMD_Quit = wxID_EXIT,
     MENUCMD_Open = wxID_OPEN,
     MENUCMD_New = wxID_NEW,
+    MENUCMD_Save = wxID_SAVE,
+    MENUCMD_SaveAs = wxID_SAVEAS,
     MENUCMD_PageSetup = wxID_PAGE_SETUP,
     MENUCMD_PrintPreview = wxID_PRINT_SETUP,
     MENUCMD_Print = wxID_PRINT,
-    MENUCMD_RunOrStop = wxID_HIGHEST,
 
     // non-standard menu items go here.
+    MENUCMD_RunOrStop = wxID_HIGHEST,
     MENUCMD_RunForPrinting,
     MENUCMD_Step,
     MENUCMD_SaveAsImage,
@@ -240,6 +242,8 @@ public:
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
+    void onMenuSave(wxCommandEvent &evt);
+    void onMenuSaveAs(wxCommandEvent &evt);
     void onTextModified(wxCommandEvent &evt);
 
 private:
@@ -249,6 +253,8 @@ private:
 
 BEGIN_EVENT_TABLE(TobyIDEFrame, TobyFrame)
     EVT_MENU(MENUCMD_Open, TobyIDEFrame::onMenuOpen)
+    EVT_MENU(MENUCMD_Save, TobyIDEFrame::onMenuSave)
+    EVT_MENU(MENUCMD_SaveAs, TobyIDEFrame::onMenuSaveAs)
     EVT_TEXT(wxID_ANY, TobyIDEFrame::onTextModified)
 END_EVENT_TABLE()
 #endif
@@ -746,7 +752,7 @@ TobyFrame::TobyFrame()
 
     // Set up common menu items. Subclasses will add more menus and menu items.
     this->fileMenu->Append(MENUCMD_Open, wxT("&Open\tCtrl-O"));
-    this->fileMenu->Append(MENUCMD_SaveAsImage, wxT("&Save As Image\tCtrl-S"))->Enable(false);
+    this->fileMenu->Append(MENUCMD_SaveAsImage, wxT("Save As &Image"))->Enable(false);
     this->fileMenu->Append(MENUCMD_PageSetup, wxT("Pa&ge Setup"));
     this->fileMenu->Append(MENUCMD_PrintPreview, wxT("P&rint Preview"))->Enable(false);
     this->fileMenu->Append(MENUCMD_Print, wxT("&Print\tCtrl-P"))->Enable(false);
@@ -959,7 +965,7 @@ void TobyFrame::onMenuOpen(wxCommandEvent& evt)
     TOBY_haltProgram();  // just in case.
 
     // !!! FIXME: localization.
-    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
+    wxFileDialog dlg(this, wxT("Choose a file to open"), wxT(""), wxT(""),
                      wxT("Toby Programs (*.toby)|*.toby"),
                      wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     
@@ -985,7 +991,7 @@ void TobyFrame::onMenuSaveAsImage(wxCommandEvent &evt)
     } // for
 
     // !!! FIXME: localization.
-    wxFileDialog dlg(this, wxT("Choose a file"), wxT(""), wxT(""),
+    wxFileDialog dlg(this, wxT("Choose a file to save"), wxT(""), wxT(""),
                      exts, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
     if (dlg.ShowModal() == wxID_OK)
@@ -1265,6 +1271,8 @@ TobyIDEFrame::TobyIDEFrame()
     : textCtrl(NULL)
 {
     // !!! FIXME: localization.
+    this->fileMenu->Append(MENUCMD_Save, wxT("&Save\tCtrl-S"));
+    this->fileMenu->Append(MENUCMD_SaveAs, wxT("Save &As"));
     this->runMenu->Append(MENUCMD_Step, wxT("&Step Program\tF8"));
 
     int w, h;
@@ -1288,7 +1296,7 @@ TobyIDEFrame::TobyIDEFrame()
 
     topsizer->Add(idesizer, 1, wxALL | wxEXPAND | wxALIGN_RIGHT);
     this->SetSizer(topsizer);
-    textCtrl->SetFocus();
+    this->textCtrl->SetFocus();
 } // TobyIDEFrame::TobyIDEFrame
 
 
@@ -1300,7 +1308,22 @@ void TobyIDEFrame::toggleWidgetsRunnableImpl(bool enable)
 
 bool TobyIDEFrame::shouldVetoClose()
 {
-    return false;  // !!! FIXME: prompt and maybe veto if code is modified.
+    if (this->modified)
+    {
+        wxMessageDialog dlg(this, wxT("Program has been modified! Save?"),
+                wxT("Toby"), wxYES_NO|wxCANCEL|wxICON_EXCLAMATION);
+
+        int rc = dlg.ShowModal();
+        if (rc == wxID_NO)
+            return false;
+        else if (rc == wxID_YES)
+        {
+            wxCommandEvent evt;
+            this->onMenuSave(evt);
+        } // else if
+    } // if
+
+    return this->modified;
 } // TobyIDEFrame::shouldVetoClose
 
 
@@ -1325,16 +1348,57 @@ void TobyIDEFrame::openFileImpl(char *prog)
     textCtrl->ChangeValue(wxString(prog, wxConvUTF8));
     delete[] prog;  // don't need this anymore.
     this->toggleWidgetsRunnable(true);
+    this->textCtrl->SetFocus();
 } // TobyIDEFrame::openFileImpl
 
 
 void TobyIDEFrame::onMenuOpen(wxCommandEvent &evt)
 {
-    // !!! FIXME: if source is modified, prompt to throwaway/save...
-
-    // go through parent's open command handler.
-    TobyFrame::onMenuOpen(evt);
+    // if source is modified, prompt to throwaway/save...
+    if (!this->shouldVetoClose())
+        TobyFrame::onMenuOpen(evt);  // go through parent's open handler.
 } // TobyIDEFrame::onMenuOpen
+
+
+void TobyIDEFrame::onMenuSave(wxCommandEvent &evt)
+{
+    if (this->filename.IsEmpty())
+        this->onMenuSaveAs(evt);  // get a filename and recall this function.
+    else
+    {
+        char *buf = this->getProgramImpl();
+        wxFileOutputStream strm(this->filename);
+        if (strm.IsOk())
+        {
+            if (!strm.Write(buf, strlen(buf)).IsOk())
+                TOBY_messageBox("Could not write file");
+            else
+            {
+                this->modified = false;
+                this->updateTitleBar();
+            } // else
+        } // if
+
+        delete[] buf;
+    } // else
+} // TobyIDEFrame::onMenuSave
+
+
+void TobyIDEFrame::onMenuSaveAs(wxCommandEvent &evt)
+{
+    wxFileDialog dlg(this, wxT("Choose a file to save"), wxT(""), wxT(""),
+                     wxT("Toby Programs (*.toby)|*.toby"),
+                     wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dlg.ShowModal() == wxID_OK)
+    {
+        wxString fname(dlg.GetPath());
+        if (fname.Find('.') == -1)
+            fname.Append(wxT(".toby"));
+        this->filename = fname;
+        this->onMenuSave(evt);
+    } // if
+} // TobyIDEFrame::onMenuSaveAs
 
 
 void TobyIDEFrame::onTextModified(wxCommandEvent &evt)
