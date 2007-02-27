@@ -14,6 +14,7 @@
 #include <wx/config.h>
 #include <wx/wfstream.h>
 #include <wx/aboutdlg.h>
+#include <wx/filename.h>
 #include <wx/print.h>
 #include <wx/printdlg.h>
 
@@ -142,7 +143,7 @@ public:
 
     // subclasses fill in these.
     virtual void toggleWidgetsRunnableImpl(bool enable) = 0;
-    virtual void openFileImpl(const wxString &fname, char *buf) = 0;
+    virtual void openFileImpl(char *buf) = 0;
     virtual char *getProgramImpl() = 0;
     virtual bool shouldVetoClose() = 0;
 
@@ -166,7 +167,10 @@ public:
     void onMenuRunForPrinting(wxCommandEvent &evt);
 
 protected:
+    void updateTitleBar();
     TurtleSpace *turtleSpace;
+    wxString filename;
+    bool modified;
     int nonMaximizedX;
     int nonMaximizedY;
     int nonMaximizedWidth;
@@ -212,7 +216,7 @@ class TobyStandaloneFrame : public TobyFrame
 public:
     TobyStandaloneFrame();
     virtual ~TobyStandaloneFrame() { delete[] this->sourceCode; }
-    virtual void openFileImpl(const wxString &fname, char *prog);
+    virtual void openFileImpl(char *prog);
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose() { return false; }  // nothing to save, etc.
     virtual void toggleWidgetsRunnableImpl(bool enable) { /* no-op. */ }
@@ -229,13 +233,14 @@ class TobyIDEFrame : public TobyFrame
 {
 public:
     TobyIDEFrame();
-    virtual void openFileImpl(const wxString &fname, char *prog);
+    virtual void openFileImpl(char *prog);
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose();
     virtual void toggleWidgetsRunnableImpl(bool enable);
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
+    void onTextModified(wxCommandEvent &evt);
 
 private:
     wxTextCtrl *textCtrl;
@@ -244,6 +249,7 @@ private:
 
 BEGIN_EVENT_TABLE(TobyIDEFrame, TobyFrame)
     EVT_MENU(MENUCMD_Open, TobyIDEFrame::onMenuOpen)
+    EVT_TEXT(wxID_ANY, TobyIDEFrame::onTextModified)
 END_EVENT_TABLE()
 #endif
 
@@ -719,6 +725,7 @@ bool TobyPrintout::HasPage(int pageNum)
 TobyFrame::TobyFrame()
     : wxFrame(NULL, -1, wxT("Toby"), getPreviousPos(), getPreviousSize())
     , turtleSpace(new TurtleSpace(this))
+    , modified(false)
     , nonMaximizedX(0)
     , nonMaximizedY(0)
     , nonMaximizedWidth(0)
@@ -912,6 +919,16 @@ void TobyFrame::onIdle(wxIdleEvent &evt)
 } // TobyFrame::onIdle
 
 
+void TobyFrame::updateTitleBar()
+{
+    const wxFileName fn(this->filename);
+    wxString fnstr(fn.GetFullName());
+    wxString modstr(this->modified ? wxT("*") : wxT(""));
+    this->SetTitle(wxString::Format(wxT("%s%s - Toby"),
+                    fnstr.c_str(), modstr.c_str()));
+} // TobyFrame::updateTitleBar
+
+
 void TobyFrame::openFile(const wxString &path)
 {
     wxFileInputStream strm(path);
@@ -927,7 +944,10 @@ void TobyFrame::openFile(const wxString &path)
         else
         {
             buf[len] = '\0';
-            this->openFileImpl(path, buf);  // openFileImpl will delete[]!
+            this->filename = path;
+            this->modified = false;
+            this->updateTitleBar();
+            this->openFileImpl(buf);  // openFileImpl will delete[]!
         } // else
     } // else
 } // TobyFrame::openFile
@@ -1228,7 +1248,7 @@ char *TobyStandaloneFrame::getProgramImpl()
 } // TobyStandaloneFrame::getProgramImpl
 
 
-void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
+void TobyStandaloneFrame::openFileImpl(char *prog)
 {
     // Run will kick off in next idle event.
     delete[] this->sourceCode;
@@ -1244,6 +1264,9 @@ void TobyStandaloneFrame::openFileImpl(const wxString &fname, char *prog)
 TobyIDEFrame::TobyIDEFrame()
     : textCtrl(NULL)
 {
+    // !!! FIXME: localization.
+    this->runMenu->Append(MENUCMD_Step, wxT("&Step Program\tF8"));
+
     int w, h;
     this->GetClientSize(&w, &h);
     this->turtleSpace->SetSize(w/2, h);
@@ -1256,10 +1279,12 @@ TobyIDEFrame::TobyIDEFrame()
                                     wxSize(w / 2, h / 2),
                                         wxTE_MULTILINE |
                                         wxTE_PROCESS_TAB |
-                                        wxTE_DONTWRAP | wxHSCROLL);
+                                        wxTE_DONTWRAP);
 
     idesizer->Add(textCtrl, 1, wxALL | wxEXPAND | wxALIGN_TOP);
     idesizer->SetItemMinSize(this->textCtrl, 1, 1);
+
+    
 
     topsizer->Add(idesizer, 1, wxALL | wxEXPAND | wxALIGN_RIGHT);
     this->SetSizer(topsizer);
@@ -1269,7 +1294,7 @@ TobyIDEFrame::TobyIDEFrame()
 
 void TobyIDEFrame::toggleWidgetsRunnableImpl(bool enable)
 {
-    // !!! FIXME: toggle IDE-specific bits.
+    // !!! FIXME: toggle other IDE-specific bits.
 } // TobyIDEFrame::toggleWidgetsRunnableImpl
 
 
@@ -1294,10 +1319,11 @@ char *TobyIDEFrame::getProgramImpl()
 } // TobyIDEFrame::getProgramImpl
 
 
-void TobyIDEFrame::openFileImpl(const wxString &fname, char *prog)
+void TobyIDEFrame::openFileImpl(char *prog)
 {
     // !!! FIXME: set filename in titlebar.
     textCtrl->ChangeValue(wxString(prog, wxConvUTF8));
+    delete[] prog;  // don't need this anymore.
     this->toggleWidgetsRunnable(true);
 } // TobyIDEFrame::openFileImpl
 
@@ -1309,6 +1335,13 @@ void TobyIDEFrame::onMenuOpen(wxCommandEvent &evt)
     // go through parent's open command handler.
     TobyFrame::onMenuOpen(evt);
 } // TobyIDEFrame::onMenuOpen
+
+
+void TobyIDEFrame::onTextModified(wxCommandEvent &evt)
+{
+    this->modified = true;
+    this->updateTitleBar();
+} // TobyIDEFrame::onTextModified
 
 #endif  // TOBY_WX_BUILD_IDE
 
