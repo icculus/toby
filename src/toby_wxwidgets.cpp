@@ -14,6 +14,7 @@
 #include <wx/config.h>
 #include <wx/wfstream.h>
 #include <wx/aboutdlg.h>
+#include <wx/splitter.h>
 #include <wx/filename.h>
 #include <wx/print.h>
 #include <wx/printdlg.h>
@@ -147,6 +148,7 @@ public:
     virtual void pauseReached(int line, int stopped, int bp, int ticks) {}
     virtual void toggleWidgetsRunnableImpl(bool enable) {}
     virtual bool shouldVetoClose() { return false; }
+    virtual void closeImpl() {}
     virtual void openFileImpl(char *buf) = 0;
     virtual char *getProgramImpl() = 0;
 
@@ -241,15 +243,23 @@ public:
     virtual bool shouldVetoClose();
     virtual void toggleWidgetsRunnableImpl(bool enable);
     virtual void pauseReached(int line, int stopped, int bp, int ticks);
+    virtual void closeImpl();
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
     void onMenuSave(wxCommandEvent &evt);
     void onMenuSaveAs(wxCommandEvent &evt);
     void onTextModified(wxCommandEvent &evt);
+    void onCallstackSelected(wxCommandEvent &evt);
 
 private:
+    void updateVariablesCtrl(int frame);
+    wxSplitterWindow *topSplit;
+    wxSplitterWindow *ideSplit;
+    wxSplitterWindow *dbgSplit;
     wxTextCtrl *textCtrl;
+    wxListBox *callstackCtrl;
+    wxListBox *variablesCtrl;
     DECLARE_EVENT_TABLE()
 };
 
@@ -257,7 +267,8 @@ BEGIN_EVENT_TABLE(TobyIDEFrame, TobyFrame)
     EVT_MENU(MENUCMD_Open, TobyIDEFrame::onMenuOpen)
     EVT_MENU(MENUCMD_Save, TobyIDEFrame::onMenuSave)
     EVT_MENU(MENUCMD_SaveAs, TobyIDEFrame::onMenuSaveAs)
-    EVT_TEXT(wxID_ANY, TobyIDEFrame::onTextModified)
+    EVT_TEXT(wxID_ANY, TobyIDEFrame::onTextModified)  // !!! FIXME: not ID_ANY!
+    EVT_LISTBOX(wxID_ANY, TobyIDEFrame::onCallstackSelected)  // !!! FIXME: not ID_ANY!
 END_EVENT_TABLE()
 #endif
 
@@ -1219,6 +1230,8 @@ void TobyFrame::onClose(wxCloseEvent &evt)
 
     else  // really closing this time.
     {
+        this->closeImpl();
+
         wxConfigBase *cfg = wxConfig::Get();
         if (cfg != NULL)
         {
@@ -1279,7 +1292,12 @@ void TobyStandaloneFrame::openFileImpl(char *prog)
 #if TOBY_WX_BUILD_IDE
 
 TobyIDEFrame::TobyIDEFrame()
-    : textCtrl(NULL)
+    : topSplit(NULL)
+    , ideSplit(NULL)
+    , dbgSplit(NULL)
+    , textCtrl(NULL)
+    , callstackCtrl(NULL)
+    , variablesCtrl(NULL)
 {
     this->CreateStatusBar();
     this->SetStatusText(wxString(GBuildVer, wxConvUTF8));
@@ -1289,35 +1307,79 @@ TobyIDEFrame::TobyIDEFrame()
     this->fileMenu->Append(MENUCMD_SaveAs, wxT("Save &As"));
     this->runMenu->Append(MENUCMD_Step, wxT("&Step Program\tF8"));
 
-    int w, h;
-    this->GetClientSize(&w, &h);
-    this->turtleSpace->SetSize(w/2, h);
-    wxBoxSizer *topsizer = new wxBoxSizer(wxHORIZONTAL);
-    topsizer->Add(this->turtleSpace, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
-    topsizer->SetItemMinSize(this->turtleSpace, 1, 1);
+    wxSize clientSize(this->GetClientSize());
+    wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+    this->topSplit = new wxSplitterWindow(this, -1,
+                                             wxDefaultPosition, clientSize,
+                                             wxSP_3D | wxSP_LIVE_UPDATE);
+    this->topSplit->SetSashGravity(0.5);
+    this->topSplit->SetMinimumPaneSize(1);
 
-    wxBoxSizer *idesizer = new wxBoxSizer(wxVERTICAL);
-    this->textCtrl = new wxTextCtrl(this, wxID_ANY, wxT(""), wxDefaultPosition,
-                                    wxSize(w / 2, h / 2),
+    this->ideSplit = new wxSplitterWindow(this->topSplit, -1,
+                                             wxDefaultPosition, wxDefaultSize,
+                                             wxSP_3D | wxSP_LIVE_UPDATE);
+    this->ideSplit->SetSashGravity(0.5);
+    this->ideSplit->SetMinimumPaneSize(1);
+
+    this->textCtrl = new wxTextCtrl(this->ideSplit, wxID_ANY, wxT(""),
+                                    wxDefaultPosition, wxDefaultSize,
                                         wxTE_MULTILINE |
                                         wxTE_PROCESS_TAB |
                                         wxTE_DONTWRAP);
 
-    idesizer->Add(textCtrl, 1, wxALL | wxEXPAND | wxALIGN_TOP);
-    idesizer->SetItemMinSize(this->textCtrl, 1, 1);
+    this->dbgSplit = new wxSplitterWindow(this->ideSplit, -1,
+                                        wxDefaultPosition, wxDefaultSize,
+                                        wxSP_3D | wxSP_LIVE_UPDATE);
+    this->dbgSplit->SetSashGravity(0.5);
+    this->dbgSplit->SetMinimumPaneSize(1);
 
-    
+    this->callstackCtrl = new wxListBox(this->dbgSplit, -1);
+    this->variablesCtrl = new wxListBox(this->dbgSplit, -1);
 
-    topsizer->Add(idesizer, 1, wxALL | wxEXPAND | wxALIGN_RIGHT);
-    this->SetSizer(topsizer);
+    this->turtleSpace->Reparent(this->topSplit);
+
+    long pos = 0;
+    wxConfigBase *cfg = wxConfig::Get();
+
+    this->dbgSplit->SplitVertically(this->callstackCtrl, this->variablesCtrl);
+    if ( (cfg != NULL) && (cfg->Read(wxT("IDEDbgSplitPos"), &pos)) )
+        this->dbgSplit->SetSashPosition((int) pos);
+
+    this->ideSplit->SplitHorizontally(this->textCtrl, this->dbgSplit);
+    if ( (cfg != NULL) && (cfg->Read(wxT("IDEIdeSplitPos"), &pos)) )
+        this->ideSplit->SetSashPosition((int) pos);
+
+    this->topSplit->SplitVertically(this->ideSplit, this->turtleSpace);
+    if ( (cfg != NULL) && (cfg->Read(wxT("IDETopSplitPos"), &pos)) )
+        this->topSplit->SetSashPosition((int) pos);
+
+    // The sizer just makes sure that topSplit owns whole client area.
+    sizer->Add(this->topSplit, 1, wxALL | wxEXPAND | wxALIGN_CENTRE);
+    sizer->SetItemMinSize(this->topSplit, 1, 1);
+    this->SetSizer(sizer);
+
     this->textCtrl->SetFocus();
 } // TobyIDEFrame::TobyIDEFrame
 
 
 void TobyIDEFrame::toggleWidgetsRunnableImpl(bool enable)
 {
+    this->callstackCtrl->Clear();
+    this->variablesCtrl->Clear();
     // !!! FIXME: toggle other IDE-specific bits.
 } // TobyIDEFrame::toggleWidgetsRunnableImpl
+
+
+void TobyIDEFrame::closeImpl()
+{
+    wxConfigBase *cfg = wxConfig::Get();
+    if (cfg != NULL)
+    {
+        cfg->Write(wxT("IDETopSplitPos"), (long) topSplit->GetSashPosition());
+        cfg->Write(wxT("IDEIdeSplitPos"), (long) ideSplit->GetSashPosition());
+        cfg->Write(wxT("IDEDbgSplitPos"), (long) dbgSplit->GetSashPosition()+84);  // !!! FIXME: +84?!
+    } // if
+} // TobyIDEFrame::closeImpl
 
 
 bool TobyIDEFrame::shouldVetoClose()
@@ -1346,22 +1408,39 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
 {
     if ((fullstop) || (pauseTicks >= 300))
     {
-        if (breakpoint != -1)
-            printf("Hit breakpoint #%d\n", breakpoint);
-
-        this->SetStatusText(wxString::Format(wxT("Now on line #%d"), line));
-        int csElems = 0;
-        const TobyDebugInfo *cs = TOBY_getCallstack(&csElems);
-        printf("Callstack (%d frames):\n", csElems);
-        for (int i = 0; i < csElems; i++, cs++)
+        wxString status;
+        if (breakpoint == -1)
+            status = wxString::Format(wxT("Now on line #%d"), line);
+        else
         {
-            int varElems = 0;
-            const TobyDebugInfo *vars = TOBY_getVariables(i, &varElems);
-            printf("  #%d: %s, line %d (%d vars)\n",
-                    i, cs->name, cs->linenum, varElems);
-            for (int j = 0; j < varElems; j++, vars++)
-                printf("      %s: '%s'\n", vars->name, vars->value);
-        } // for
+            status = wxString::Format(wxT("Hit breakpoint #%d on line #%d.\n"),
+                                        breakpoint, line);
+        } // else
+        this->SetStatusText(status);
+
+        int frames = 0;
+        const TobyDebugInfo *cs = TOBY_getCallstack(&frames);
+        if ((frames <= 0) || (cs == NULL))
+        {
+            this->callstackCtrl->Clear();
+            this->variablesCtrl->Clear();
+        } // if
+        else
+        {
+            wxString *items = new wxString[frames];
+            for (int i = 0; i < frames; i++, cs++)
+            {
+                items[i] = wxString(cs->name, wxConvUTF8);
+                items[i] << ((wxChar) ':') << cs->linenum;
+            } // for
+
+            this->callstackCtrl->Set(frames, items);
+            delete[] items;
+
+            wxCommandEvent evt;
+            this->callstackCtrl->Select(0);
+            this->updateVariablesCtrl(0);
+        } // else
     } // if
 } // TobyIDEFrame::pauseReached
 
@@ -1393,6 +1472,35 @@ void TobyIDEFrame::openFileImpl(char *prog)
 //TOBY_clearAllBreakpoints();
 //printf("test breakpoint: %d\n", TOBY_addBreakpointLine(18));
 } // TobyIDEFrame::openFileImpl
+
+
+void TobyIDEFrame::updateVariablesCtrl(int frame)
+{
+    int varCount = 0;
+    const TobyDebugInfo *vars = TOBY_getVariables(frame, &varCount);
+    if ((varCount <= 0) || (vars == NULL))
+        this->variablesCtrl->Clear();
+    else
+    {
+        wxString *items = new wxString[varCount];
+        for (int i = 0; i < varCount; i++, vars++)
+        {
+            items[i] = wxString(vars->name, wxConvUTF8);
+            items[i] << ((wxChar) '=') << wxString(vars->value, wxConvUTF8);
+        } // for
+        this->variablesCtrl->Set(varCount, items);
+        delete[] items;
+    } // else
+} // TobyIDEFrame::updateVariablesCtrl
+
+
+void TobyIDEFrame::onCallstackSelected(wxCommandEvent &evt)
+{
+    int frame = this->callstackCtrl->GetSelection();
+    if (frame == wxNOT_FOUND)
+        return;
+    this->updateVariablesCtrl(frame);
+} // TobyIDEFrame::onCallstackSelected
 
 
 void TobyIDEFrame::onMenuOpen(wxCommandEvent &evt)
