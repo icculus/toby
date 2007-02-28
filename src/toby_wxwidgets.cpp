@@ -1205,13 +1205,15 @@ void TobyFrame::onMove(wxMoveEvent &evt)
 
 void TobyFrame::onClose(wxCloseEvent &evt)
 {
-    if (this->shouldVetoClose())
-        evt.Veto();  // subclass says no.
-
-    else if (TOBY_isRunning())
+    if (TOBY_isRunning())
     {
         this->requestQuit();  // try it again later so program can halt...
         evt.Veto();  // ...this time, though, no deal.
+    } // else if
+
+    else if (this->shouldVetoClose())
+    {
+        evt.Veto();  // subclass says no.
     } // else if
 
     else  // really closing this time.
