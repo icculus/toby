@@ -31,8 +31,10 @@ static Turtle *turtles = NULL;
 static int fenceEnabled = 1;
 static int halted = 0;
 static TurtleRGB background = { 0, 0, 0 };
-static TobyCallstack *callstack = NULL;
+static TobyDebugInfo *callstack = NULL;
 static int callstackCount = 0;
+static TobyDebugInfo *varList = NULL;
+static int varCount = 0;
 static lua_State *luaState = NULL;
 static int turtleSpaceIsDirty = 0;
 static int executingLine = 0;
@@ -923,6 +925,9 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
             execState = EXEC_PAUSED;
     } /* if */
 
+    if ((TOBY_isPaused()) || (pauseTicks > 0))
+        TOBY_pauseReached(ar->currentline, TOBY_isPaused(), pauseTicks);
+
     while ( (TOBY_isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
     {
         if (shouldRedraw)
@@ -975,10 +980,60 @@ static void luaErrorMsgBox(lua_State *L)
 } /* luaErrorMsgBox */
 
 
-const TobyCallstack *TOBY_getCallstack(int *elementCount)
+static inline int makestr(char **dst, const char *str)
+{
+    if (str == NULL)
+    {
+        free(*dst);
+        *dst = NULL;
+    } /* if */
+    else
+    {
+        void *ptr = realloc(*dst, strlen(str) + 1);
+        if (ptr == NULL)
+            return 0;
+        *dst = (char *) ptr;
+        strcpy(*dst, str);
+    } /* else */
+    return 1;
+} /* makestr */
+
+
+static int addDebugItem(int *elements, int *itemCount, TobyDebugInfo **info,
+                        const char *name, const char *value, int line)
+{
+    TobyDebugInfo *di = NULL;
+    if (*elements == *itemCount)
+    {
+        const int growBy = 64;
+        const size_t newSize = sizeof (TobyDebugInfo) * (*itemCount + growBy);
+        void *ptr = realloc(*info, newSize);
+        if (ptr == NULL)
+            return 0;  /* oh well. */
+        *info = (TobyDebugInfo *) ptr;
+        memset((*info) + *elements, '\0', growBy * sizeof (TobyDebugInfo));
+        *itemCount += growBy;
+    } /* if */
+
+    di = (*info) + *elements;
+    if ( (!makestr((char **) &di->name, name)) ||
+         (!makestr((char **) &di->value, value)) )
+    {
+        free((void *) di->name);
+        free((void *) di->value);
+        di->name = di->value = NULL;
+        return 0;
+    } /* if */
+
+    di->linenum = line;
+    (*elements)++;
+    return 1;
+} /* addDebugItem */
+
+
+const TobyDebugInfo *TOBY_getCallstack(int *elementCount)
 {
     lua_State *L = luaState;
-    TobyCallstack *cs = NULL;
     lua_Debug ldbg;
     int elements = 0;
     int i;
@@ -996,29 +1051,57 @@ const TobyCallstack *TOBY_getCallstack(int *elementCount)
         /* only care about user-written Toby code with debug information. */
         if ((ldbg.currentline > 0) && (strcmp(ldbg.what, "Lua") == 0))
         {
-            if (elements >= callstackCount)
-            {
-                callstackCount += 64;
-                void *ptr = realloc(callstack,
-                                    sizeof (TobyCallstack) * callstackCount);
-                if (ptr == NULL)
-                {
-                    callstackCount -= 64;
-                    return NULL;  /* oh well. */
-                } /* if */
-                callstack = (TobyCallstack *) ptr;
-            } /* if */
-
-            cs = callstack + elements;
-            cs->name = ldbg.name;   /* this gets garbage-collected by Lua! */
-            cs->linenum = ldbg.currentline;
-            elements++;
+            if (!addDebugItem(&elements, &callstackCount, &callstack,
+                        ldbg.name, NULL, ldbg.currentline))
+                return 0;
         } /* if */
     } /* for */
 
     *elementCount = elements;
     return callstack;
 } /* TOBY_getCallstack */
+
+
+const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount)
+{
+    const char *name = NULL;
+    lua_State *L = luaState;
+    lua_Debug ldbg;
+    int elements = 0;
+    int i;
+
+    *elementCount = 0;
+
+    if (L == NULL)   /* if frontend calls this when program isn't running. */
+        return NULL;
+
+    if (!lua_getstack(L, stackframe, &ldbg))
+        return NULL;
+
+    for (i = 1; (name = lua_getlocal(L, &ldbg, i)) != NULL; i++)
+    {
+        int rc = 1;
+        if (*name != '(')  /* internal Lua variable? */
+        {
+            const char *val = lua_tostring(L, -1);
+            if (val == NULL)
+            {
+                printf("!!! FIXME: null value for '%s' at %s:%d\n",
+                        name, __FILE__, __LINE__);
+                continue;
+            } /* if */
+
+            rc = addDebugItem(&elements, &varCount, &varList, name, val, -1);
+        } /* if */
+
+        lua_pop(L, 1);
+        if (!rc)
+            return 0;
+    } /* for */
+
+    *elementCount = elements;
+    return varList;
+} /* TOBY_getVariables */
 
 
 long TOBY_getDelayTicksPerLine(void)
@@ -1079,11 +1162,25 @@ int TOBY_isStopping(void)
 } /* TOBY_isStopping */
 
 
+static void freeDebugInfo(TobyDebugInfo **info, int *count)
+{
+    int i;
+    const int top = *count;
+    for (i = 0; i < top; i++)
+    {
+        free((void *) (*info)[i].value);
+        free((void *) (*info)[i].name);
+    } /* for */
+    free(*info);
+    *info = NULL;
+    *count = 0;
+} /* freeDebugInfo */
+
+
 static inline void resetProgramState(void)
 {
-    free(callstack);
-    callstack = NULL;
-    callstackCount = 0;
+    freeDebugInfo(&callstack, &callstackCount);
+    freeDebugInfo(&varList, &varCount);
     free(turtles);
     turtles = NULL;
     currentTurtleIndex = -1;

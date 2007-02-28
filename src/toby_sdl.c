@@ -105,6 +105,12 @@ void TOBY_messageBox(const char *msg)
 } /* TOBY_messageBox */
 
 
+void TOBY_pauseReached(int currentline, int breakpoint, int pauseTicks)
+{
+    /* no-op in this implementation: no debugging facilities. */
+} /* TOBY_pauseReached */
+
+
 #if 0
 #define _D(x) printf x
 #else

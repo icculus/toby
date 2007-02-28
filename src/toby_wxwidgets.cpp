@@ -144,10 +144,11 @@ public:
     inline bool isQuitting() const { return this->quitting; }
 
     // subclasses fill in these.
-    virtual void toggleWidgetsRunnableImpl(bool enable) = 0;
+    virtual void pauseReached(int curLine, int breakpoint, int pauseTicks) {}
+    virtual void toggleWidgetsRunnableImpl(bool enable) {}
+    virtual bool shouldVetoClose() { return false; }
     virtual void openFileImpl(char *buf) = 0;
     virtual char *getProgramImpl() = 0;
-    virtual bool shouldVetoClose() = 0;
 
     // wxWidgets event handlers...
     void onIdle(wxIdleEvent &evt);
@@ -170,6 +171,7 @@ public:
 
 protected:
     void updateTitleBar();
+    wxStopWatch profileStopwatch;
     TurtleSpace *turtleSpace;
     wxString filename;
     bool modified;
@@ -221,8 +223,6 @@ public:
     virtual ~TobyStandaloneFrame() { delete[] this->sourceCode; }
     virtual void openFileImpl(char *prog);
     virtual char *getProgramImpl();
-    virtual bool shouldVetoClose() { return false; }  // nothing to save, etc.
-    virtual void toggleWidgetsRunnableImpl(bool enable) { /* no-op. */ }
 
 private:
     char *sourceCode;
@@ -240,6 +240,7 @@ public:
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose();
     virtual void toggleWidgetsRunnableImpl(bool enable);
+    virtual void pauseReached(int curLine, int breakpoint, int pauseTicks);
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
@@ -318,18 +319,9 @@ void TOBY_yieldCPU(int ms)
 } // TOBY_yieldCPU
 
 
-#define TOBY_PROFILE 1
-#if TOBY_PROFILE
-static wxStopWatch *profileStopwatch = NULL;
-#endif
-
 void TOBY_startRun()
 {
     wxGetApp().getTobyFrame()->startRun();
-
-    #if TOBY_PROFILE
-    profileStopwatch = new wxStopWatch;
-    #endif
 } // TOBY_startRun
 
 
@@ -377,6 +369,12 @@ void TOBY_drawTurtle(const Turtle *turtle, void *data)
 {
     wxGetApp().getTobyFrame()->getTurtleSpace()->drawTurtle(turtle, data);
 } // TOBY_drawTurtle
+
+
+void TOBY_pauseReached(int curLine, int breakpoint, int pauseTicks)
+{
+    wxGetApp().getTobyFrame()->pauseReached(curLine, breakpoint, pauseTicks);
+} // TOBY_pauseReached
 
 
 void TOBY_cleanup(int r, int g, int b)
@@ -873,12 +871,16 @@ void TobyFrame::startRun()
     this->turtleSpace->startRun(this->runForPrinting);
     if (this->breakAtStart)
         TOBY_stepProgram();
+    this->SetStatusText(wxT("Now running..."));
+    this->profileStopwatch.Start(0);
 } // TobyFrame::startRun
 
 
 void TobyFrame::stopRun()
 {
     wxASSERT(TOBY_isRunning());
+    const long ms = this->profileStopwatch.Time();
+    this->SetStatusText(wxString::Format(wxT("...ran %ld milliseconds."), ms));
     this->toggleWidgetsRunnable(true);
     this->turtleSpace->stopRun();
 } // TobyFrame::stopRun
@@ -1274,6 +1276,9 @@ void TobyStandaloneFrame::openFileImpl(char *prog)
 TobyIDEFrame::TobyIDEFrame()
     : textCtrl(NULL)
 {
+    this->CreateStatusBar();
+    this->SetStatusText(wxString(GBuildVer, wxConvUTF8));
+
     // !!! FIXME: localization.
     this->fileMenu->Append(MENUCMD_Save, wxT("&Save\tCtrl-S"));
     this->fileMenu->Append(MENUCMD_SaveAs, wxT("Save &As"));
@@ -1329,6 +1334,27 @@ bool TobyIDEFrame::shouldVetoClose()
 
     return this->modified;
 } // TobyIDEFrame::shouldVetoClose
+
+
+void TobyIDEFrame::pauseReached(int curLine, int breakpoint, int pauseTicks)
+{
+    if ((breakpoint) || (pauseTicks >= 300))
+    {
+        this->SetStatusText(wxString::Format(wxT("Now on line #%d"), curLine));
+        int csElems = 0;
+        const TobyDebugInfo *cs = TOBY_getCallstack(&csElems);
+        printf("Callstack (%d frames):\n", csElems);
+        for (int i = 0; i < csElems; i++, cs++)
+        {
+            int varElems = 0;
+            const TobyDebugInfo *vars = TOBY_getVariables(i, &varElems);
+            printf("  #%d: %s, line %d (%d vars)\n",
+                    i, cs->name, cs->linenum, varElems);
+            for (int j = 0; j < varElems; j++, vars++)
+                printf("      %s: '%s'\n", vars->name, vars->value);
+        } // for
+    } // if
+} // TobyIDEFrame::pauseReached
 
 
 char *TobyIDEFrame::getProgramImpl()

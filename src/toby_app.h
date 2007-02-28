@@ -65,11 +65,12 @@ typedef struct Turtle
 } Turtle;
 
 
-typedef struct TobyCallstack
+typedef struct TobyDebugInfo
 {
     const char *name;
+    const char *value;
     int linenum;
-} TobyCallstack;
+} TobyDebugInfo;
 
 
 /* !!! FIXME: comment this */
@@ -80,8 +81,9 @@ void TOBY_background(int *r, int *g, int *b);
 void TOBY_renderAllTurtles(void *udata);
 
 
-/* !!! FIXME: comment this */
-const TobyCallstack *TOBY_getCallstack(int *elementCount);
+/* !!! FIXME: comment these */
+const TobyDebugInfo *TOBY_getCallstack(int *elementCount);
+const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount);
 
 
 /* !!! FIXME: comment all these */
@@ -113,6 +115,8 @@ int TOBY_delay(long ms);
  */
 void TOBY_runProgram(const char *source_code, int run_for_printing);
 
+/* !!! FIXME: comment me. */
+void TOBY_pauseReached(int currentline, int breakpoint, int pauseTicks);
 
 
 /*
