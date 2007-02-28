@@ -327,12 +327,6 @@ void TOBY_startRun()
 
 void TOBY_stopRun()
 {
-    #if TOBY_PROFILE
-    printf("time to execute: %ld\n", profileStopwatch->Time());
-    delete profileStopwatch;
-    profileStopwatch = NULL;
-    #endif
-
     wxGetApp().getTobyFrame()->stopRun();
 } // TOBY_stopRun
 
