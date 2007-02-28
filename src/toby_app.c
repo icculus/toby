@@ -1139,21 +1139,28 @@ const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount)
 
     for (i = 1; (name = lua_getlocal(L, &ldbg, i)) != NULL; i++)
     {
+        int dopop = 1;
         int rc = 1;
         if (*name != '(')  /* internal Lua variable? */
         {
             const char *val = lua_tostring(L, -1);
             if (val == NULL)
             {
-                printf("!!! FIXME: null value for '%s' at %s:%d\n",
-                        name, __FILE__, __LINE__);
-                continue;
+                if (lua_isboolean(L, -1))
+                    val = ((lua_toboolean(L, -1)) ? "true" : "false");
+                else
+                {
+                    dopop = 0;
+                    val = "??? (bug in Toby!)";
+                } /* else */
             } /* if */
 
             rc = addDebugItem(&elements, &varCount, &varList, name, val, -1);
         } /* if */
 
-        lua_pop(L, 1);
+        if (dopop)
+            lua_pop(L, 1);
+
         if (!rc)
             return 0;
     } /* for */
