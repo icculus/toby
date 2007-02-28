@@ -1446,8 +1446,11 @@ void TobyIDEFrame::onMenuSaveAs(wxCommandEvent &evt)
 
 void TobyIDEFrame::onTextModified(wxCommandEvent &evt)
 {
-    this->modified = true;
-    this->updateTitleBar();
+    if (!this->modified)
+    {
+        this->modified = true;
+        this->updateTitleBar();
+    } // if
 } // TobyIDEFrame::onTextModified
 
 #endif  // TOBY_WX_BUILD_IDE
