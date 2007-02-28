@@ -765,6 +765,11 @@ TobyFrame::TobyFrame()
     this->menuBar->Append(this->runMenu, wxT("&Run"));
     this->menuBar->Append(this->helpMenu, wxT("&Help"));
     this->SetMenuBar(this->menuBar);
+
+    long mx = 0;
+    wxConfigBase *cfg = wxConfig::Get();
+    if ((cfg != NULL) && (cfg->Read(wxT("Maximized"), &mx)) && (mx))
+        this->Maximize();
 } // TobyFrame::TobyFrame
 
 
@@ -786,11 +791,12 @@ const wxPoint TobyFrame::getPreviousPos()
 
     long winx, winy, winw, winh;
     wxConfigBase *cfg = wxConfig::Get();
-    if ( (!cfg->Read(wxT("LastWindowX"), &winx, -1)) ||
-         (!cfg->Read(wxT("LastWindowY"), &winy, -1)) ||
-         (!cfg->Read(wxT("LastWindowW"), &winw, -1)) ||
-         (!cfg->Read(wxT("LastWindowH"), &winh, -1)) )
-        return wxDefaultPosition;
+    if ( (cfg == NULL) ||
+         (!cfg->Read(wxT("WindowX"), &winx)) ||
+         (!cfg->Read(wxT("WindowY"), &winy)) ||
+         (!cfg->Read(wxT("WindowW"), &winw)) ||
+         (!cfg->Read(wxT("WindowH"), &winh)) )
+        return wxPoint(dpyw / 4, dpyh / 4);
 
     if (winw > dpyw) { winw = dpyw; winx = 0; }
     else if (winw < 50) winw = 50;
@@ -811,9 +817,10 @@ const wxSize TobyFrame::getPreviousSize()
 
     long winw, winh;
     wxConfigBase *cfg = wxConfig::Get();
-    if ( (!cfg->Read(wxT("LastWindowW"), &winw, -1)) ||
-         (!cfg->Read(wxT("LastWindowH"), &winh, -1)) )
-        return wxDefaultSize;
+    if ( (cfg == NULL) ||
+         (!cfg->Read(wxT("WindowW"), &winw)) ||
+         (!cfg->Read(wxT("WindowH"), &winh)) )
+        return wxSize(dpyw - (dpyw / 4), dpyh - (dpyh / 4));
 
     if (winw > dpyw) winw = dpyw;
     else if (winw < 50) winw = 50;
@@ -1212,13 +1219,15 @@ void TobyFrame::onClose(wxCloseEvent &evt)
 
     else  // really closing this time.
     {
-        // !!! FIXME: this may not be the best place for this...
         wxConfigBase *cfg = wxConfig::Get();
-        cfg->Write(wxT("LastWindowW"), (long) this->nonMaximizedWidth);
-        cfg->Write(wxT("LastWindowH"), (long) this->nonMaximizedHeight);
-        cfg->Write(wxT("LastWindowX"), (long) this->nonMaximizedX);
-        cfg->Write(wxT("LastWindowY"), (long) this->nonMaximizedY);
-        cfg->Write(wxT("Maximized"), (long) this->IsMaximized() ? 1 : 0);
+        if (cfg != NULL)
+        {
+            cfg->Write(wxT("WindowW"), (long) this->nonMaximizedWidth);
+            cfg->Write(wxT("WindowH"), (long) this->nonMaximizedHeight);
+            cfg->Write(wxT("WindowX"), (long) this->nonMaximizedX);
+            cfg->Write(wxT("WindowY"), (long) this->nonMaximizedY);
+            cfg->Write(wxT("Maximized"), (long) this->IsMaximized() ? 1 : 0);
+        } // if
         this->Destroy();
     } // else
 } // TobyFrame::onClose
@@ -1519,7 +1528,7 @@ bool TobyWxApp::OnInit()
     #endif
 
     wxConfigBase *cfg = new wxConfig(wxT("Toby"), wxT("icculus.org"));
-    wxConfig::Set(cfg);
+    if (cfg != NULL) wxConfig::Set(cfg);
 
     this->processStopwatch.Start(0);
 
@@ -1528,7 +1537,7 @@ bool TobyWxApp::OnInit()
     if (standalone)
     {
         #if TOBY_WX_BUILD_STANDALONE
-        cfg->SetPath(wxT("/Standalone"));
+        if (cfg != NULL) cfg->SetPath(wxT("/Standalone"));
         this->mainWindow = new TobyStandaloneFrame;
         #else
         fprintf(stderr, "ERROR: No standalone app support in this build.\n");
@@ -1538,17 +1547,13 @@ bool TobyWxApp::OnInit()
     else
     {
         #if TOBY_WX_BUILD_IDE
-        cfg->SetPath(wxT("/IDE"));
+        if (cfg != NULL) cfg->SetPath(wxT("/IDE"));
         this->mainWindow = new TobyIDEFrame;
         #else
         fprintf(stderr, "ERROR: No IDE app support in this build.\n");
         return false;
         #endif
     } // else
-
-    long mx = 0;
-    if ((wxConfig::Get()->Read(wxT("Maximized"), &mx, -1)) && (mx))
-        this->mainWindow->Maximize();
 
     this->mainWindow->Show(true);
     SetTopWindow(this->mainWindow);
