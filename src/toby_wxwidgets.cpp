@@ -1377,7 +1377,7 @@ void TobyIDEFrame::closeImpl()
     {
         cfg->Write(wxT("IDETopSplitPos"), (long) topSplit->GetSashPosition());
         cfg->Write(wxT("IDEIdeSplitPos"), (long) ideSplit->GetSashPosition());
-        cfg->Write(wxT("IDEDbgSplitPos"), (long) dbgSplit->GetSashPosition()+84);  // !!! FIXME: +84?!
+        cfg->Write(wxT("IDEDbgSplitPos"), (long) dbgSplit->GetSashPosition());
     } // if
 } // TobyIDEFrame::closeImpl
 
