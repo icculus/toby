@@ -1470,15 +1470,11 @@ char *TobyIDEFrame::getProgramImpl()
 
 void TobyIDEFrame::openFileImpl(char *prog)
 {
-    // !!! FIXME: set filename in titlebar.
-    textCtrl->ChangeValue(wxString(prog, wxConvUTF8));
+    this->textCtrl->ChangeValue(wxString(prog, wxConvUTF8));
     delete[] prog;  // don't need this anymore.
     this->toggleWidgetsRunnable(true);
     this->textCtrl->SetFocus();
-
-// !!! FIXME: remove this.
-//TOBY_clearAllBreakpoints();
-//printf("test breakpoint: %d\n", TOBY_addBreakpointLine(18));
+    TOBY_clearAllBreakpoints();
 } // TobyIDEFrame::openFileImpl
 
 
