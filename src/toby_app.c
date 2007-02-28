@@ -1121,6 +1121,37 @@ const TobyDebugInfo *TOBY_getCallstack(int *elementCount)
 } /* TOBY_getCallstack */
 
 
+static const TobyDebugInfo *getGlobals(lua_State *L, int *elementCount)
+{
+    int elements = 0;
+
+    lua_pushnil(L);  /* initial key value for iteration. */
+    while (lua_next(L, LUA_GLOBALSINDEX))  /* replaces key, pushes value. */
+    {
+        int rc = 1;
+        const char *name = lua_tostring(L, -2);
+        const char *val = lua_tostring(L, -1);
+        if (val == NULL)  /* !!! FIXME: code dupe with getVariables */
+        {
+            if (lua_isboolean(L, -1))
+                val = ((lua_toboolean(L, -1)) ? "true" : "false");
+            else if (!lua_isfunction(L, -1))  /* ignore global functions. */
+                val = "??? (bug in Toby!)";
+        } /* if */
+
+        if (val != NULL)
+            rc = addDebugItem(&elements, &varCount, &varList, name, val, -1);
+        lua_pop(L, 1);  /* remove value, keep key for next iteration. */
+        if (!rc)
+            return 0;
+    } /* while */
+    lua_pop(L, 1);  /* pop iterator key */
+
+    *elementCount = elements;
+    return varList;
+} /* getGlobals */
+
+
 const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount)
 {
     const char *name = NULL;
@@ -1134,12 +1165,14 @@ const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount)
     if (L == NULL)   /* if frontend calls this when program isn't running. */
         return NULL;
 
+    if (stackframe < 0)
+        return getGlobals(L, elementCount);
+
     if (!lua_getstack(L, stackframe, &ldbg))
         return NULL;
 
     for (i = 1; (name = lua_getlocal(L, &ldbg, i)) != NULL; i++)
     {
-        int dopop = 1;
         int rc = 1;
         if (*name != '(')  /* internal Lua variable? */
         {
@@ -1149,18 +1182,13 @@ const TobyDebugInfo *TOBY_getVariables(int stackframe, int *elementCount)
                 if (lua_isboolean(L, -1))
                     val = ((lua_toboolean(L, -1)) ? "true" : "false");
                 else
-                {
-                    dopop = 0;
                     val = "??? (bug in Toby!)";
-                } /* else */
             } /* if */
 
             rc = addDebugItem(&elements, &varCount, &varList, name, val, -1);
         } /* if */
 
-        if (dopop)
-            lua_pop(L, 1);
-
+        lua_pop(L, 1);
         if (!rc)
             return 0;
     } /* for */

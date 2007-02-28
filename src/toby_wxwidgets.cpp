@@ -1421,10 +1421,7 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
         int frames = 0;
         const TobyDebugInfo *cs = TOBY_getCallstack(&frames);
         if ((frames <= 0) || (cs == NULL))
-        {
             this->callstackCtrl->Clear();
-            this->variablesCtrl->Clear();
-        } // if
         else
         {
             wxString *items = new wxString[frames];
@@ -1436,11 +1433,11 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
 
             this->callstackCtrl->Set(frames, items);
             delete[] items;
-
-            wxCommandEvent evt;
-            this->callstackCtrl->Select(0);
-            this->updateVariablesCtrl(0);
         } // else
+
+        this->callstackCtrl->Append(wxT("(global variables)"));
+        this->callstackCtrl->Select(0);
+        this->updateVariablesCtrl(0);
     } // if
 } // TobyIDEFrame::pauseReached
 
@@ -1476,6 +1473,12 @@ void TobyIDEFrame::openFileImpl(char *prog)
 
 void TobyIDEFrame::updateVariablesCtrl(int frame)
 {
+    if (frame >= 0)
+    {
+        if ( ((unsigned int) frame) == (this->callstackCtrl->GetCount()-1) )
+            frame = -1;  // Requesting global variables, not a stack frame.
+    } // if
+
     int varCount = 0;
     const TobyDebugInfo *vars = TOBY_getVariables(frame, &varCount);
     if ((varCount <= 0) || (vars == NULL))
