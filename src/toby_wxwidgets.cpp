@@ -807,7 +807,7 @@ const wxPoint TobyFrame::getPreviousPos()
          (!cfg->Read(wxT("WindowY"), &winy)) ||
          (!cfg->Read(wxT("WindowW"), &winw)) ||
          (!cfg->Read(wxT("WindowH"), &winh)) )
-        return wxPoint(dpyw / 4, dpyh / 4);
+        return wxPoint(dpyw / 8, dpyh / 8);
 
     if (winw > dpyw) { winw = dpyw; winx = 0; }
     else if (winw < 50) winw = 50;
