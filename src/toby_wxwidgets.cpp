@@ -1420,6 +1420,17 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
 
         int frames = 0;
         const TobyDebugInfo *cs = TOBY_getCallstack(&frames);
+
+        // if you're on the (global variables) selection, stick there,
+        //  otherwise always view the top stackframe by default.
+        int viewing = this->callstackCtrl->GetSelection();
+        if (viewing == wxNOT_FOUND)
+            viewing = 0;
+        else if (((unsigned int) viewing) == this->callstackCtrl->GetCount()-1)
+            viewing = frames;
+        else
+            viewing = 0;
+
         if ((frames <= 0) || (cs == NULL))
             this->callstackCtrl->Clear();
         else
@@ -1436,8 +1447,8 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
         } // else
 
         this->callstackCtrl->Append(wxT("(global variables)"));
-        this->callstackCtrl->Select(0);
-        this->updateVariablesCtrl(0);
+        this->callstackCtrl->Select(viewing);
+        this->updateVariablesCtrl(viewing);
     } // if
 } // TobyIDEFrame::pauseReached
 
