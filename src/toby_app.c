@@ -901,11 +901,56 @@ static int luahook_stackwalk(lua_State *L)
 } /* luahook_stackwalk */
 
 
+static int *breakpointLines = NULL;
+static int breakpointLineCount = 0;
+
+void TOBY_clearAllBreakpoints(void)
+{
+    free(breakpointLines);
+    breakpointLines = NULL;
+    breakpointLineCount = 0;
+} /* TOBY_clearAllBreakpoints */
+
+
+int TOBY_addBreakpointLine(int line)
+{
+    const size_t newSize = sizeof (int) * (breakpointLineCount + 1);
+    void *ptr = realloc(breakpointLines, newSize);
+    if (ptr == NULL)
+        return -1;
+
+    /* !!! FIXME: sort into array, don't append. */
+    /* !!! FIXME: make sure it's not already in the array. */
+    breakpointLines = (int *) ptr;
+    breakpointLines[breakpointLineCount++] = line;
+    return breakpointLineCount-1;
+} /* TOBY_addBreakpointLine */
+
+
+static int isBreakpointLine(int line)
+{
+    int retval = -1;
+    if (breakpointLines != NULL)
+    {
+        int i;  /* !!! FIXME: don't do a linear search here... */
+        for (i = 0; i < breakpointLineCount; i++)
+        {
+            if (breakpointLines[i] == line)
+                return i;
+        } /* for */
+    } /* if */
+
+    return retval;
+} /* isBreakpointLine */
+
+
 static void luaDebugHook(lua_State *L, lua_Debug *ar)
 {
     const int hook = ar->event;
+    const int line = ar->currentline;
     const long startTicks = TOBY_getTicks();
     long pauseTicks = -1;
+    int breakpoint = -1;
     int shouldRedraw = (startTicks >= nextPumpTicks);
 
     /*
@@ -918,15 +963,29 @@ static void luaDebugHook(lua_State *L, lua_Debug *ar)
     if (hook == LUA_HOOKLINE)
     {
         const long mustDelay = TOBY_getDelayTicksPerLine();
-        /*printf("Now on line #%d\n", ar->currentline);*/
+        /*printf("Now on line #%d\n", line);*/
         if (mustDelay > 0)
             pauseTicks = startTicks + mustDelay;
         if (TOBY_isStepping())  /* single stepping? Break here. */
             execState = EXEC_PAUSED;
+        if ((breakpoint = isBreakpointLine(line)) != -1)
+            execState = EXEC_PAUSED;
     } /* if */
 
+    /* !!! FIXME: maybe later. */
+    #if 0
+    if (hook == LUA_HOOKCALL)
+    {
+        if (breakpoint == -1)
+        {
+            if ((breakpoint = isBreakpointFunc(ar)) != -1)
+                execState = EXEC_PAUSED;
+        } /* if */
+    } /* if */
+    #endif
+
     if ((TOBY_isPaused()) || (pauseTicks > 0))
-        TOBY_pauseReached(ar->currentline, TOBY_isPaused(), pauseTicks);
+        TOBY_pauseReached(line, TOBY_isPaused(), breakpoint, pauseTicks);
 
     while ( (TOBY_isPaused()) || (pauseTicks > 0) || (shouldRedraw) )
     {

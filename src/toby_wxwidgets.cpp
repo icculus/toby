@@ -144,7 +144,7 @@ public:
     inline bool isQuitting() const { return this->quitting; }
 
     // subclasses fill in these.
-    virtual void pauseReached(int curLine, int breakpoint, int pauseTicks) {}
+    virtual void pauseReached(int line, int stopped, int bp, int ticks) {}
     virtual void toggleWidgetsRunnableImpl(bool enable) {}
     virtual bool shouldVetoClose() { return false; }
     virtual void openFileImpl(char *buf) = 0;
@@ -240,7 +240,7 @@ public:
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose();
     virtual void toggleWidgetsRunnableImpl(bool enable);
-    virtual void pauseReached(int curLine, int breakpoint, int pauseTicks);
+    virtual void pauseReached(int line, int stopped, int bp, int ticks);
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
@@ -371,9 +371,9 @@ void TOBY_drawTurtle(const Turtle *turtle, void *data)
 } // TOBY_drawTurtle
 
 
-void TOBY_pauseReached(int curLine, int breakpoint, int pauseTicks)
+void TOBY_pauseReached(int line, int fullstop, int breakpoint, int ticks)
 {
-    wxGetApp().getTobyFrame()->pauseReached(curLine, breakpoint, pauseTicks);
+    wxGetApp().getTobyFrame()->pauseReached(line, fullstop, breakpoint, ticks);
 } // TOBY_pauseReached
 
 
@@ -1336,11 +1336,15 @@ bool TobyIDEFrame::shouldVetoClose()
 } // TobyIDEFrame::shouldVetoClose
 
 
-void TobyIDEFrame::pauseReached(int curLine, int breakpoint, int pauseTicks)
+void TobyIDEFrame::pauseReached(int line, int fullstop,
+                                int breakpoint, int pauseTicks)
 {
-    if ((breakpoint) || (pauseTicks >= 300))
+    if ((fullstop) || (pauseTicks >= 300))
     {
-        this->SetStatusText(wxString::Format(wxT("Now on line #%d"), curLine));
+        if (breakpoint != -1)
+            printf("Hit breakpoint #%d\n", breakpoint);
+
+        this->SetStatusText(wxString::Format(wxT("Now on line #%d"), line));
         int csElems = 0;
         const TobyDebugInfo *cs = TOBY_getCallstack(&csElems);
         printf("Callstack (%d frames):\n", csElems);
@@ -1379,6 +1383,10 @@ void TobyIDEFrame::openFileImpl(char *prog)
     delete[] prog;  // don't need this anymore.
     this->toggleWidgetsRunnable(true);
     this->textCtrl->SetFocus();
+
+// !!! FIXME: remove this.
+//TOBY_clearAllBreakpoints();
+//printf("test breakpoint: %d\n", TOBY_addBreakpointLine(18));
 } // TobyIDEFrame::openFileImpl
 
 

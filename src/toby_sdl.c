@@ -105,7 +105,7 @@ void TOBY_messageBox(const char *msg)
 } /* TOBY_messageBox */
 
 
-void TOBY_pauseReached(int currentline, int breakpoint, int pauseTicks)
+void TOBY_pauseReached(int line, int fullstop, int breakpoint, int pauseTicks)
 {
     /* no-op in this implementation: no debugging facilities. */
 } /* TOBY_pauseReached */

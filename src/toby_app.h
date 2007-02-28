@@ -115,8 +115,12 @@ int TOBY_delay(long ms);
  */
 void TOBY_runProgram(const char *source_code, int run_for_printing);
 
-/* !!! FIXME: comment me. */
-void TOBY_pauseReached(int currentline, int breakpoint, int pauseTicks);
+
+/* !!! FIXME: comment these. */
+/* !!! FIXME: breakpoint API isn't robust, but it's all I need right now. */
+void TOBY_clearAllBreakpoints(void);
+int TOBY_addBreakpointLine(int line);
+void TOBY_pauseReached(int line, int fullstop, int breakpoint, int pauseTicks);
 
 
 /*
