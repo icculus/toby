@@ -781,6 +781,8 @@ TobyFrame::TobyFrame()
     wxConfigBase *cfg = wxConfig::Get();
     if ((cfg != NULL) && (cfg->Read(wxT("Maximized"), &mx)) && (mx))
         this->Maximize();
+
+    this->updateTitleBar();
 } // TobyFrame::TobyFrame
 
 
@@ -946,10 +948,13 @@ void TobyFrame::onIdle(wxIdleEvent &evt)
 
 void TobyFrame::updateTitleBar()
 {
-    const wxFileName fn(this->filename);
-    wxString fnstr(fn.GetFullName());
+    wxString fnstr;
+    if (!this->filename.IsEmpty())
+        fnstr = wxFileName(this->filename).GetFullName();
+    else
+        fnstr = wxT("New file");
     wxString modstr(this->modified ? wxT("*") : wxT(""));
-    this->SetTitle(wxString::Format(wxT("%s%s - Toby"),
+    this->SetTitle(wxString::Format(wxT("Toby - %s%s"),
                     fnstr.c_str(), modstr.c_str()));
 } // TobyFrame::updateTitleBar
 
