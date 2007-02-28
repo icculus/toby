@@ -110,8 +110,9 @@ enum TobyMenuCommands
     MENUCMD_Print = wxID_PRINT,
 
     // non-standard menu items go here.
-    MENUCMD_RunOrStop = wxID_HIGHEST,
+    MENUCMD_Run = wxID_HIGHEST,
     MENUCMD_RunForPrinting,
+    MENUCMD_Stop,
     MENUCMD_Step,
     MENUCMD_SaveAsImage,
     MENUCMD_Cleanup,
@@ -140,13 +141,13 @@ public:
     inline void pumpEvents();
     inline void repaintTurtlespace();
     inline void runProgram(bool printing, bool _breakAtStart=false);
-    void toggleWidgetsRunnable(bool enable);
+    void toggleWidgetsRunnable(bool readyToRun);
     inline void requestQuit();
     inline bool isQuitting() const { return this->quitting; }
 
     // subclasses fill in these.
     virtual void pauseReached(int line, int stopped, int bp, int ticks) {}
-    virtual void toggleWidgetsRunnableImpl(bool enable) {}
+    virtual void toggleWidgetsRunnableImpl(bool readyToRun) {}
     virtual bool shouldVetoClose() { return false; }
     virtual void closeImpl() {}
     virtual void openFileImpl(char *buf) = 0;
@@ -167,7 +168,8 @@ public:
     void onMenuOpen(wxCommandEvent &evt);
     void onMenuSaveAsImage(wxCommandEvent &evt);
     void onMenuCleanup(wxCommandEvent &evt);
-    void onMenuRunOrStop(wxCommandEvent &evt);
+    void onMenuRun(wxCommandEvent &evt);
+    void onMenuStop(wxCommandEvent &evt);
     void onMenuStep(wxCommandEvent &evt);
     void onMenuRunForPrinting(wxCommandEvent &evt);
 
@@ -209,9 +211,10 @@ BEGIN_EVENT_TABLE(TobyFrame, wxFrame)
     EVT_MENU(MENUCMD_Website, TobyFrame::onMenuWebsite)
     EVT_MENU(MENUCMD_License, TobyFrame::onMenuLicense)
     EVT_MENU(MENUCMD_Cleanup, TobyFrame::onMenuCleanup)
-    EVT_MENU(MENUCMD_RunOrStop, TobyFrame::onMenuRunOrStop)
-    EVT_MENU(MENUCMD_Step, TobyFrame::onMenuStep)
+    EVT_MENU(MENUCMD_Run, TobyFrame::onMenuRun)
     EVT_MENU(MENUCMD_RunForPrinting, TobyFrame::onMenuRunForPrinting)
+    EVT_MENU(MENUCMD_Stop, TobyFrame::onMenuStop)
+    EVT_MENU(MENUCMD_Step, TobyFrame::onMenuStep)
 END_EVENT_TABLE()
 
 
@@ -241,7 +244,7 @@ public:
     virtual void openFileImpl(char *prog);
     virtual char *getProgramImpl();
     virtual bool shouldVetoClose();
-    virtual void toggleWidgetsRunnableImpl(bool enable);
+    virtual void toggleWidgetsRunnableImpl(bool readyToRun);
     virtual void pauseReached(int line, int stopped, int bp, int ticks);
     virtual void closeImpl();
 
@@ -764,7 +767,8 @@ TobyFrame::TobyFrame()
     this->fileMenu->AppendSeparator();
     this->fileMenu->Append(MENUCMD_Quit, wxT("E&xit\tCtrl-X"));
 
-    this->runMenu->Append(MENUCMD_RunOrStop, wxT("&Run Program\tF5"))->Enable(false);
+    this->runMenu->Append(MENUCMD_Run, wxT("&Run Program\tF5"))->Enable(false);
+    this->runMenu->Append(MENUCMD_Stop, wxT("&Stop Program\tF6"))->Enable(false);
     this->runMenu->Append(MENUCMD_RunForPrinting, wxT("R&un Program for Printing"))->Enable(false);
     this->runMenu->Append(MENUCMD_Cleanup, wxT("&Clean up TurtleSpace"))->Enable(false);
 
@@ -858,23 +862,17 @@ void TobyFrame::repaintTurtlespace()
 } // TobyFrame::repaintTurtlespace
 
 
-void TobyFrame::toggleWidgetsRunnable(bool enable)
+void TobyFrame::toggleWidgetsRunnable(bool readyToRun)
 {
     wxMenuBar *mb = this->menuBar;
-    if (enable)
-        mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Run Program\tF5"));
-    else
-        mb->FindItem(MENUCMD_RunOrStop)->SetText(wxT("&Stop Program\tF5"));
-
-    // always enabled (since it toggles between STOP and RUN).
-    mb->FindItem(MENUCMD_RunOrStop)->Enable(true);
-
-    mb->FindItem(MENUCMD_RunForPrinting)->Enable(enable);
-    mb->FindItem(MENUCMD_SaveAsImage)->Enable(enable);
-    mb->FindItem(MENUCMD_Print)->Enable(enable);
-    mb->FindItem(MENUCMD_PrintPreview)->Enable(enable);
-    mb->FindItem(MENUCMD_Cleanup)->Enable(enable);
-    this->toggleWidgetsRunnableImpl(enable);
+    mb->FindItem(MENUCMD_Run)->Enable(readyToRun);
+    mb->FindItem(MENUCMD_Stop)->Enable(!readyToRun);
+    mb->FindItem(MENUCMD_RunForPrinting)->Enable(readyToRun);
+    mb->FindItem(MENUCMD_SaveAsImage)->Enable(readyToRun);
+    mb->FindItem(MENUCMD_Print)->Enable(readyToRun);
+    mb->FindItem(MENUCMD_PrintPreview)->Enable(readyToRun);
+    mb->FindItem(MENUCMD_Cleanup)->Enable(readyToRun);
+    this->toggleWidgetsRunnableImpl(readyToRun);
 } // TobyFrame::toggleWidgetsRunnable
 
 
@@ -1091,13 +1089,22 @@ void TobyFrame::onMenuPrint(wxCommandEvent &event)
 } // TobyFrame::onMenuPrint
 
 
-void TobyFrame::onMenuRunOrStop(wxCommandEvent &evt)
+void TobyFrame::onMenuRun(wxCommandEvent &evt)
 {
-    if (TOBY_isRunning())
-        TOBY_haltProgram();
-    else
+    if (!TOBY_isRunning())
         this->runProgram(false);  // Run will kick off in next idle event.
-} // TobyFrame::onMenuRunOrStop
+    else if (TOBY_isPaused())
+    {
+        this->menuBar->FindItem(MENUCMD_Run)->Enable(false);
+        TOBY_continueProgram();
+    } // else if
+} // TobyFrame::onMenuRun
+
+
+void TobyFrame::onMenuStop(wxCommandEvent &evt)
+{
+    TOBY_haltProgram();
+} // TobyFrame::onMenuStop
 
 
 void TobyFrame::onMenuStep(wxCommandEvent &evt)
@@ -1367,7 +1374,7 @@ TobyIDEFrame::TobyIDEFrame()
 } // TobyIDEFrame::TobyIDEFrame
 
 
-void TobyIDEFrame::toggleWidgetsRunnableImpl(bool enable)
+void TobyIDEFrame::toggleWidgetsRunnableImpl(bool readyToRun)
 {
     this->callstackCtrl->Clear();
     this->variablesCtrl->Clear();
@@ -1413,6 +1420,8 @@ void TobyIDEFrame::pauseReached(int line, int fullstop,
 {
     if ((fullstop) || (pauseTicks >= 300))
     {
+        this->menuBar->FindItem(MENUCMD_Run)->Enable(true);
+
         wxString status;
         if (breakpoint == -1)
             status = wxString::Format(wxT("Now on line #%d"), line);
