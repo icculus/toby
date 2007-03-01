@@ -152,6 +152,7 @@ public:
     virtual void closeImpl() {}
     virtual void openFileImpl(char *buf) = 0;
     virtual char *getProgramImpl() = 0;
+    virtual void onContinueImpl() {}
 
     // wxWidgets event handlers...
     void onIdle(wxIdleEvent &evt);
@@ -247,6 +248,7 @@ public:
     virtual void toggleWidgetsRunnableImpl(bool readyToRun);
     virtual void pauseReached(int line, int stopped, int bp, int ticks);
     virtual void closeImpl();
+    virtual void onContinueImpl();
 
     // wxWidgets event handlers...
     void onMenuOpen(wxCommandEvent &evt);
@@ -1096,6 +1098,7 @@ void TobyFrame::onMenuRun(wxCommandEvent &evt)
     else if (TOBY_isPaused())
     {
         this->menuBar->FindItem(MENUCMD_Run)->Enable(false);
+        this->onContinueImpl();
         TOBY_continueProgram();
     } // else if
 } // TobyFrame::onMenuRun
@@ -1413,6 +1416,13 @@ bool TobyIDEFrame::shouldVetoClose()
 
     return this->modified;
 } // TobyIDEFrame::shouldVetoClose
+
+
+void TobyIDEFrame::onContinueImpl()
+{
+    this->callstackCtrl->Clear();
+    this->variablesCtrl->Clear();
+} // TobyIDEFrame::onContinueImpl
 
 
 void TobyIDEFrame::pauseReached(int line, int fullstop,
