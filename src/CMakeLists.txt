@@ -61,6 +61,11 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 ADD_DEFINITIONS(-D_setjmp=setjmp)
 ADD_DEFINITIONS(-D_longjmp=longjmp)
 
+IF(MSVC)
+    # VS.NET 8.0 got really really anal about strcpy, etc.
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS=1)
+ENDIF(MSVC)
+
 SET(TOBY_HAVE_GUI FALSE)
 
 OPTION(TOBY_GUI_WXWIDGETS "Build wxWidgets GUI(s)" TRUE)
