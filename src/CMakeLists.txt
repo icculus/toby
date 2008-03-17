@@ -4,6 +4,8 @@
 # Please refer to LICENSE.txt in the root directory of the source
 #  distribution for licensing details.
 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
 PROJECT(Toby)
 SET(TOBY_VERSION 0.1)
 
