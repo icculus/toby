@@ -9,6 +9,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(Toby)
 SET(TOBY_VERSION 0.1)
 
+SET(LUA_DIR lua-5.1.3)
+
 # I hate that they define "WIN32" ... we're about to move to Win64...I hope!
 IF(WIN32 AND NOT WINDOWS)
     SET(WINDOWS TRUE)
@@ -30,7 +32,7 @@ ADD_DEFINITIONS(-D_THREAD_SAFE)
 ADD_DEFINITIONS(-DLUA_ANSI=1)
 
 INCLUDE_DIRECTORIES(.)
-INCLUDE_DIRECTORIES(lua-5.1.1/src)
+INCLUDE_DIRECTORIES(${LUA_DIR}/src)
 
 IF(MACOSX)
     ADD_DEFINITIONS(-DPLATFORM_MACOSX=1)
@@ -123,27 +125,27 @@ ENDIF(NOT TOBY_HAVE_GUI)
 SET(TOBY_SRCS
     buildver.c
     toby_app.c
-    lua-5.1.1/src/lapi.c
-    lua-5.1.1/src/ldebug.c
-    lua-5.1.1/src/ldo.c
-    lua-5.1.1/src/ldump.c
-    lua-5.1.1/src/lfunc.c
-    lua-5.1.1/src/lgc.c
-    lua-5.1.1/src/lmem.c
-    lua-5.1.1/src/lobject.c
-    lua-5.1.1/src/lopcodes.c
-    lua-5.1.1/src/lstate.c
-    lua-5.1.1/src/lstring.c
-    lua-5.1.1/src/ltable.c
-    lua-5.1.1/src/ltm.c
-    lua-5.1.1/src/lundump.c
-    lua-5.1.1/src/lvm.c
-    lua-5.1.1/src/lzio.c
-    lua-5.1.1/src/loadlib.c
-    lua-5.1.1/src/lparser.c
-    lua-5.1.1/src/llex.c
-    lua-5.1.1/src/lcode.c
-    lua-5.1.1/src/lauxlib.c
+    ${LUA_DIR}/src/lapi.c
+    ${LUA_DIR}/src/ldebug.c
+    ${LUA_DIR}/src/ldo.c
+    ${LUA_DIR}/src/ldump.c
+    ${LUA_DIR}/src/lfunc.c
+    ${LUA_DIR}/src/lgc.c
+    ${LUA_DIR}/src/lmem.c
+    ${LUA_DIR}/src/lobject.c
+    ${LUA_DIR}/src/lopcodes.c
+    ${LUA_DIR}/src/lstate.c
+    ${LUA_DIR}/src/lstring.c
+    ${LUA_DIR}/src/ltable.c
+    ${LUA_DIR}/src/ltm.c
+    ${LUA_DIR}/src/lundump.c
+    ${LUA_DIR}/src/lvm.c
+    ${LUA_DIR}/src/lzio.c
+    ${LUA_DIR}/src/loadlib.c
+    ${LUA_DIR}/src/lparser.c
+    ${LUA_DIR}/src/llex.c
+    ${LUA_DIR}/src/lcode.c
+    ${LUA_DIR}/src/lauxlib.c
 )
 
 IF(UNIX AND NOT MACOSX)
