@@ -229,7 +229,7 @@ static int allocateTurtle(lua_State *L)
 
     ptr->pos.x = ptr->pos.y = N(500);   /* center of turtlespace. */
     ptr->width = ptr->height = N(20);
-    ptr->pen.r = ptr->pen.g = ptr->pen.b = N(255);  /* white. */
+    ptr->pen.r = ptr->pen.g = ptr->pen.b = 255;  /* white. */
     ptr->angle = 270;  /* due north. */
     ptr->penDown = 1;
     ptr->recalcPoints = 1;
@@ -606,7 +606,7 @@ static int luahook_leftstring(lua_State *L)
     int charCount = checkWholeNum(L, 2);
     if (charCount < 0)
         throwError(L, "Negative string length");
-    else if (charCount > origLen)
+    else if ( ((size_t) charCount) > origLen )
         charCount = origLen;
 
     lua_pushlstring(L, str, charCount);
@@ -621,7 +621,7 @@ static int luahook_rightstring(lua_State *L)
     int charCount = checkWholeNum(L, 2);
     if (charCount < 0)
         throwError(L, "Negative string length");
-    else if (charCount > origLen)
+    else if ( ((size_t) charCount) > origLen)
         charCount = origLen;
 
     lua_pushstring(L, str + (origLen - charCount));
@@ -663,8 +663,8 @@ static int luahook_substring(lua_State *L)
         lua_pushstring(L, "");
     else
     {
-        if (charCount > origLen)
-            charCount = origLen;
+        if ( ((size_t) charCount) > origLen)
+            charCount = (int) origLen;
         lua_pushlstring(L, str+pos, charCount);
     } /* else */
 
@@ -713,7 +713,11 @@ static int luahook_drawstring(lua_State *L)
 
 static int luahook_random(lua_State *L)
 {
+#ifdef _MSC_VER
+    const long val = rand();  /* !!! FIXME: seed this. */
+#else
     const long val = random();  /* !!! FIXME: seed this. */
+#endif
     /* !!! FIXME: fixed point */
     /* !!! FIXME: nasty double code. */
     const lua_Number flt = (lua_Number) (((double)val) / ((double)RAND_MAX));

@@ -44,10 +44,14 @@ ENDIF(MACOSX)
 
 IF(WINDOWS)
     ADD_DEFINITIONS(-DPLATFORM_WINDOWS=1)
+    SET(USES_WINMAIN WIN32)
 ENDIF(WINDOWS)
 
 IF(BEOS)
     ADD_DEFINITIONS(-DPLATFORM_BEOS=1)
+    # !!! FIXME: Workaround for lua issue on some platforms...fix this better.
+    ADD_DEFINITIONS(-D_setjmp=setjmp)
+    ADD_DEFINITIONS(-D_longjmp=longjmp)
 ENDIF(BEOS)
 
 IF(UNIX)
@@ -58,10 +62,6 @@ IF(CMAKE_COMPILER_IS_GNUCC)
     # Always build with debug symbols...you can strip it later.
     ADD_DEFINITIONS(-g -pipe -Wall -Werror -fsigned-char)
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
-
-# !!! FIXME: Workaround for lua issue on some platforms...fix this better.
-ADD_DEFINITIONS(-D_setjmp=setjmp)
-ADD_DEFINITIONS(-D_longjmp=longjmp)
 
 IF(MSVC)
     # VS.NET 8.0 got really really anal about strcpy, etc.
@@ -156,12 +156,12 @@ ENDIF(UNIX AND NOT MACOSX)
 ADD_LIBRARY(tobybackend STATIC ${TOBY_SRCS} ${OPTIONAL_SRCS})
 
 IF(TOBY_GUI_WXWIDGETS)
-    ADD_EXECUTABLE(toby toby_wxwidgets.cpp)
+    ADD_EXECUTABLE(toby ${USES_WINMAIN} toby_wxwidgets.cpp)
     TARGET_LINK_LIBRARIES(toby tobybackend ${OPTIONAL_LIBS} ${wxWidgets_LIBRARIES})
 ENDIF(TOBY_GUI_WXWIDGETS)
 
 IF(TOBY_GUI_SDL)
-    ADD_EXECUTABLE(toby-sdl toby_sdl.c)
+    ADD_EXECUTABLE(toby-sdl ${USES_WINMAIN} toby_sdl.c)
     TARGET_LINK_LIBRARIES(toby-sdl tobybackend ${OPTIONAL_LIBS} ${SDL_LIBRARY})
 ENDIF(TOBY_GUI_SDL)
 

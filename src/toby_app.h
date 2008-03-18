@@ -17,7 +17,21 @@ extern "C" {
 #include "lauxlib.h"
 #include "lualib.h"
 
-/* Try to handle platforms where lua_Number isn't a double. Whenever
+#if (defined(_MSC_VER) && (!defined inline))
+#define inline __inline
+#endif
+
+/* needed for alloca(). */
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <malloc.h>
+#endif
+
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
+/*
+ * Try to handle platforms where lua_Number isn't a double. Whenever
  *  specifying a numeric constant, try to use whole numbers, and wrap them
  *  in N(), so that we don't have the compiler do an unnecessary implicit cast:
  *
