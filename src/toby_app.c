@@ -1370,7 +1370,7 @@ const char *GLicense =
 "\n"
 "Toby uses code from Lua. The Lua copyright follows.\n"
 "\n"
-"Copyright (C) 1994-2006 Lua.org, PUC-Rio.\n"
+"Copyright (C) 1994-2008 Lua.org, PUC-Rio.\n"
 "\n"
 "Permission is hereby granted, free of charge, to any person obtaining a copy "
 "of this software and associated documentation files (the \"Software\"), to deal "
