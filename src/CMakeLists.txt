@@ -9,7 +9,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 PROJECT(Toby)
 SET(TOBY_VERSION 0.1)
 
-SET(LUA_DIR lua-5.1.3)
+SET(LUA_DIR lua)
 
 # I hate that they define "WIN32" ... we're about to move to Win64...I hope!
 IF(WIN32 AND NOT WINDOWS)
