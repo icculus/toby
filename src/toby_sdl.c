@@ -196,9 +196,6 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else if (dx >= dy)
     {
-        int lastX = px;
-        int thisY = py;
-
         _D(("LFB: Line with major axis of X.\n"));
 
         for (x = 0; x < dx; x++)
@@ -209,9 +206,6 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
             {
                 y -= dx;
                 py += sdy;
-
-                lastX = px;
-                thisY = py;
             } /* if */
             px += sdx;
         } /* for */
@@ -219,9 +213,6 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
 
     else
     {
-        int lastY = py;
-        int thisX = px;
-
         _D(("LFB: Line with major axis of Y.\n"));
 
         for (y = 0; y < dy; y++)
@@ -232,9 +223,6 @@ void TOBY_drawLine(lua_Number x1, lua_Number y1, lua_Number x2, lua_Number y2,
             {
                 x -= dy;
                 px += sdx;
-
-                lastY = py;
-                thisX = px;
             } /* if */
             py += sdy;
         } /* for */
